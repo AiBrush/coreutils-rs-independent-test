@@ -288,12 +288,13 @@ def generate_report():
 
     lines.append("")
 
-    # Write report
+    # Write report to both REPORT.md and README.md
     report = "\n".join(lines)
-    with open("REPORT.md", "w") as f:
-        f.write(report)
+    for filename in ("REPORT.md", "README.md"):
+        with open(filename, "w") as f:
+            f.write(report)
 
-    print(f"Report generated: REPORT.md ({len(lines)} lines)")
+    print(f"Report generated: REPORT.md + README.md ({len(lines)} lines)")
     print(f"  Compatibility: {total_passed}/{total_tests} passed")
     print(f"  Platforms: {len(compat_platforms)}")
     print(f"  Recommendation: {recommendation}")

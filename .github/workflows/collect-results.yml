@@ -58,6 +58,7 @@ jobs:
           name: final-report
           path: |
             REPORT.md
+            README.md
             collected/
           retention-days: 90
 
@@ -66,6 +67,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add REPORT.md || true
+          git add REPORT.md README.md || true
           git diff --cached --quiet || git commit -m "Update test report [skip ci]"
           git push || true
