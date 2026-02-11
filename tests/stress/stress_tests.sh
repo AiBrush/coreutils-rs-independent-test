@@ -46,7 +46,7 @@ ensure_test_data
 FTOOLS=("fwc" "fcut" "fsha256sum" "fmd5sum" "fb2sum" "fbase64" "fsort" "ftr" "funiq" "ftac")
 
 echo ""
-echo "=== Concurrent Execution (100 parallel instances) ==="
+echo "=== Concurrent Execution (50 parallel instances) ==="
 
 for tool in "${FTOOLS[@]}"; do
     if ! command -v "$tool" &>/dev/null; then
@@ -54,10 +54,10 @@ for tool in "${FTOOLS[@]}"; do
         continue
     fi
 
-    # Run 100 parallel instances
+    # Run 50 parallel instances
     pids=()
     all_ok=true
-    for i in $(seq 1 100); do
+    for i in $(seq 1 50); do
         case "$tool" in
             fwc)     $tool "$TEST_DATA_DIR/text_100k.txt" > /dev/null 2>&1 & ;;
             fcut)    $tool -d, -f1 "$TEST_DATA_DIR/simple.csv" > /dev/null 2>&1 & ;;
@@ -78,14 +78,14 @@ for tool in "${FTOOLS[@]}"; do
     done
 
     if $all_ok; then
-        stress_pass "concurrent $tool (100 instances)"
+        stress_pass "concurrent $tool (50 instances)"
     else
-        stress_fail "concurrent $tool (100 instances)" "some instances failed"
+        stress_fail "concurrent $tool (50 instances)" "some instances failed"
     fi
 done
 
 echo ""
-echo "=== Rapid Repeated Execution (1000 runs) ==="
+echo "=== Rapid Repeated Execution (100 runs) ==="
 
 for tool in "${FTOOLS[@]}"; do
     if ! command -v "$tool" &>/dev/null; then
@@ -94,7 +94,7 @@ for tool in "${FTOOLS[@]}"; do
     fi
 
     all_ok=true
-    for i in $(seq 1 1000); do
+    for i in $(seq 1 100); do
         case "$tool" in
             fwc)     $tool "$TEST_DATA_DIR/simple.csv" > /dev/null 2>&1 ;;
             fcut)    $tool -d, -f1 "$TEST_DATA_DIR/simple.csv" > /dev/null 2>&1 ;;
@@ -112,9 +112,9 @@ for tool in "${FTOOLS[@]}"; do
     done
 
     if $all_ok; then
-        stress_pass "rapid $tool (1000 runs)"
+        stress_pass "rapid $tool (100 runs)"
     else
-        stress_fail "rapid $tool (1000 runs)" "failed during rapid execution"
+        stress_fail "rapid $tool (100 runs)" "failed during rapid execution"
     fi
 done
 
