@@ -73,6 +73,10 @@ run_benchmark() {
         unset GNU_BINARY_OVERRIDE
     else
         gnu_binary=$(echo "$gnu_cmd" | awk '{print $1}')
+        # 'eval' is a shell builtin — the actual tool is the second word
+        if [[ "$gnu_binary" == "eval" ]]; then
+            gnu_binary=$(echo "$gnu_cmd" | awk '{print $2}')
+        fi
     fi
 
     # Check if GNU tool is available
