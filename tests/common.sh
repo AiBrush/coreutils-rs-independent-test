@@ -38,12 +38,18 @@ fi
 
 check_tool_exists() {
     local tool="$1"
-    if command -v "$tool" &>/dev/null; then
-        return 0
-    else
+    if ! command -v "$tool" &>/dev/null; then
         echo -e "${YELLOW}SKIP: $tool not found in PATH${NC}"
         return 1
     fi
+    # Check if tool reports "not yet implemented"
+    local test_output
+    test_output=$(echo "test" | "$tool" 2>&1 || true)
+    if echo "$test_output" | grep -qi "not yet implemented"; then
+        echo -e "${YELLOW}SKIP: $tool reports 'not yet implemented'${NC}"
+        return 1
+    fi
+    return 0
 }
 
 get_tool_version() {

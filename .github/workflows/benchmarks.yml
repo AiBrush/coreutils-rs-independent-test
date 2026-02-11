@@ -73,13 +73,14 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install coreutils
+          # Force GNU versions over BSD: always symlink g-prefixed tools
           for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
-            if ! command -v $tool &>/dev/null; then
-              if command -v g$tool &>/dev/null; then
-                sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
-              fi
+            if command -v g$tool &>/dev/null; then
+              sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
             fi
           done
+          # Ensure /usr/local/bin comes first in PATH so GNU tools are found
+          echo "/usr/local/bin" >> $GITHUB_PATH
 
       - name: Install Python 3
         uses: actions/setup-python@v5
