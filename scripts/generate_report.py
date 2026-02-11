@@ -141,13 +141,62 @@ def generate_report():
     else:
         recommendation = "NOT READY"
 
+    # Compute per-tool best speedup across all platforms (for summary)
+    tool_best_speedups = {}
+    for platform, tools in bench_platforms.items():
+        for tool, data in tools.items():
+            if isinstance(data, dict) and data.get("status") != "NOT_IMPLEMENTED":
+                for b in data.get("benchmarks", []):
+                    s = b.get("speedup")
+                    if isinstance(s, (int, float)) and s > 0:
+                        if tool not in tool_best_speedups or s > tool_best_speedups[tool]:
+                            tool_best_speedups[tool] = s
+
     lines.append("## Executive Summary\n")
     lines.append("| Metric | Result |")
     lines.append("|--------|--------|")
     lines.append(f"| Tools Implemented | {tools_implemented}/10 |")
+    lines.append(f"| Total Tests | {total_tests} |")
+    lines.append(f"| Passed | {total_passed} |")
+    lines.append(f"| Failed | {total_failed} |")
     lines.append(f"| Overall Compatibility | {pass_rate:.1f}% |")
     lines.append(f"| Platforms Tested | {len(compat_platforms)} |")
     lines.append(f"| Recommendation | **{recommendation}** |")
+    lines.append("")
+
+    # Performance overview — best speedup per tool
+    if tool_best_speedups:
+        lines.append("## Performance Overview\n")
+        lines.append("Best measured speedup (fcoreutils vs GNU) across all platforms:\n")
+        lines.append("| Tool | Best Speedup |")
+        lines.append("|------|-------------|")
+        for tool in TOOLS:
+            if tool in tool_best_speedups:
+                lines.append(f"| {tool} | **{tool_best_speedups[tool]:.1f}x** |")
+            else:
+                lines.append(f"| {tool} | - |")
+        lines.append("")
+
+    # Compatibility overview — per-tool pass rate
+    lines.append("## Compatibility Overview\n")
+    lines.append("| Tool | Tests | Passed | Failed | Pass Rate |")
+    lines.append("|------|-------|--------|--------|-----------|")
+    for tool in TOOLS:
+        if tool in tool_results:
+            t_total = 0
+            t_passed = 0
+            t_failed = 0
+            for platform, data in tool_results[tool].items():
+                if data.get("status") == "NOT_IMPLEMENTED":
+                    continue
+                s = data.get("summary", {})
+                t_total += s.get("total", 0)
+                t_passed += s.get("passed", 0)
+                t_failed += s.get("failed", 0)
+            t_rate = f"{t_passed/t_total*100:.1f}%" if t_total > 0 else "N/A"
+            lines.append(f"| {tool} | {t_total} | {t_passed} | {t_failed} | {t_rate} |")
+        else:
+            lines.append(f"| {tool} | - | - | - | NOT TESTED |")
     lines.append("")
 
     # Platform Results
@@ -159,31 +208,6 @@ def generate_report():
         lines.append(f"- Failed: {summary.get('failed', 0)}")
         lines.append(f"- Skipped: {summary.get('skipped', 0)}")
         lines.append("")
-
-    # Compatibility Matrix
-    lines.append("## Compatibility Matrix\n")
-    lines.append("| Tool | Tests Run | Passed | Failed | Pass Rate |")
-    lines.append("|------|-----------|--------|--------|-----------|")
-
-    for tool in TOOLS:
-        if tool in tool_results:
-            # Aggregate across platforms
-            total = 0
-            passed = 0
-            failed = 0
-            for platform, data in tool_results[tool].items():
-                if data.get("status") == "NOT_IMPLEMENTED":
-                    continue
-                s = data.get("summary", {})
-                total += s.get("total", 0)
-                passed += s.get("passed", 0)
-                failed += s.get("failed", 0)
-            rate = f"{passed/total*100:.1f}%" if total > 0 else "N/A"
-            lines.append(f"| {tool} | {total} | {passed} | {failed} | {rate} |")
-        else:
-            lines.append(f"| {tool} | - | - | - | NOT TESTED |")
-
-    lines.append("")
 
     # Failed Test Details
     if failures:
@@ -223,12 +247,15 @@ def generate_report():
                         benchmarks = data.get("benchmarks", [])
                         if benchmarks:
                             for b in benchmarks:
-                                gnu_t = b.get("gnu_mean", 0)
-                                f_t = b.get("f_mean", 0)
-                                speedup = b.get("speedup", 0)
+                                gnu_t = b.get("gnu_mean")
+                                f_t = b.get("f_mean")
+                                speedup = b.get("speedup")
+                                gnu_missing = b.get("gnu_missing", False)
                                 name = b.get("name", "")
                                 label = f"{tool} ({name})" if name else tool
-                                if isinstance(gnu_t, (int, float)) and gnu_t > 0:
+                                if gnu_missing:
+                                    gnu_str = "N/A (not installed)"
+                                elif isinstance(gnu_t, (int, float)) and gnu_t > 0:
                                     gnu_str = f"{gnu_t:.4f}s"
                                 else:
                                     gnu_str = "-"
@@ -236,7 +263,9 @@ def generate_report():
                                     f_str = f"{f_t:.4f}s"
                                 else:
                                     f_str = "-"
-                                if isinstance(speedup, (int, float)) and speedup > 0:
+                                if gnu_missing:
+                                    sp_str = "N/A"
+                                elif isinstance(speedup, (int, float)) and speedup > 0:
                                     sp_str = f"**{speedup:.1f}x**"
                                 else:
                                     sp_str = "-"

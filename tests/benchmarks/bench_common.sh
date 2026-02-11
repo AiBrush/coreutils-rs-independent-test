@@ -66,7 +66,56 @@ run_benchmark() {
     local json_file
     json_file=$(mktemp /tmp/bench_result_XXXXXX.json)
 
-    # Run hyperfine
+    # Extract the GNU tool name (use override for stdin benchmarks, or first word)
+    local gnu_binary
+    if [[ -n "${GNU_BINARY_OVERRIDE:-}" ]]; then
+        gnu_binary="$GNU_BINARY_OVERRIDE"
+        unset GNU_BINARY_OVERRIDE
+    else
+        gnu_binary=$(echo "$gnu_cmd" | awk '{print $1}')
+    fi
+
+    # Check if GNU tool is available
+    if ! command -v "$gnu_binary" &>/dev/null; then
+        echo -e "  ${YELLOW}GNU $TOOL_NAME not available on this platform${NC}"
+
+        # Run fcoreutils only
+        if hyperfine \
+            --warmup "$WARMUP" \
+            --runs "$RUNS" \
+            --export-json "$json_file" \
+            -n "f$TOOL_NAME" "$f_cmd" 2>&1; then
+
+            local f_mean
+            f_mean=$(python3 -c "
+import json
+d = json.load(open('$json_file'))
+print(f\"{d['results'][0]['mean']:.6f}\")
+" 2>/dev/null || echo "0")
+
+            echo -e "  GNU: N/A (not installed)  |  F: ${f_mean}s"
+
+            local entry="{\"name\":\"$name\",\"gnu_mean\":null,\"f_mean\":$f_mean,\"speedup\":null,\"gnu_missing\":true}"
+            if [[ "$BENCH_RESULTS_JSON" == "[]" ]]; then
+                BENCH_RESULTS_JSON="[$entry]"
+            else
+                BENCH_RESULTS_JSON="${BENCH_RESULTS_JSON%]},${entry}]"
+            fi
+        else
+            echo -e "  ${RED}Benchmark failed${NC}"
+            local entry="{\"name\":\"$name\",\"gnu_mean\":null,\"f_mean\":null,\"gnu_missing\":true,\"error\":\"benchmark failed\"}"
+            if [[ "$BENCH_RESULTS_JSON" == "[]" ]]; then
+                BENCH_RESULTS_JSON="[$entry]"
+            else
+                BENCH_RESULTS_JSON="${BENCH_RESULTS_JSON%]},${entry}]"
+            fi
+        fi
+
+        rm -f "$json_file"
+        return
+    fi
+
+    # Both tools available — run comparison
     if hyperfine \
         --warmup "$WARMUP" \
         --runs "$RUNS" \
@@ -118,13 +167,21 @@ else:
 }
 
 # Run benchmark with stdin piping
+# Note: gnu_cmd/f_cmd here are the tool commands (e.g. "tr 'a-z' 'A-Z'"),
+# not wrapped with cat yet. We pass the raw gnu_cmd so run_benchmark can
+# detect the GNU tool binary correctly.
 run_stdin_benchmark() {
     local name="$1"
     local input_file="$2"
     local gnu_cmd="$3"
     local f_cmd="$4"
 
-    run_benchmark "$name" \
+    # Extract GNU binary for detection before wrapping with cat pipe
+    local gnu_binary
+    gnu_binary=$(echo "$gnu_cmd" | awk '{print $1}')
+
+    # Set env var so run_benchmark can detect the right binary
+    GNU_BINARY_OVERRIDE="$gnu_binary" run_benchmark "$name" \
         "cat '$input_file' | $gnu_cmd" \
         "cat '$input_file' | $f_cmd"
 }
