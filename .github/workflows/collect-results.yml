@@ -24,29 +24,45 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Download compatibility artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: compatibility-results-*
-          path: collected/compatibility/
-          merge-multiple: false
-        continue-on-error: true
+      - name: Download artifacts from latest workflow runs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p collected/compatibility collected/benchmarks collected/failures
 
-      - name: Download benchmark artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: benchmark-results-*
-          path: collected/benchmarks/
-          merge-multiple: false
-        continue-on-error: true
+          echo "=== Downloading compatibility test artifacts ==="
+          COMPAT_RUN=$(gh run list --workflow="Compatibility Tests" --status=completed --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+          if [[ -n "$COMPAT_RUN" ]]; then
+            echo "Found compatibility run: $COMPAT_RUN"
+            gh run download "$COMPAT_RUN" -p "compatibility-results-*" -D collected/compatibility/ 2>/dev/null || echo "No compatibility artifacts found"
+            gh run download "$COMPAT_RUN" -p "failed-tests-*" -D collected/failures/ 2>/dev/null || echo "No failure artifacts found"
+          else
+            echo "No completed compatibility test runs found"
+          fi
 
-      - name: Download failed test artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: failed-tests-*
-          path: collected/failures/
-          merge-multiple: false
-        continue-on-error: true
+          echo ""
+          echo "=== Downloading benchmark artifacts ==="
+          BENCH_RUN=$(gh run list --workflow="Performance Benchmarks" --status=completed --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+          if [[ -n "$BENCH_RUN" ]]; then
+            echo "Found benchmark run: $BENCH_RUN"
+            gh run download "$BENCH_RUN" -p "benchmark-results-*" -D collected/benchmarks/ 2>/dev/null || echo "No benchmark artifacts found"
+          else
+            echo "No completed benchmark runs found"
+          fi
+
+          echo ""
+          echo "=== Also checking Run All workflow ==="
+          RUNALL_RUN=$(gh run list --workflow="Run All" --status=completed --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+          if [[ -n "$RUNALL_RUN" ]]; then
+            echo "Found Run All run: $RUNALL_RUN"
+            gh run download "$RUNALL_RUN" -p "compatibility-results-*" -D collected/compatibility/ 2>/dev/null || echo "No compatibility artifacts in Run All"
+            gh run download "$RUNALL_RUN" -p "benchmark-results-*" -D collected/benchmarks/ 2>/dev/null || echo "No benchmark artifacts in Run All"
+            gh run download "$RUNALL_RUN" -p "failed-tests-*" -D collected/failures/ 2>/dev/null || echo "No failure artifacts in Run All"
+          fi
+
+          echo ""
+          echo "=== Collected files ==="
+          find collected/ -type f | head -50 || echo "No files collected"
 
       - name: Generate REPORT.md
         run: |
@@ -67,6 +83,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          git pull --rebase || true
           git add REPORT.md README.md || true
           git diff --cached --quiet || git commit -m "Update test report [skip ci]"
           git push || true
