@@ -1,6 +1,6 @@
 # fcoreutils Independent Test Report
 
-Generated: 2026-02-11 21:12:25 UTC
+Generated: 2026-02-11 21:24:00 UTC
 
 ## Executive Summary
 
@@ -8,7 +8,6 @@ Generated: 2026-02-11 21:12:25 UTC
 |--------|--------|
 | Tools Implemented | 0/10 |
 | Overall Compatibility | 0.0% |
-| Performance Claims Verified | 0/0 |
 | Platforms Tested | 0 |
 | Recommendation | **NO DATA** |
 
@@ -35,18 +34,8 @@ No failures recorded (or no failure artifacts available).
 
 ## Performance Results
 
-| Tool | Claimed | No Data |
-|------|---------|--------|
-| wc | 30x | No Data |
-| cut | 10x | No Data |
-| sha256sum | 4x single, 10x parallel | No Data |
-| md5sum | 10x single, 30x parallel | No Data |
-| b2sum | 10x | No Data |
-| base64 | 10x | No Data |
-| sort | 10x | No Data |
-| tr | 10x | No Data |
-| uniq | 10x | No Data |
-| tac | 10x | No Data |
+No benchmark data available.
+
 
 ## Issues Found
 
