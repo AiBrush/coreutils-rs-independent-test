@@ -1,0 +1,172 @@
+name: Compatibility Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+            name: Linux x86_64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            name: Linux ARM64
+          - os: macos-13
+            arch: x86_64
+            name: macOS x86_64
+          - os: macos-latest
+            arch: arm64
+            name: macOS ARM64
+          - os: windows-latest
+            arch: x86_64
+            name: Windows x86_64
+          - os: windows-11-arm
+            arch: arm64
+            name: Windows ARM64
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-cargo-
+
+      - name: Install fcoreutils
+        shell: bash
+        run: |
+          cargo uninstall fcoreutils 2>/dev/null || true
+          cargo install fcoreutils
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install GNU coreutils (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils
+          # GNU coreutils on macOS are prefixed with 'g'
+          # Create symlinks for unprefixed names if they don't exist
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
+            if ! command -v $tool &>/dev/null; then
+              if command -v g$tool &>/dev/null; then
+                sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
+              fi
+            fi
+          done
+
+      - name: Install GNU coreutils (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          # GNU coreutils should be available via Git Bash / MSYS2
+          echo "Using system coreutils from Git Bash"
+          which wc cut sha256sum md5sum sort tr uniq || echo "Some tools may be missing on Windows"
+
+      - name: Verify tool installation
+        shell: bash
+        run: |
+          echo "=== fcoreutils ==="
+          for tool in fwc fcut fsha256sum fmd5sum fb2sum fbase64 fsort ftr funiq ftac; do
+            if command -v $tool &>/dev/null; then
+              echo "  $tool: $(which $tool)"
+            else
+              echo "  $tool: NOT FOUND"
+            fi
+          done
+
+          echo ""
+          echo "=== GNU coreutils ==="
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
+            if command -v $tool &>/dev/null; then
+              echo "  $tool: $(which $tool)"
+            else
+              echo "  $tool: NOT FOUND"
+            fi
+          done
+
+      - name: Install Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Make test scripts executable
+        shell: bash
+        run: chmod +x tests/compatibility/*.sh tests/helpers/*.sh tests/stress/*.sh 2>/dev/null || true
+
+      - name: Run compatibility tests
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          mkdir -p "$RESULTS_DIR"
+          bash tests/compatibility/run_all.sh || true
+
+      - name: Run stress tests
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          bash tests/stress/stress_tests.sh || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-results-${{ matrix.os }}-${{ matrix.arch }}
+          path: results/
+          retention-days: 30
+
+      - name: Upload failed tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-tests-${{ matrix.os }}-${{ matrix.arch }}
+          path: tests/failed_tests/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Print summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Compatibility Results - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -f "results/compatibility_results.json" ]]; then
+            python3 -c "
+          import json
+          d = json.load(open('results/compatibility_results.json'))
+          s = d['summary']
+          print(f\"| Metric | Value |\")
+          print(f\"|--------|-------|\")
+          print(f\"| Total Tests | {s['total_tests']} |\")
+          print(f\"| Passed | {s['passed']} |\")
+          print(f\"| Failed | {s['failed']} |\")
+          print(f\"| Skipped | {s['skipped']} |\")
+          print(f\"| Tools Tested | {s['tools_tested']} |\")
+          print(f\"| Tools Skipped | {s['tools_skipped']} |\")
+          " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No results file found." >> $GITHUB_STEP_SUMMARY
+          fi

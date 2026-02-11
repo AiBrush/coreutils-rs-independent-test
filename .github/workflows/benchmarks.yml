@@ -1,0 +1,140 @@
+name: Performance Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+            name: Linux x86_64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            name: Linux ARM64
+          - os: macos-13
+            arch: x86_64
+            name: macOS x86_64
+          - os: macos-latest
+            arch: arm64
+            name: macOS ARM64
+          - os: windows-latest
+            arch: x86_64
+            name: Windows x86_64
+          - os: windows-11-arm
+            arch: arm64
+            name: Windows ARM64
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-cargo-bench-
+
+      - name: Install fcoreutils
+        shell: bash
+        run: |
+          cargo uninstall fcoreutils 2>/dev/null || true
+          cargo install fcoreutils
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install hyperfine
+        shell: bash
+        run: |
+          if ! command -v hyperfine &>/dev/null; then
+            cargo install hyperfine
+          fi
+
+      - name: Install GNU coreutils (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
+            if ! command -v $tool &>/dev/null; then
+              if command -v g$tool &>/dev/null; then
+                sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
+              fi
+            fi
+          done
+
+      - name: Install Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Make scripts executable
+        shell: bash
+        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh 2>/dev/null || true
+
+      - name: Run benchmarks
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          export GENERATE_LARGE=true
+          export BENCH_WARMUP=3
+          export BENCH_RUNS=10
+          mkdir -p "$RESULTS_DIR"
+          bash tests/benchmarks/run_all.sh
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ matrix.os }}-${{ matrix.arch }}
+          path: results/
+          retention-days: 30
+
+      - name: Print summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Benchmark Results - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ -f "results/benchmark_results.json" ]]; then
+            python3 -c "
+          import json
+          d = json.load(open('results/benchmark_results.json'))
+          print('| Tool | Status | Best Speedup | Claimed |')
+          print('|------|--------|-------------|---------|')
+          for tool, data in sorted(d.get('tools', {}).items()):
+              status = data.get('status', 'tested')
+              if status == 'NOT_IMPLEMENTED':
+                  print(f'| {tool} | NOT IMPLEMENTED | - | - |')
+                  continue
+              benchmarks = data.get('benchmarks', [])
+              if not benchmarks:
+                  print(f'| {tool} | no data | - | - |')
+                  continue
+              best = max((b.get('speedup', 0) for b in benchmarks if isinstance(b.get('speedup', 0), (int, float))), default=0)
+              claimed = data.get('claimed_speedup', 'N/A')
+              print(f'| {tool} | tested | {best:.1f}x | {claimed} |')
+          " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No benchmark results found." >> $GITHUB_STEP_SUMMARY
+          fi

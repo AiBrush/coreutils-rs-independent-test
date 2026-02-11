@@ -1,0 +1,71 @@
+name: Collect Results
+
+on:
+  workflow_run:
+    workflows: ["Compatibility Tests", "Performance Benchmarks"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    name: Aggregate Results
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Download compatibility artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: compatibility-results-*
+          path: collected/compatibility/
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-results-*
+          path: collected/benchmarks/
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Download failed test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: failed-tests-*
+          path: collected/failures/
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Generate REPORT.md
+        run: |
+          python3 scripts/generate_report.py
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-report
+          path: |
+            REPORT.md
+            collected/
+          retention-days: 90
+
+      - name: Commit report (if on main)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add REPORT.md || true
+          git diff --cached --quiet || git commit -m "Update test report [skip ci]"
+          git push || true
