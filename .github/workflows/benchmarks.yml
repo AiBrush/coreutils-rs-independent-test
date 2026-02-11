@@ -122,20 +122,29 @@ jobs:
             python3 -c "
           import json
           d = json.load(open('results/benchmark_results.json'))
-          print('| Tool | Status | Best Speedup | Claimed |')
-          print('|------|--------|-------------|---------|')
+          print('| Tool | GNU (mean) | fcoreutils (mean) | Best Speedup |')
+          print('|------|-----------|-------------------|-------------|')
           for tool, data in sorted(d.get('tools', {}).items()):
               status = data.get('status', 'tested')
               if status == 'NOT_IMPLEMENTED':
-                  print(f'| {tool} | NOT IMPLEMENTED | - | - |')
+                  print(f'| {tool} | - | - | N/A (not implemented) |')
                   continue
               benchmarks = data.get('benchmarks', [])
               if not benchmarks:
-                  print(f'| {tool} | no data | - | - |')
+                  print(f'| {tool} | - | - | no data |')
                   continue
-              best = max((b.get('speedup', 0) for b in benchmarks if isinstance(b.get('speedup', 0), (int, float))), default=0)
-              claimed = data.get('claimed_speedup', 'N/A')
-              print(f'| {tool} | tested | {best:.1f}x | {claimed} |')
+              best_speedup = 0
+              best_gnu = 0
+              best_f = 0
+              for b in benchmarks:
+                  s = b.get('speedup', 0)
+                  if isinstance(s, (int, float)) and s > best_speedup:
+                      best_speedup = s
+                      best_gnu = b.get('gnu_mean', 0)
+                      best_f = b.get('f_mean', 0)
+              gnu_str = f'{best_gnu:.4f}s' if best_gnu > 0 else '-'
+              f_str = f'{best_f:.4f}s' if best_f > 0 else '-'
+              print(f'| {tool} | {gnu_str} | {f_str} | {best_speedup:.1f}x |')
           " >> $GITHUB_STEP_SUMMARY
           else
             echo "No benchmark results found." >> $GITHUB_STEP_SUMMARY

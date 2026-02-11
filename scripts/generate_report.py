@@ -7,18 +7,6 @@ import os
 from datetime import datetime
 
 TOOLS = ["wc", "cut", "sha256sum", "md5sum", "b2sum", "base64", "sort", "tr", "uniq", "tac"]
-CLAIMED_SPEEDUPS = {
-    "wc": "30x",
-    "cut": "10x",
-    "sha256sum": "4x single, 10x parallel",
-    "md5sum": "10x single, 30x parallel",
-    "b2sum": "10x",
-    "base64": "10x",
-    "sort": "10x",
-    "tr": "10x",
-    "uniq": "10x",
-    "tac": "10x",
-}
 
 
 def load_json_files(pattern):
@@ -144,19 +132,6 @@ def generate_report():
 
     pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
 
-    # Count verified performance claims
-    perf_verified = 0
-    perf_total = 0
-    for platform, tools in bench_platforms.items():
-        for tool, data in tools.items():
-            if isinstance(data, dict) and data.get("status") != "NOT_IMPLEMENTED":
-                benchmarks = data.get("benchmarks", [])
-                for b in benchmarks:
-                    if b.get("verdict"):
-                        perf_total += 1
-                        if b["verdict"] in ("MEETS/EXCEEDS",):
-                            perf_verified += 1
-
     if total_failed == 0 and total_tests > 0:
         recommendation = "READY"
     elif pass_rate >= 95:
@@ -171,7 +146,6 @@ def generate_report():
     lines.append("|--------|--------|")
     lines.append(f"| Tools Implemented | {tools_implemented}/10 |")
     lines.append(f"| Overall Compatibility | {pass_rate:.1f}% |")
-    lines.append(f"| Performance Claims Verified | {perf_verified}/{perf_total} |")
     lines.append(f"| Platforms Tested | {len(compat_platforms)} |")
     lines.append(f"| Recommendation | **{recommendation}** |")
     lines.append("")
@@ -233,34 +207,48 @@ def generate_report():
 
     # Performance Results
     lines.append("## Performance Results\n")
-    lines.append("| Tool | Claimed | " + " | ".join(sorted(bench_platforms.keys()) or ["No Data"]) + " |")
-    lines.append("|------|---------" + "|--------" * max(len(bench_platforms), 1) + "|")
 
-    for tool in TOOLS:
-        claimed = CLAIMED_SPEEDUPS.get(tool, "N/A")
-        row = f"| {tool} | {claimed}"
-        if bench_platforms:
-            for platform in sorted(bench_platforms.keys()):
+    if bench_platforms:
+        for platform in sorted(bench_platforms.keys()):
+            lines.append(f"### {platform}\n")
+            lines.append("| Tool | GNU (mean) | fcoreutils (mean) | Speedup |")
+            lines.append("|------|-----------|-------------------|---------|")
+
+            for tool in TOOLS:
                 data = bench_platforms[platform].get(tool, {})
                 if isinstance(data, dict):
                     if data.get("status") == "NOT_IMPLEMENTED":
-                        row += " | N/A"
+                        lines.append(f"| {tool} | - | - | N/A (not implemented) |")
                     else:
                         benchmarks = data.get("benchmarks", [])
-                        speedups = [b.get("speedup", 0) for b in benchmarks
-                                    if isinstance(b.get("speedup", 0), (int, float)) and b.get("speedup", 0) > 0]
-                        if speedups:
-                            best = max(speedups)
-                            avg = sum(speedups) / len(speedups)
-                            row += f" | {avg:.1f}x (best: {best:.1f}x)"
+                        if benchmarks:
+                            for b in benchmarks:
+                                gnu_t = b.get("gnu_mean", 0)
+                                f_t = b.get("f_mean", 0)
+                                speedup = b.get("speedup", 0)
+                                name = b.get("name", "")
+                                label = f"{tool} ({name})" if name else tool
+                                if isinstance(gnu_t, (int, float)) and gnu_t > 0:
+                                    gnu_str = f"{gnu_t:.4f}s"
+                                else:
+                                    gnu_str = "-"
+                                if isinstance(f_t, (int, float)) and f_t > 0:
+                                    f_str = f"{f_t:.4f}s"
+                                else:
+                                    f_str = "-"
+                                if isinstance(speedup, (int, float)) and speedup > 0:
+                                    sp_str = f"**{speedup:.1f}x**"
+                                else:
+                                    sp_str = "-"
+                                lines.append(f"| {label} | {gnu_str} | {f_str} | {sp_str} |")
                         else:
-                            row += " | no data"
+                            lines.append(f"| {tool} | - | - | no data |")
                 else:
-                    row += " | -"
-        else:
-            row += " | No Data"
-        row += " |"
-        lines.append(row)
+                    lines.append(f"| {tool} | - | - | - |")
+
+            lines.append("")
+    else:
+        lines.append("No benchmark data available.\n")
 
     lines.append("")
 
