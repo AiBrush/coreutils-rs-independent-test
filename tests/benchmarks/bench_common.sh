@@ -54,12 +54,11 @@ init_benchmark() {
 }
 
 # Run a single benchmark comparing GNU vs fcoreutils
-# Usage: run_benchmark "name" "gnu_cmd" "f_cmd" "claimed_speedup"
+# Usage: run_benchmark "name" "gnu_cmd" "f_cmd"
 run_benchmark() {
     local name="$1"
     local gnu_cmd="$2"
     local f_cmd="$3"
-    local claimed_speedup="${4:-}"
 
     echo ""
     echo -e "${CYAN}--- $name ---${NC}"
@@ -96,29 +95,10 @@ else:
     print('N/A')
 " 2>/dev/null || echo "N/A")
 
-        local verdict=""
-        if [[ -n "$claimed_speedup" ]] && [[ "$speedup" != "N/A" ]]; then
-            local claimed_num
-            claimed_num=$(echo "$claimed_speedup" | sed 's/x$//')
-            verdict=$(python3 -c "
-s = $speedup
-c = $claimed_num
-if s >= c:
-    print('MEETS/EXCEEDS')
-elif s >= c * 0.5:
-    print('CLOSE')
-else:
-    print('FALLS SHORT')
-" 2>/dev/null || echo "UNKNOWN")
-        fi
-
         echo -e "  GNU: ${gnu_mean}s  |  F: ${f_mean}s  |  ${GREEN}Speedup: ${speedup}x${NC}"
-        if [[ -n "$claimed_speedup" ]]; then
-            echo -e "  Claimed: ${claimed_speedup}  |  Verdict: $verdict"
-        fi
 
         # Record result
-        local entry="{\"name\":\"$name\",\"gnu_mean\":$gnu_mean,\"f_mean\":$f_mean,\"speedup\":$speedup,\"claimed\":\"$claimed_speedup\",\"verdict\":\"$verdict\"}"
+        local entry="{\"name\":\"$name\",\"gnu_mean\":$gnu_mean,\"f_mean\":$f_mean,\"speedup\":$speedup}"
         if [[ "$BENCH_RESULTS_JSON" == "[]" ]]; then
             BENCH_RESULTS_JSON="[$entry]"
         else
@@ -143,17 +123,13 @@ run_stdin_benchmark() {
     local input_file="$2"
     local gnu_cmd="$3"
     local f_cmd="$4"
-    local claimed_speedup="${5:-}"
 
     run_benchmark "$name" \
         "cat '$input_file' | $gnu_cmd" \
-        "cat '$input_file' | $f_cmd" \
-        "$claimed_speedup"
+        "cat '$input_file' | $f_cmd"
 }
 
 save_benchmark_results() {
-    local claimed_speedup="${1:-}"
-
     cat > "$RESULTS_DIR/${TOOL_NAME}_benchmark.json" <<EOF
 {
     "tool": "$TOOL_NAME",
@@ -161,7 +137,6 @@ save_benchmark_results() {
     "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
     "warmup": $WARMUP,
     "runs": $RUNS,
-    "claimed_speedup": "$claimed_speedup",
     "benchmarks": $BENCH_RESULTS_JSON
 }
 EOF

@@ -7,9 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="md5sum"
 F_TOOL="fmd5sum"
-CLAIMED_SINGLE="10x"
-CLAIMED_PARALLEL="30x"
-
 run_md5sum_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -26,24 +23,24 @@ run_md5sum_benchmarks() {
 
     run_benchmark "single 100KB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'" "$CLAIMED_SINGLE"
+        "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'"
 
     run_benchmark "single 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" "$CLAIMED_SINGLE"
+        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
 
     run_benchmark "single 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" "$CLAIMED_SINGLE"
+        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'"
 
     run_benchmark "single 10MB binary" \
         "$GNU_TOOL '$TEST_DATA_DIR/random_10m.bin'" \
-        "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'" "$CLAIMED_SINGLE"
+        "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'"
 
     if [[ -f "$TEST_DATA_DIR/text_100m.txt" ]]; then
         run_benchmark "single 100MB text" \
             "$GNU_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
-            "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'" "$CLAIMED_SINGLE"
+            "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'"
     fi
 
     echo ""
@@ -56,7 +53,7 @@ run_md5sum_benchmarks() {
 
     run_benchmark "10 files" \
         "eval $GNU_TOOL $ten_files" \
-        "eval $F_TOOL $ten_files" "$CLAIMED_PARALLEL"
+        "eval $F_TOOL $ten_files"
 
     local hundred_files=""
     for f in "$TEST_DATA_DIR/many_files"/file_*.txt; do
@@ -65,9 +62,9 @@ run_md5sum_benchmarks() {
 
     run_benchmark "100 files" \
         "eval $GNU_TOOL $hundred_files" \
-        "eval $F_TOOL $hundred_files" "$CLAIMED_PARALLEL"
+        "eval $F_TOOL $hundred_files"
 
-    save_benchmark_results "$CLAIMED_SINGLE single / $CLAIMED_PARALLEL parallel"
+    save_benchmark_results
 }
 
 run_md5sum_benchmarks

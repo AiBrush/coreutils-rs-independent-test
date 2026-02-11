@@ -7,8 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="base64"
 F_TOOL="fbase64"
-CLAIMED="10x"
-
 run_base64_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -25,19 +23,19 @@ run_base64_benchmarks() {
 
     run_benchmark "encode 100KB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'" "$CLAIMED"
+        "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'"
 
     run_benchmark "encode 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" "$CLAIMED"
+        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
 
     run_benchmark "encode 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" "$CLAIMED"
+        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'"
 
     run_benchmark "encode 10MB binary" \
         "$GNU_TOOL '$TEST_DATA_DIR/random_10m.bin'" \
-        "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'" "$CLAIMED"
+        "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'"
 
     echo ""
     echo "=== Decode ==="
@@ -53,11 +51,11 @@ run_base64_benchmarks() {
 
     run_benchmark "decode 1MB" \
         "$GNU_TOOL -d '$encoded_1m'" \
-        "$F_TOOL -d '$encoded_1m'" "$CLAIMED"
+        "$F_TOOL -d '$encoded_1m'"
 
     run_benchmark "decode 10MB" \
         "$GNU_TOOL -d '$encoded_10m'" \
-        "$F_TOOL -d '$encoded_10m'" "$CLAIMED"
+        "$F_TOOL -d '$encoded_10m'"
 
     rm -f "$encoded_1m" "$encoded_10m"
 
@@ -66,13 +64,13 @@ run_base64_benchmarks() {
 
     run_benchmark "encode -w 76 10MB" \
         "$GNU_TOOL -w 76 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -w 76 '$TEST_DATA_DIR/text_10m.txt'" "$CLAIMED"
+        "$F_TOOL -w 76 '$TEST_DATA_DIR/text_10m.txt'"
 
     run_benchmark "encode -w 0 (no wrap) 10MB" \
         "$GNU_TOOL -w 0 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -w 0 '$TEST_DATA_DIR/text_10m.txt'" "$CLAIMED"
+        "$F_TOOL -w 0 '$TEST_DATA_DIR/text_10m.txt'"
 
-    save_benchmark_results "$CLAIMED"
+    save_benchmark_results
 }
 
 run_base64_benchmarks

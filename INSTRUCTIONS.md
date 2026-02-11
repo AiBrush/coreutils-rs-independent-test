@@ -16,23 +16,23 @@ This project must:
 5. Run functional compatibility tests
 6. Test for 100% compatibility
 7. Run performance benchmarks
-8. Benchmark for claimed 10x+ performance improvements
+8. Benchmark performance comparing GNU vs fcoreutils
 9. Collect and report results from CI
 
 ## Tools to Test (All 10)
 
-| Tool | Binary | Status | Target Speedup |
-|------|--------|--------|----------------|
-| wc | fwc | Implemented | 30x |
-| cut | fcut | Implemented | 10x |
-| sha256sum | fsha256sum | Implemented | 4x single, 10x parallel |
-| md5sum | fmd5sum | Implemented | 10x single, 30x parallel |
-| b2sum | fb2sum | Implemented | 10x |
-| base64 | fbase64 | Implemented | 10x |
-| sort | fsort | Implemented | 10x |
-| tr | ftr | Implemented | 10x |
-| uniq | funiq | Implemented | 10x |
-| tac | ftac | Implemented | 10x |
+| Tool | Binary | Status |
+|------|--------|--------|
+| wc | fwc | Implemented |
+| cut | fcut | Implemented |
+| sha256sum | fsha256sum | Implemented |
+| md5sum | fmd5sum | Implemented |
+| b2sum | fb2sum | Implemented |
+| base64 | fbase64 | Implemented |
+| sort | fsort | Implemented |
+| tr | ftr | Implemented |
+| uniq | funiq | Implemented |
+| tac | ftac | Implemented |
 
 Test ALL tools. For tools not yet implemented, the test should:
 1. Detect if the tool exists
@@ -268,23 +268,6 @@ Flags to test: -b -r -s
 
 ### Category 2: Performance Benchmarks (All 10 Tools)
 
-**Claimed speedups to verify:**
-
-| Tool | Claimed Speedup |
-|------|-----------------|
-| wc | 30x |
-| cut | 10x |
-| sha256sum | 4x single, 10x parallel |
-| md5sum | 10x single, 30x parallel |
-| b2sum | 10x |
-| base64 | 10x |
-| sort | 10x |
-| tr | 10x |
-| uniq | 10x |
-| tac | 10x |
-
-**Your job: VERIFY OR REFUTE these claims.**
-
 **Benchmark methodology:**
 
 1. Use hyperfine for accurate timing:
@@ -378,12 +361,10 @@ hyperfine --warmup 3 --runs 10 \
 ```
 ## wc Performance Results
 
-| File Size | Content Type | GNU wc | fwc | Speedup | Claimed |
-|-----------|--------------|--------|-----|---------|---------|
-| 100 MB | text | 302ms | ??? | ???x | 30x |
-| 100 MB | binary | ??? | ??? | ???x | 30x |
-
-VERDICT: [MEETS CLAIMS / FALLS SHORT / EXCEEDS CLAIMS]
+| File Size | Content Type | GNU wc | fwc | Speedup |
+|-----------|--------------|--------|-----|---------|
+| 100 MB | text | 302ms | ??? | ???x |
+| 100 MB | binary | ??? | ??? | ???x |
 ```
 
 
@@ -432,7 +413,7 @@ Test cases that have historically broken coreutils implementations:
 2. **wc counting** - The string "I\xcc\x88" (I + combining umlaut) 
 3. **cut field 0** - Should error, not crash
 4. **Negative ranges** - cut -b-0 should error
-5. **Integer overflow** - Files claiming >2^63 bytes
+5. **Integer overflow** - Files with >2^63 bytes
 
 ## Report Format
 
@@ -453,7 +434,7 @@ Platforms tested: [list]
 |--------|--------|
 | Tools Implemented | X/10 |
 | Overall Compatibility | X% |
-| Performance Claims Verified | X/Y |
+| Tools Benchmarked | X/10 |
 | Recommendation | [READY/NEEDS WORK/NOT READY] |
 
 ## Platform Results
@@ -494,22 +475,22 @@ Platforms tested: [list]
     - Diff: [differences]
 
 4. **Performance Results**
-   - Speedup achieved vs claimed for each tool
+   - Measured GNU vs fcoreutils times for each tool
+   - Actual speedup measured per platform
    - Conditions where fcoreutils is slower
-   - Recommendations for use cases
 
-  | Tool | Claimed | Linux x86 | Linux ARM | macOS x86 | macOS ARM | Windows |
-  |------|---------|-----------|-----------|-----------|-----------|---------|
-  | wc | 30x | Xx | Xx | Xx | Xx | Xx |
-  | cut | 10x | Xx | Xx | Xx | Xx | Xx |
-  | sha256sum | 10x | Xx | Xx | Xx | Xx | Xx |
-  | md5sum | 30x | Xx | Xx | Xx | Xx | Xx |
-  | b2sum | 10x | Xx | Xx | Xx | Xx | Xx |
-  | base64 | 10x | N/A | N/A | N/A | N/A | N/A |
-  | sort | 10x | N/A | N/A | N/A | N/A | N/A |
-  | tr | 10x | N/A | N/A | N/A | N/A | N/A |
-  | uniq | 10x | N/A | N/A | N/A | N/A | N/A |
-  | tac | 10x | N/A | N/A | N/A | N/A | N/A |
+  | Tool | Linux x86 | Linux ARM | macOS ARM | Windows |
+  |------|-----------|-----------|-----------|---------|
+  | wc | Xx | Xx | Xx | Xx |
+  | cut | Xx | Xx | Xx | Xx |
+  | sha256sum | Xx | Xx | Xx | Xx |
+  | md5sum | Xx | Xx | Xx | Xx |
+  | b2sum | Xx | Xx | Xx | Xx |
+  | base64 | Xx | Xx | Xx | Xx |
+  | sort | Xx | Xx | Xx | Xx |
+  | tr | Xx | Xx | Xx | Xx |
+  | uniq | Xx | Xx | Xx | Xx |
+  | tac | Xx | Xx | Xx | Xx |
 
 5. **Issues Found**
   1. [Issue description, Bugs discovered ...]
@@ -569,7 +550,7 @@ fi
 A successful test run produces:
 
 1. **For compatibility:** "100% of tests pass - output is byte-identical to GNU coreutils"
-2. **For performance:** "Measured speedups: wc=25x, cut=8x, sha256sum=6x - [MEETS/EXCEEDS] claims"
+2. **For performance:** "Measured speedups: wc=25x, cut=8x, sha256sum=6x"
 3. **For reliability:** "All stress tests passed without crashes or hangs"
 
 ## What Failure Looks Like
@@ -577,7 +558,7 @@ A successful test run produces:
 Be explicit about failures:
 
 1. "fwc -L produces incorrect output for files with tabs - reports 16 instead of 8 for tab width"
-2. "fsha256sum is only 1.2x faster than GNU, not 4x as claimed"
+2. "fsha256sum is only 1.2x faster than GNU sha256sum"
 3. "fcut crashes on empty delimiter (-d '')"
 
 ## Start Now
@@ -593,4 +574,4 @@ Your goal is to determine: **Is fcoreutils ready for real-world use as a GNU cor
 
 The test infrastructure should be ready and waiting for tools as they get implemented. Let the CI be the judge. Report what it finds. No bias, no excuses.
 
-Be the harshest critic. Find every bug. Challenge every claim. The developers need to know the truth.
+Be the harshest critic. Find every bug. The developers need to know the truth.

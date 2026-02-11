@@ -7,8 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="tr"
 F_TOOL="ftr"
-CLAIMED="10x"
-
 run_tr_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -26,12 +24,12 @@ run_tr_benchmarks() {
     run_stdin_benchmark "a-z to A-Z 1MB" \
         "$TEST_DATA_DIR/text_1m.txt" \
         "$GNU_TOOL 'a-z' 'A-Z'" \
-        "$F_TOOL 'a-z' 'A-Z'" "$CLAIMED"
+        "$F_TOOL 'a-z' 'A-Z'"
 
     run_stdin_benchmark "a-z to A-Z 10MB" \
         "$TEST_DATA_DIR/text_10m.txt" \
         "$GNU_TOOL 'a-z' 'A-Z'" \
-        "$F_TOOL 'a-z' 'A-Z'" "$CLAIMED"
+        "$F_TOOL 'a-z' 'A-Z'"
 
     echo ""
     echo "=== Delete mode (-d) ==="
@@ -39,12 +37,12 @@ run_tr_benchmarks() {
     run_stdin_benchmark "-d digits 10MB" \
         "$TEST_DATA_DIR/csv_10m.csv" \
         "$GNU_TOOL -d '0-9'" \
-        "$F_TOOL -d '0-9'" "$CLAIMED"
+        "$F_TOOL -d '0-9'"
 
     run_stdin_benchmark "-d lowercase 10MB" \
         "$TEST_DATA_DIR/text_10m.txt" \
         "$GNU_TOOL -d 'a-z'" \
-        "$F_TOOL -d 'a-z'" "$CLAIMED"
+        "$F_TOOL -d 'a-z'"
 
     echo ""
     echo "=== Squeeze mode (-s) ==="
@@ -52,7 +50,7 @@ run_tr_benchmarks() {
     run_stdin_benchmark "-s spaces 10MB" \
         "$TEST_DATA_DIR/text_10m.txt" \
         "$GNU_TOOL -s ' '" \
-        "$F_TOOL -s ' '" "$CLAIMED"
+        "$F_TOOL -s ' '"
 
     echo ""
     echo "=== Character class translation ==="
@@ -60,12 +58,12 @@ run_tr_benchmarks() {
     run_stdin_benchmark "[:lower:] to [:upper:] 10MB" \
         "$TEST_DATA_DIR/text_10m.txt" \
         "$GNU_TOOL '[:lower:]' '[:upper:]'" \
-        "$F_TOOL '[:lower:]' '[:upper:]'" "$CLAIMED"
+        "$F_TOOL '[:lower:]' '[:upper:]'"
 
     run_stdin_benchmark "-d [:digit:] 10MB CSV" \
         "$TEST_DATA_DIR/csv_10m.csv" \
         "$GNU_TOOL -d '[:digit:]'" \
-        "$F_TOOL -d '[:digit:]'" "$CLAIMED"
+        "$F_TOOL -d '[:digit:]'"
 
     echo ""
     echo "=== Binary data ==="
@@ -73,9 +71,9 @@ run_tr_benchmarks() {
     run_stdin_benchmark "translate binary 10MB" \
         "$TEST_DATA_DIR/random_10m.bin" \
         "$GNU_TOOL '\\000-\\037' 'X'" \
-        "$F_TOOL '\\000-\\037' 'X'" "$CLAIMED"
+        "$F_TOOL '\\000-\\037' 'X'"
 
-    save_benchmark_results "$CLAIMED"
+    save_benchmark_results
 }
 
 run_tr_benchmarks
