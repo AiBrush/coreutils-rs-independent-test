@@ -5,17 +5,91 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
   workflow_dispatch:
 
 permissions:
   contents: write
   actions: read
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
+  discover-versions:
+    runs-on: ubuntu-latest
+    name: Discover versions to benchmark
+    outputs:
+      versions: ${{ steps.discover.outputs.versions }}
+      latest: ${{ steps.discover.outputs.latest }}
+      has_versions: ${{ steps.discover.outputs.has_versions }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Discover un-benchmarked versions
+        id: discover
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch all non-draft, non-prerelease releases
+          releases=$(curl -sS -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/AiBrush/coreutils-rs/releases?per_page=100" | \
+            python3 -c "
+          import sys, json
+          releases = json.load(sys.stdin)
+          tags = []
+          for r in releases:
+              if not r.get('draft') and not r.get('prerelease'):
+                  tags.append(r['tag_name'])
+          # Sort by version number
+          import re
+          def ver(t):
+              m = re.match(r'v?(\d+)\.(\d+)\.(\d+)', t)
+              return (int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else (0,0,0)
+          tags.sort(key=ver)
+          for t in tags:
+              print(t)
+          ")
+
+          echo "All releases:"
+          echo "$releases"
+
+          # Check which versions already have results
+          new_versions=()
+          latest=""
+          for tag in $releases; do
+              latest="$tag"
+              # Check if results exist for this version on any platform
+              if [[ -d "results/benchmarks/$tag" ]] && ls results/benchmarks/$tag/*.json &>/dev/null; then
+                  echo "  $tag: already benchmarked, skipping"
+              else
+                  echo "  $tag: NEW — will benchmark"
+                  new_versions+=("$tag")
+              fi
+          done
+
+          # Build JSON array of new versions
+          json_versions=$(printf '%s\n' "${new_versions[@]}" | python3 -c "
+          import sys, json
+          versions = [l.strip() for l in sys.stdin if l.strip()]
+          print(json.dumps(versions))
+          ")
+
+          echo "versions=$json_versions" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          if [[ ${#new_versions[@]} -gt 0 ]]; then
+              echo "has_versions=true" >> "$GITHUB_OUTPUT"
+          else
+              echo "has_versions=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo ""
+          echo "New versions to benchmark: ${new_versions[*]:-none}"
+          echo "Latest release: $latest"
+
   compatibility:
+    needs: discover-versions
+    if: needs.discover-versions.outputs.latest != ''
     strategy:
       fail-fast: false
       matrix:
@@ -43,25 +117,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-cargo-
-
-      - name: Install fcoreutils
+      - name: Install fcoreutils from GitHub releases
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo uninstall fcoreutils 2>/dev/null || true
-          cargo install fcoreutils
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          chmod +x scripts/install_from_github.sh
+          INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "${{ needs.discover-versions.outputs.latest }}"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install GNU coreutils (macOS)
         if: runner.os == 'macOS'
@@ -169,6 +232,8 @@ jobs:
           fi
 
   benchmarks:
+    needs: discover-versions
+    if: needs.discover-versions.outputs.has_versions == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -196,7 +261,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
+      - name: Install Rust toolchain (for hyperfine)
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo registry
@@ -208,13 +273,6 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.arch }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-cargo-bench-
-
-      - name: Install fcoreutils
-        shell: bash
-        run: |
-          cargo uninstall fcoreutils 2>/dev/null || true
-          cargo install fcoreutils
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install hyperfine
         shell: bash
@@ -241,26 +299,79 @@ jobs:
 
       - name: Make scripts executable
         shell: bash
-        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh 2>/dev/null || true
+        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh scripts/*.sh 2>/dev/null || true
 
-      - name: Run benchmarks
+      - name: Benchmark all new versions
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
-          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
-          export GENERATE_LARGE=true
-          export BENCH_WARMUP=3
-          export BENCH_RUNS=10
-          mkdir -p "$RESULTS_DIR"
-          bash tests/benchmarks/run_all.sh
+          VERSIONS='${{ needs.discover-versions.outputs.versions }}'
+          echo "Versions to benchmark: $VERSIONS"
 
-      - name: Upload results
+          # Detect platform tag for result filenames
+          OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+          ARCH=$(uname -m)
+          PLATFORM_TAG="${OS_NAME}_${ARCH}"
+
+          # Parse JSON array into bash array
+          readarray -t VERSION_LIST < <(echo "$VERSIONS" | python3 -c "
+          import sys, json
+          versions = json.load(sys.stdin)
+          for v in versions:
+              print(v)
+          ")
+
+          for VERSION in "${VERSION_LIST[@]}"; do
+              echo ""
+              echo "============================================================"
+              echo "  Benchmarking $VERSION on $PLATFORM_TAG"
+              echo "============================================================"
+
+              # Install this version
+              INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "$VERSION"
+              export PATH="$HOME/.local/bin:$PATH"
+
+              # Run benchmarks
+              export RESULTS_DIR="${GITHUB_WORKSPACE}/bench_tmp"
+              export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+              export GENERATE_LARGE=true
+              export BENCH_WARMUP=3
+              export BENCH_RUNS=10
+              mkdir -p "$RESULTS_DIR"
+              bash tests/benchmarks/run_all.sh || true
+
+              # Copy aggregate results to versioned directory
+              DEST_DIR="${GITHUB_WORKSPACE}/versioned_results/benchmarks/${VERSION}"
+              mkdir -p "$DEST_DIR"
+              if [[ -f "$RESULTS_DIR/benchmark_results.json" ]]; then
+                  cp "$RESULTS_DIR/benchmark_results.json" "$DEST_DIR/${PLATFORM_TAG}.json"
+                  echo "Saved: $DEST_DIR/${PLATFORM_TAG}.json"
+              fi
+
+              # Run compatibility tests too
+              export RESULTS_DIR="${GITHUB_WORKSPACE}/compat_tmp"
+              mkdir -p "$RESULTS_DIR"
+              bash tests/compatibility/run_all.sh || true
+
+              COMPAT_DEST="${GITHUB_WORKSPACE}/versioned_results/compatibility/${VERSION}"
+              mkdir -p "$COMPAT_DEST"
+              if [[ -f "$RESULTS_DIR/compatibility_results.json" ]]; then
+                  cp "$RESULTS_DIR/compatibility_results.json" "$COMPAT_DEST/${PLATFORM_TAG}.json"
+                  echo "Saved: $COMPAT_DEST/${PLATFORM_TAG}.json"
+              fi
+
+              # Cleanup for next version
+              rm -rf "${GITHUB_WORKSPACE}/bench_tmp" "${GITHUB_WORKSPACE}/compat_tmp"
+          done
+
+      - name: Upload versioned results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-${{ matrix.os }}-${{ matrix.arch }}
-          path: results/
-          retention-days: 30
+          name: versioned-results-${{ matrix.os }}-${{ matrix.arch }}
+          path: versioned_results/
+          retention-days: 90
 
       - name: Print summary
         if: always()
@@ -268,100 +379,74 @@ jobs:
         run: |
           echo "## Benchmark Results - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [[ -f "results/benchmark_results.json" ]]; then
-            python3 -c "
-          import json
-          d = json.load(open('results/benchmark_results.json'))
-          print('| Tool | GNU (mean) | fcoreutils (mean) | Best Speedup |')
-          print('|------|-----------|-------------------|-------------|')
-          for tool, data in sorted(d.get('tools', {}).items()):
-              status = data.get('status', 'tested')
-              if status == 'NOT_IMPLEMENTED':
-                  print(f'| {tool} | - | - | N/A (not implemented) |')
-                  continue
-              benchmarks = data.get('benchmarks', [])
-              if not benchmarks:
-                  print(f'| {tool} | - | - | no data |')
-                  continue
-              best_speedup = 0
-              best_gnu = 0
-              best_f = 0
-              for b in benchmarks:
-                  s = b.get('speedup', 0)
-                  if isinstance(s, (int, float)) and s > best_speedup:
-                      best_speedup = s
-                      best_gnu = b.get('gnu_mean', 0)
-                      best_f = b.get('f_mean', 0)
-              gnu_str = f'{best_gnu:.4f}s' if best_gnu > 0 else '-'
-              f_str = f'{best_f:.4f}s' if best_f > 0 else '-'
-              print(f'| {tool} | {gnu_str} | {f_str} | {best_speedup:.1f}x |')
-          " >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No benchmark results found." >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "Benchmarked versions: ${{ needs.discover-versions.outputs.versions }}" >> $GITHUB_STEP_SUMMARY
 
   report:
-    needs: [compatibility, benchmarks]
-    if: always()
+    needs: [discover-versions, compatibility, benchmarks]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     name: Publish Report
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Python 3
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Download all artifacts
+      - name: Install dependencies
+        run: pip install matplotlib
+
+      - name: Download versioned results
         uses: actions/download-artifact@v4
         with:
-          pattern: compatibility-results-*
-          path: collected/compatibility/
-          merge-multiple: false
+          pattern: versioned-results-*
+          path: new_results/
+          merge-multiple: true
         continue-on-error: true
 
-      - name: Download benchmark artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: benchmark-results-*
-          path: collected/benchmarks/
-          merge-multiple: false
-        continue-on-error: true
+      - name: Merge new results into results/
+        shell: bash
+        run: |
+          echo "=== New results from this CI run ==="
+          find new_results/ -type f 2>/dev/null | head -50 || echo "No new results"
 
-      - name: Download failed test artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: failed-tests-*
-          path: collected/failures/
-          merge-multiple: false
-        continue-on-error: true
+          # Merge new versioned results into the repo's results/ directory
+          if [[ -d "new_results/benchmarks" ]]; then
+              for version_dir in new_results/benchmarks/v*/; do
+                  version=$(basename "$version_dir")
+                  dest="results/benchmarks/${version}"
+                  mkdir -p "$dest"
+                  cp -v "$version_dir"*.json "$dest/" 2>/dev/null || true
+              done
+          fi
 
-      - name: List collected files
-        run: find collected/ -type f | head -50 || echo "No files collected"
+          if [[ -d "new_results/compatibility" ]]; then
+              for version_dir in new_results/compatibility/v*/; do
+                  version=$(basename "$version_dir")
+                  dest="results/compatibility/${version}"
+                  mkdir -p "$dest"
+                  cp -v "$version_dir"*.json "$dest/" 2>/dev/null || true
+              done
+          fi
 
-      - name: Generate REPORT.md
+          echo ""
+          echo "=== All results ==="
+          find results/ -type f | sort | head -100 || echo "No results"
+
+      - name: Generate report and chart
         run: python3 scripts/generate_report.py
 
-      - name: Upload final report
-        uses: actions/upload-artifact@v4
-        with:
-          name: final-report
-          path: |
-            REPORT.md
-            README.md
-            collected/
-          retention-days: 90
-
-      - name: Commit report (if on main)
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      - name: Commit results and report
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git pull --rebase || true
-          git add REPORT.md README.md || true
+          git add results/ README.md || true
+          git rm REPORT.md 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Update test report [skip ci]"
           git push || true

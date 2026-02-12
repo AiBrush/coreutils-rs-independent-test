@@ -7,6 +7,10 @@
 - [x] `tests/compatibility/run_all.sh` - Compatibility test runner (aggregates all tools, writes JSON)
 - [x] `tests/benchmarks/bench_common.sh` - Shared benchmark framework (hyperfine wrapper, JSON output)
 - [x] `tests/benchmarks/run_all.sh` - Benchmark runner (aggregates all tools)
+- [x] `scripts/install_from_github.sh` - Install fcoreutils from GitHub releases (replaces cargo install)
+- [x] `scripts/plot_speedup.py` - Generate performance-over-versions chart
+- [x] `requirements.txt` - Python dependencies (matplotlib)
+- [x] `results/` directory structure with `benchmarks/` and `compatibility/` subdirs
 
 ## Compatibility Test Scripts (10/10)
 - [x] `tests/compatibility/test_wc.sh` - 55+ tests (empty, flags -c/-l/-w/-m/-L, combined, multi-file, unicode, locale, files0-from)
@@ -35,14 +39,14 @@
 ## Stress Tests
 - [x] `tests/stress/stress_tests.sh` - Concurrent (100 parallel), rapid (1000 runs), long lines, millions of lines, mixed binary, adversarial, signal handling, slow stdin
 
-## GitHub Actions Workflows (3/3)
-- [x] `.github/workflows/compatibility-tests.yml` - 6-platform matrix, installs fcoreutils + GNU, runs compat + stress tests
-- [x] `.github/workflows/benchmarks.yml` - 6-platform matrix, installs hyperfine, runs all benchmarks
-- [x] `.github/workflows/collect-results.yml` - Downloads artifacts, generates REPORT.md, commits to main
-
-## Reports
-- [x] `scripts/generate_report.py` - Aggregates results into REPORT.md with executive summary, matrix, failures, performance
+## CI & Reporting (Updated)
+- [x] `.github/workflows/ci.yml` - Unified workflow: discover versions, compatibility tests, per-version benchmarks, report generation
+- [x] `scripts/generate_report.py` - Simplified README + per-version detail reports from `results/` directory
+- [x] `scripts/plot_speedup.py` - Performance-over-versions chart (matplotlib)
+- [x] Install from GitHub releases (no more cargo install / crates.io)
+- [x] Versioned results: `results/benchmarks/v{X.Y.Z}/{platform}.json`
+- [x] REPORT.md removed (README.md is the single report)
 
 ## Status: COMPLETE
 All 10 tools have compatibility tests, benchmark scripts, and stress tests.
-All 3 CI workflows are configured for 6 platforms (Linux/macOS/Windows x x86_64/ARM64).
+CI workflow discovers un-benchmarked versions, runs benchmarks, persists results, generates chart + README.
