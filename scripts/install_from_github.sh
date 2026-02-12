@@ -118,8 +118,11 @@ install_version() {
     tmp_dir=$(mktemp -d)
     local tmp_file="${tmp_dir}/${asset_name}"
 
-    if ! curl -sSL -o "$tmp_file" "$download_url"; then
-        echo "ERROR: Failed to download ${download_url}"
+    local http_code
+    http_code=$(curl -sSL -w "%{http_code}" -o "$tmp_file" "$download_url")
+
+    if [[ "$http_code" != "200" ]]; then
+        echo "ERROR: Download failed with HTTP ${http_code} for ${download_url}"
         rm -rf "$tmp_dir"
         return 1
     fi
@@ -133,7 +136,14 @@ install_version() {
 
     echo "Extracting to ${INSTALL_DIR}..."
     if [[ "$ext" == "zip" ]]; then
-        unzip -o -q "$tmp_file" -d "$INSTALL_DIR"
+        # Extract to temp dir first, then move binaries to INSTALL_DIR
+        # (zip may contain subdirectories like release/)
+        local extract_dir="${tmp_dir}/extracted"
+        mkdir -p "$extract_dir"
+        unzip -o -q "$tmp_file" -d "$extract_dir"
+        # Find and move all f* binaries to INSTALL_DIR
+        find "$extract_dir" -type f -name "f*.exe" -exec cp {} "$INSTALL_DIR/" \;
+        find "$extract_dir" -type f -name "f*" ! -name "*.exe" -exec cp {} "$INSTALL_DIR/" \;
     else
         tar xzf "$tmp_file" -C "$INSTALL_DIR"
     fi
@@ -146,13 +156,15 @@ install_version() {
 verify_install() {
     local found=0
     for tool in fwc fsort fcut ftr funiq ftac fbase64 fsha256sum fmd5sum fb2sum; do
-        if [[ -x "${INSTALL_DIR}/${tool}" ]] || command -v "$tool" &>/dev/null; then
+        if [[ -x "${INSTALL_DIR}/${tool}" ]] || [[ -x "${INSTALL_DIR}/${tool}.exe" ]] || command -v "$tool" &>/dev/null; then
             found=$((found + 1))
         fi
     done
 
     if [[ "$found" -eq 0 ]]; then
         echo "ERROR: No fcoreutils binaries found after installation"
+        echo "Contents of ${INSTALL_DIR}:"
+        ls -la "${INSTALL_DIR}/" 2>/dev/null || echo "  (directory not found)"
         return 1
     fi
 
@@ -161,6 +173,8 @@ verify_install() {
         echo "Verification: fwc is available at $(which fwc)"
     elif [[ -x "${INSTALL_DIR}/fwc" ]]; then
         echo "Verification: fwc is available at ${INSTALL_DIR}/fwc"
+    elif [[ -x "${INSTALL_DIR}/fwc.exe" ]]; then
+        echo "Verification: fwc.exe is available at ${INSTALL_DIR}/fwc.exe"
     fi
 
     echo "Successfully installed ${found} fcoreutils binaries"

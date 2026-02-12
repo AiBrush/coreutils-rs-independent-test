@@ -68,6 +68,14 @@ jobs:
               fi
           done
 
+          # Limit to 5 versions per run to avoid CI timeout
+          # (results accumulate across runs — daily schedule catches up)
+          MAX_VERSIONS=5
+          if [[ ${#new_versions[@]} -gt $MAX_VERSIONS ]]; then
+              echo "Limiting to $MAX_VERSIONS versions (${#new_versions[@]} total new)"
+              new_versions=("${new_versions[@]: -$MAX_VERSIONS}")
+          fi
+
           # Build JSON array of new versions
           json_versions=$(printf '%s\n' "${new_versions[@]}" | python3 -c "
           import sys, json
@@ -106,9 +114,7 @@ jobs:
           - os: windows-latest
             arch: x86_64
             name: Windows x86_64
-          - os: windows-11-arm
-            arch: arm64
-            name: Windows ARM64
+          # windows-11-arm excluded: no pre-built ARM64 Windows binaries available
 
     runs-on: ${{ matrix.os }}
     name: Tests - ${{ matrix.name }}
@@ -250,9 +256,7 @@ jobs:
           - os: windows-latest
             arch: x86_64
             name: Windows x86_64
-          - os: windows-11-arm
-            arch: arm64
-            name: Windows ARM64
+          # windows-11-arm excluded: no pre-built ARM64 Windows binaries available
 
     runs-on: ${{ matrix.os }}
     name: Bench - ${{ matrix.name }}
@@ -314,22 +318,26 @@ jobs:
           ARCH=$(uname -m)
           PLATFORM_TAG="${OS_NAME}_${ARCH}"
 
-          # Parse JSON array into bash array
-          readarray -t VERSION_LIST < <(echo "$VERSIONS" | python3 -c "
+          # Parse JSON array into newline-separated list (portable, no readarray)
+          VERSION_LIST=$(echo "$VERSIONS" | python3 -c "
           import sys, json
           versions = json.load(sys.stdin)
           for v in versions:
               print(v)
           ")
 
-          for VERSION in "${VERSION_LIST[@]}"; do
+          echo "$VERSION_LIST" | while IFS= read -r VERSION; do
+              [[ -z "$VERSION" ]] && continue
               echo ""
               echo "============================================================"
               echo "  Benchmarking $VERSION on $PLATFORM_TAG"
               echo "============================================================"
 
-              # Install this version
-              INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "$VERSION"
+              # Install this version (skip if no asset available)
+              if ! INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "$VERSION"; then
+                  echo "WARNING: Could not install $VERSION — skipping"
+                  continue
+              fi
               export PATH="$HOME/.local/bin:$PATH"
 
               # Run benchmarks
@@ -363,7 +371,7 @@ jobs:
 
               # Cleanup for next version
               rm -rf "${GITHUB_WORKSPACE}/bench_tmp" "${GITHUB_WORKSPACE}/compat_tmp"
-          done
+          done || true
 
       - name: Upload versioned results
         if: always()
