@@ -1,0 +1,133 @@
+{
+  "type": "benchmark",
+  "platform": "Darwin_arm64",
+  "timestamp": "2026-02-12T18:14:32Z",
+  "tools": {
+    "sort": {
+      "tool": "sort",
+      "platform": "Darwin_arm64",
+      "timestamp": "2026-02-12T18:14:02Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "lexicographic 1MB",
+          "gnu_mean": 0.119884,
+          "f_mean": 0.001098,
+          "speedup": 109.2
+        },
+        {
+          "name": "lexicographic 10MB random",
+          "gnu_mean": 0.444237,
+          "f_mean": 0.046516,
+          "speedup": 9.6
+        },
+        {
+          "name": "already sorted 10MB",
+          "gnu_mean": 0.242315,
+          "f_mean": 0.000153,
+          "speedup": 1583.8
+        },
+        {
+          "name": "reverse sorted 10MB",
+          "gnu_mean": 0.21377,
+          "f_mean": 0.004752,
+          "speedup": 45.0
+        },
+        {
+          "name": "-n numeric 10MB",
+          "gnu_mean": 0.437117,
+          "f_mean": 0.00632,
+          "speedup": 69.2
+        },
+        {
+          "name": "-r reverse 10MB",
+          "gnu_mean": 0.461904,
+          "f_mean": 0.041558,
+          "speedup": 11.1
+        },
+        {
+          "name": "-u unique 10MB",
+          "gnu_mean": 0.449063,
+          "f_mean": 0.015146,
+          "speedup": 29.6
+        },
+        {
+          "name": "-t, -k2 CSV 10MB",
+          "gnu_mean": 0.644079,
+          "f_mean": 0.078294,
+          "speedup": 8.2
+        },
+        {
+          "name": "repetitive 10MB",
+          "gnu_mean": 0.085027,
+          "f_mean": 0.02113,
+          "speedup": 4.0
+        },
+        {
+          "name": "--parallel=4 10MB",
+          "gnu_mean": 0.414567,
+          "f_mean": 0.033215,
+          "speedup": 12.5
+        }
+      ]
+    },
+    "uniq": {
+      "tool": "uniq",
+      "platform": "Darwin_arm64",
+      "timestamp": "2026-02-12T18:14:21Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 10MB many duplicates",
+          "gnu_mean": 0.01249,
+          "f_mean": 0.010452,
+          "speedup": 1.2
+        },
+        {
+          "name": "default 10MB sorted (low dup)",
+          "gnu_mean": 0.023913,
+          "f_mean": 0.022802,
+          "speedup": 1.0
+        },
+        {
+          "name": "-c count 10MB many dups",
+          "gnu_mean": 0.013729,
+          "f_mean": 0.013944,
+          "speedup": 1.0
+        },
+        {
+          "name": "-c count 10MB sorted",
+          "gnu_mean": 0.038788,
+          "f_mean": 0.025448,
+          "speedup": 1.5
+        },
+        {
+          "name": "-d duplicates only 10MB",
+          "gnu_mean": 0.01509,
+          "f_mean": 0.008086,
+          "speedup": 1.9
+        },
+        {
+          "name": "-u unique only 10MB",
+          "gnu_mean": 0.021755,
+          "f_mean": 0.012459,
+          "speedup": 1.7
+        },
+        {
+          "name": "-i case insensitive 10MB",
+          "gnu_mean": 0.020798,
+          "f_mean": 0.015506,
+          "speedup": 1.3
+        },
+        {
+          "name": "repetitive 10MB",
+          "gnu_mean": 0.046204,
+          "f_mean": 0.01365,
+          "speedup": 3.4
+        }
+      ]
+    }
+  }
+}
