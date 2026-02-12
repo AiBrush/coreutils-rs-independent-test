@@ -1,6 +1,6 @@
 # fcoreutils Independent Test Report
 
-Generated: 2026-02-12 09:39:03 UTC
+Generated: 2026-02-12 10:32:31 UTC
 
 ## Executive Summary
 
@@ -19,16 +19,16 @@ Best measured speedup (fcoreutils vs GNU) across all platforms:
 
 | Tool | Best Speedup |
 |------|-------------|
-| wc | **28.0x** |
-| cut | **5.7x** |
-| sha256sum | **9.5x** |
-| md5sum | **69.5x** |
+| wc | **29.1x** |
+| cut | **7.0x** |
+| sha256sum | **1.4x** |
+| md5sum | **40.5x** |
 | b2sum | **1.3x** |
-| base64 | **22.7x** |
-| sort | **30.4x** |
-| tr | **7.1x** |
-| uniq | **11.0x** |
-| tac | **1.6x** |
+| base64 | **3.7x** |
+| sort | **30.8x** |
+| tr | **2.1x** |
+| uniq | **9.5x** |
+| tac | **1.8x** |
 
 ## Compatibility Overview
 
@@ -116,11 +116,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c --status valid checksums
 # GNU command:
-sha256sum -c --status '/tmp/fcoreutils_checksums_3aC5pz'
+sha256sum -c --status '/tmp/fcoreutils_checksums_kUSj2k'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c --status '/tmp/fcoreutils_checksums_3aC5pz'
+fsha256sum -c --status '/tmp/fcoreutils_checksums_kUSj2k'
 echo "fcoreutils exit: $?"
 
 ```
@@ -193,11 +193,11 @@ Ex
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c check valid
 # GNU command:
-md5sum -c '/tmp/fcoreutils_md5check_zZLb4N'
+md5sum -c '/tmp/fcoreutils_md5check_D4Xjpt'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c '/tmp/fcoreutils_md5check_zZLb4N'
+fmd5sum -c '/tmp/fcoreutils_md5check_D4Xjpt'
 echo "fcoreutils exit: $?"
 
 ```
@@ -279,9 +279,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< md5sum: /tmp/fcoreutils_md5missing_cqezoJ: no file was verified
+< md5sum: /tmp/fcoreutils_md5missing_v44yos: no file was verified
 ---
-> md5sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_md5missing_cqezoJ: no file was verified
+> md5sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_md5missing_v44yos: no file was verified
 
 ```
 **Reproduction:**
@@ -289,11 +289,11 @@ echo "fcoreutils exit: $?"
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c --ignore-missing
 # GNU command:
-md5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_cqezoJ'
+md5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_v44yos'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_cqezoJ'
+fmd5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_v44yos'
 echo "fcoreutils exit: $?"
 
 ```
@@ -593,9 +593,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-<    6   27 1024 /tmp/fcoreutils-test-data/random_1k.bin
+<    4   32 1024 /tmp/fcoreutils-test-data/random_1k.bin
 ---
->    6   18 1024 C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+>    4   26 1024 C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -617,9 +617,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< aaac58d517088b19173b4b08581dc74c */tmp/fcoreutils-test-data/random_1k.bin
+< 3a8150e5ffd8f40090b49e302f73c530 */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> aaac58d517088b19173b4b08581dc74c *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> 3a8150e5ffd8f40090b49e302f73c530 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -654,11 +654,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c --quiet
 # GNU command:
-md5sum -c --quiet '/tmp/fcoreutils_md5check_zZLb4N'
+md5sum -c --quiet '/tmp/fcoreutils_md5check_D4Xjpt'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c --quiet '/tmp/fcoreutils_md5check_zZLb4N'
+fmd5sum -c --quiet '/tmp/fcoreutils_md5check_D4Xjpt'
 echo "fcoreutils exit: $?"
 
 ```
@@ -764,9 +764,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 9dc8a2ae2f3050e787ca29913b0c6c3834fde742547a9d58d73c9657993abc6f */tmp/fcoreutils-test-data/random_1k.bin
+< 3a59e6f0a5ebe8b1e4cbc5ffcda244c668f4a917e629065692c285903431d46e */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> 9dc8a2ae2f3050e787ca29913b0c6c3834fde742547a9d58d73c9657993abc6f *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> 3a59e6f0a5ebe8b1e4cbc5ffcda244c668f4a917e629065692c285903431d46e *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -921,9 +921,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< ff614b21ca1a57a8dcc6d1c32829aa94b64daee410c02cb40a9cf63039e6adad9a72190e06044be9e442ba7b437e6f545d8dd549de2059442a22ae953db7c9c8 */tmp/fcoreutils-test-data/random_10m.bin
+< 624a7e1e9518fba798ca75f31cea8a870e9d9fd069966181bfaa346582427269cf40d043f095ba01b7651ed9c78183ac288e535c9565403beb9afac24586a264 */tmp/fcoreutils-test-data/random_10m.bin
 ---
-> ff614b21ca1a57a8dcc6d1c32829aa94b64daee410c02cb40a9cf63039e6adad9a72190e06044be9e442ba7b437e6f545d8dd549de2059442a22ae953db7c9c8 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
+> 624a7e1e9518fba798ca75f31cea8a870e9d9fd069966181bfaa346582427269cf40d043f095ba01b7651ed9c78183ac288e535c9565403beb9afac24586a264 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
 
 ```
 **Reproduction:**
@@ -1092,7 +1092,7 @@ echo "fcoreutils exit: $?"
 
 **Diff:**
 ```
-Binary files /tmp/gnu_output_3870 and /tmp/f_output_3870 differ
+Binary files /tmp/gnu_output_4387 and /tmp/f_output_4387 differ
 
 ```
 **Reproduction:**
@@ -1113,7 +1113,7 @@ echo "fcoreutils exit: $?"
 
 **Diff:**
 ```
-Binary files /tmp/gnu_output_4751 and /tmp/f_output_4751 differ
+Binary files /tmp/gnu_output_5268 and /tmp/f_output_5268 differ
 
 ```
 **Reproduction:**
@@ -1150,11 +1150,11 @@ Exi
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c check valid checksums
 # GNU command:
-sha256sum -c '/tmp/fcoreutils_checksums_3aC5pz'
+sha256sum -c '/tmp/fcoreutils_checksums_kUSj2k'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c '/tmp/fcoreutils_checksums_3aC5pz'
+fsha256sum -c '/tmp/fcoreutils_checksums_kUSj2k'
 echo "fcoreutils exit: $?"
 
 ```
@@ -1427,9 +1427,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< e2061496c16639ea664f28fd258bf1230aebb01f23fad2c07ed920c72ad9e94376b731a783b9f92b2268d2834b41cead7f7a801bae9703d4e76aa72e380c3112 */tmp/fcoreutils-test-data/random_1k.bin
+< 1c24b16426c253bc97af4dd68554549cadcbdda4c37394579ae5871208c91fad26545d43361288ebbb31f34d21f5a458cfbdda320a35a349e41b35459cab43ee */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> e2061496c16639ea664f28fd258bf1230aebb01f23fad2c07ed920c72ad9e94376b731a783b9f92b2268d2834b41cead7f7a801bae9703d4e76aa72e380c3112 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> 1c24b16426c253bc97af4dd68554549cadcbdda4c37394579ae5871208c91fad26545d43361288ebbb31f34d21f5a458cfbdda320a35a349e41b35459cab43ee *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -1475,9 +1475,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 3ccb8696171986c0adaba3bcc4e5b218 */tmp/fcoreutils-test-data/random_10m.bin
+< 3c46e38466c4ac2adf1284cd3052e9f9 */tmp/fcoreutils-test-data/random_10m.bin
 ---
-> 3ccb8696171986c0adaba3bcc4e5b218 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
+> 3c46e38466c4ac2adf1284cd3052e9f9 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
 
 ```
 **Reproduction:**
@@ -1928,11 +1928,11 @@ Exit code misma
 #!/usr/bin/env bash
 # Reproduction case for: b2sum - -c check valid
 # GNU command:
-b2sum -c '/tmp/fcoreutils_b2check_D6FauJ'
+b2sum -c '/tmp/fcoreutils_b2check_qgMsI2'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fb2sum -c '/tmp/fcoreutils_b2check_D6FauJ'
+fb2sum -c '/tmp/fcoreutils_b2check_qgMsI2'
 echo "fcoreutils exit: $?"
 
 ```
@@ -2004,11 +2004,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: wc - --files0-from
 # GNU command:
-wc --files0-from='/tmp/fcoreutils_filelist_0GJnT7'
+wc --files0-from='/tmp/fcoreutils_filelist_6DOzzu'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fwc --files0-from='/tmp/fcoreutils_filelist_0GJnT7'
+fwc --files0-from='/tmp/fcoreutils_filelist_6DOzzu'
 echo "fcoreutils exit: $?"
 
 ```
@@ -2241,11 +2241,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c --status
 # GNU command:
-md5sum -c --status '/tmp/fcoreutils_md5check_zZLb4N'
+md5sum -c --status '/tmp/fcoreutils_md5check_D4Xjpt'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c --status '/tmp/fcoreutils_md5check_zZLb4N'
+fmd5sum -c --status '/tmp/fcoreutils_md5check_D4Xjpt'
 echo "fcoreutils exit: $?"
 
 ```
@@ -2255,9 +2255,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< sha256sum: /tmp/fcoreutils_missingcheck_gTmlTu: no file was verified
+< sha256sum: /tmp/fcoreutils_missingcheck_wN7kkc: no file was verified
 ---
-> sha256sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_missingcheck_gTmlTu: no file was verified
+> sha256sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_missingcheck_wN7kkc: no file was verified
 
 ```
 **Reproduction:**
@@ -2265,11 +2265,11 @@ echo "fcoreutils exit: $?"
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c --ignore-missing
 # GNU command:
-sha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_gTmlTu'
+sha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_wN7kkc'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_gTmlTu'
+fsha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_wN7kkc'
 echo "fcoreutils exit: $?"
 
 ```
@@ -2279,9 +2279,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 139af323ec230754c154f4bcb8a0773df3de8a9469f70382c6c85379885e941f */tmp/fcoreutils-test-data/random_10m.bin
+< 164194852e3d6ddcadc177665d26b39eef71afb14fd0d4545c506da6975303c0 */tmp/fcoreutils-test-data/random_10m.bin
 ---
-> 139af323ec230754c154f4bcb8a0773df3de8a9469f70382c6c85379885e941f *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
+> 164194852e3d6ddcadc177665d26b39eef71afb14fd0d4545c506da6975303c0 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
 
 ```
 **Reproduction:**
@@ -2827,11 +2827,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c --quiet valid checksums
 # GNU command:
-sha256sum -c --quiet '/tmp/fcoreutils_checksums_3aC5pz'
+sha256sum -c --quiet '/tmp/fcoreutils_checksums_kUSj2k'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c --quiet '/tmp/fcoreutils_checksums_3aC5pz'
+fsha256sum -c --quiet '/tmp/fcoreutils_checksums_kUSj2k'
 echo "fcoreutils exit: $?"
 
 ```
@@ -3036,9 +3036,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 9dc8a2ae2f3050e787ca29913b0c6c3834fde742547a9d58d73c9657993abc6f */tmp/fcoreutils-test-data/random_1k.bin
+< 3a59e6f0a5ebe8b1e4cbc5ffcda244c668f4a917e629065692c285903431d46e */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> 9dc8a2ae2f3050e787ca29913b0c6c3834fde742547a9d58d73c9657993abc6f *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> 3a59e6f0a5ebe8b1e4cbc5ffcda244c668f4a917e629065692c285903431d46e *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -3212,11 +3212,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c --status valid checksums
 # GNU command:
-sha256sum -c --status '/tmp/fcoreutils_checksums_72xoU1'
+sha256sum -c --status '/tmp/fcoreutils_checksums_OSHp17'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c --status '/tmp/fcoreutils_checksums_72xoU1'
+fsha256sum -c --status '/tmp/fcoreutils_checksums_OSHp17'
 echo "fcoreutils exit: $?"
 
 ```
@@ -3289,11 +3289,11 @@ Ex
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c check valid
 # GNU command:
-md5sum -c '/tmp/fcoreutils_md5check_eLwJT2'
+md5sum -c '/tmp/fcoreutils_md5check_x1WUzr'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c '/tmp/fcoreutils_md5check_eLwJT2'
+fmd5sum -c '/tmp/fcoreutils_md5check_x1WUzr'
 echo "fcoreutils exit: $?"
 
 ```
@@ -3375,9 +3375,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< md5sum: /tmp/fcoreutils_md5missing_Hk1zW3: no file was verified
+< md5sum: /tmp/fcoreutils_md5missing_5m4GOu: no file was verified
 ---
-> md5sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_md5missing_Hk1zW3: no file was verified
+> md5sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_md5missing_5m4GOu: no file was verified
 
 ```
 **Reproduction:**
@@ -3385,11 +3385,11 @@ echo "fcoreutils exit: $?"
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c --ignore-missing
 # GNU command:
-md5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_Hk1zW3'
+md5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_5m4GOu'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_Hk1zW3'
+fmd5sum -c --ignore-missing '/tmp/fcoreutils_md5missing_5m4GOu'
 echo "fcoreutils exit: $?"
 
 ```
@@ -3689,9 +3689,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-<    5   29 1024 /tmp/fcoreutils-test-data/random_1k.bin
+<    1   20 1024 /tmp/fcoreutils-test-data/random_1k.bin
 ---
->    5   23 1024 C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+>    1   18 1024 C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -3713,9 +3713,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 8acbfc180a38899d7b346c7278caa71b */tmp/fcoreutils-test-data/random_1k.bin
+< dbb9d643a748786adeb119cbfe5e8e6d */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> 8acbfc180a38899d7b346c7278caa71b *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> dbb9d643a748786adeb119cbfe5e8e6d *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -3750,11 +3750,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c --quiet
 # GNU command:
-md5sum -c --quiet '/tmp/fcoreutils_md5check_eLwJT2'
+md5sum -c --quiet '/tmp/fcoreutils_md5check_x1WUzr'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c --quiet '/tmp/fcoreutils_md5check_eLwJT2'
+fmd5sum -c --quiet '/tmp/fcoreutils_md5check_x1WUzr'
 echo "fcoreutils exit: $?"
 
 ```
@@ -3860,9 +3860,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< af39619541d902f57d1ef423459567404e373914a4f634a6c44e56373f4cb9e5 */tmp/fcoreutils-test-data/random_1k.bin
+< ada027d05e904dd17e158d074c81108dfd5a245d252e3d671e770b890d7b0218 */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> af39619541d902f57d1ef423459567404e373914a4f634a6c44e56373f4cb9e5 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> ada027d05e904dd17e158d074c81108dfd5a245d252e3d671e770b890d7b0218 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -4017,9 +4017,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< d8c064c5abcb86b884e78b848f2fd3e37078cd94999f2c8d6e9321c4946050c8c16756a70da81a94b8607219a167d50fa08b1063e2a85811e43dbdd943cb1f6e */tmp/fcoreutils-test-data/random_10m.bin
+< 49ce9d99d62781ac2fc45cfae4ae5a2d1f9e4d44e1054fbc55c95c70472e0c31e29c79f148877c0fa003c14593fa2a124f1ce0c0998e50123da04ef4416a8d3d */tmp/fcoreutils-test-data/random_10m.bin
 ---
-> d8c064c5abcb86b884e78b848f2fd3e37078cd94999f2c8d6e9321c4946050c8c16756a70da81a94b8607219a167d50fa08b1063e2a85811e43dbdd943cb1f6e *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
+> 49ce9d99d62781ac2fc45cfae4ae5a2d1f9e4d44e1054fbc55c95c70472e0c31e29c79f148877c0fa003c14593fa2a124f1ce0c0998e50123da04ef4416a8d3d *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
 
 ```
 **Reproduction:**
@@ -4188,7 +4188,7 @@ echo "fcoreutils exit: $?"
 
 **Diff:**
 ```
-Binary files /tmp/gnu_output_4858 and /tmp/f_output_4858 differ
+Binary files /tmp/gnu_output_5013 and /tmp/f_output_5013 differ
 
 ```
 **Reproduction:**
@@ -4209,7 +4209,7 @@ echo "fcoreutils exit: $?"
 
 **Diff:**
 ```
-Binary files /tmp/gnu_output_5739 and /tmp/f_output_5739 differ
+Binary files /tmp/gnu_output_5894 and /tmp/f_output_5894 differ
 
 ```
 **Reproduction:**
@@ -4246,11 +4246,11 @@ Exi
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c check valid checksums
 # GNU command:
-sha256sum -c '/tmp/fcoreutils_checksums_72xoU1'
+sha256sum -c '/tmp/fcoreutils_checksums_OSHp17'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c '/tmp/fcoreutils_checksums_72xoU1'
+fsha256sum -c '/tmp/fcoreutils_checksums_OSHp17'
 echo "fcoreutils exit: $?"
 
 ```
@@ -4523,9 +4523,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 3831e630cbacfa986ba65e477ca4f74a7098b2b981ddb6ceed6fbb59a05eb814ed2c91e7433f3b0334189156374534328eba00e89ae2c817a292bdd007b0a90c */tmp/fcoreutils-test-data/random_1k.bin
+< 5356cec84fcd16801626e78388073bd6427919000d489d7a44f78e5fbd702489862e6f874e418a0aed9d739c0142c961a80db3192d78ddf5b53112fed4f2460c */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> 3831e630cbacfa986ba65e477ca4f74a7098b2b981ddb6ceed6fbb59a05eb814ed2c91e7433f3b0334189156374534328eba00e89ae2c817a292bdd007b0a90c *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> 5356cec84fcd16801626e78388073bd6427919000d489d7a44f78e5fbd702489862e6f874e418a0aed9d739c0142c961a80db3192d78ddf5b53112fed4f2460c *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -4571,9 +4571,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 21ec9e66ed405784e9c79b5136391a92 */tmp/fcoreutils-test-data/random_10m.bin
+< f89972ffa00da76f2fa9ec30dbf4b0b5 */tmp/fcoreutils-test-data/random_10m.bin
 ---
-> 21ec9e66ed405784e9c79b5136391a92 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
+> f89972ffa00da76f2fa9ec30dbf4b0b5 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
 
 ```
 **Reproduction:**
@@ -5024,11 +5024,11 @@ Exit code misma
 #!/usr/bin/env bash
 # Reproduction case for: b2sum - -c check valid
 # GNU command:
-b2sum -c '/tmp/fcoreutils_b2check_0uLZKJ'
+b2sum -c '/tmp/fcoreutils_b2check_EI9ylX'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fb2sum -c '/tmp/fcoreutils_b2check_0uLZKJ'
+fb2sum -c '/tmp/fcoreutils_b2check_EI9ylX'
 echo "fcoreutils exit: $?"
 
 ```
@@ -5100,11 +5100,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: wc - --files0-from
 # GNU command:
-wc --files0-from='/tmp/fcoreutils_filelist_EVQoQV'
+wc --files0-from='/tmp/fcoreutils_filelist_Sjof6p'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fwc --files0-from='/tmp/fcoreutils_filelist_EVQoQV'
+fwc --files0-from='/tmp/fcoreutils_filelist_Sjof6p'
 echo "fcoreutils exit: $?"
 
 ```
@@ -5337,11 +5337,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: md5sum - -c --status
 # GNU command:
-md5sum -c --status '/tmp/fcoreutils_md5check_eLwJT2'
+md5sum -c --status '/tmp/fcoreutils_md5check_x1WUzr'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fmd5sum -c --status '/tmp/fcoreutils_md5check_eLwJT2'
+fmd5sum -c --status '/tmp/fcoreutils_md5check_x1WUzr'
 echo "fcoreutils exit: $?"
 
 ```
@@ -5351,9 +5351,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< sha256sum: /tmp/fcoreutils_missingcheck_9tFE9w: no file was verified
+< sha256sum: /tmp/fcoreutils_missingcheck_tOxdCU: no file was verified
 ---
-> sha256sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_missingcheck_9tFE9w: no file was verified
+> sha256sum: C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils_missingcheck_tOxdCU: no file was verified
 
 ```
 **Reproduction:**
@@ -5361,11 +5361,11 @@ echo "fcoreutils exit: $?"
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c --ignore-missing
 # GNU command:
-sha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_9tFE9w'
+sha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_tOxdCU'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_9tFE9w'
+fsha256sum -c --ignore-missing '/tmp/fcoreutils_missingcheck_tOxdCU'
 echo "fcoreutils exit: $?"
 
 ```
@@ -5375,9 +5375,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< 41549af07ab4c79609650a5b737ca2b8d0ea8db3846c4a50e16a9ba0dcdc0d4b */tmp/fcoreutils-test-data/random_10m.bin
+< f34c079b0f8eb7c0e705d8763f47edd60f831b3ad0947457770a7382b6d5465d */tmp/fcoreutils-test-data/random_10m.bin
 ---
-> 41549af07ab4c79609650a5b737ca2b8d0ea8db3846c4a50e16a9ba0dcdc0d4b *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
+> f34c079b0f8eb7c0e705d8763f47edd60f831b3ad0947457770a7382b6d5465d *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_10m.bin
 
 ```
 **Reproduction:**
@@ -5923,11 +5923,11 @@ Exit code mismatch: GNU=0, fcoreutils=1
 #!/usr/bin/env bash
 # Reproduction case for: sha256sum - -c --quiet valid checksums
 # GNU command:
-sha256sum -c --quiet '/tmp/fcoreutils_checksums_72xoU1'
+sha256sum -c --quiet '/tmp/fcoreutils_checksums_OSHp17'
 echo "GNU exit: $?"
 
 # fcoreutils command:
-fsha256sum -c --quiet '/tmp/fcoreutils_checksums_72xoU1'
+fsha256sum -c --quiet '/tmp/fcoreutils_checksums_OSHp17'
 echo "fcoreutils exit: $?"
 
 ```
@@ -6132,9 +6132,9 @@ echo "fcoreutils exit: $?"
 **Diff:**
 ```
 1c1
-< af39619541d902f57d1ef423459567404e373914a4f634a6c44e56373f4cb9e5 */tmp/fcoreutils-test-data/random_1k.bin
+< ada027d05e904dd17e158d074c81108dfd5a245d252e3d671e770b890d7b0218 */tmp/fcoreutils-test-data/random_1k.bin
 ---
-> af39619541d902f57d1ef423459567404e373914a4f634a6c44e56373f4cb9e5 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
+> ada027d05e904dd17e158d074c81108dfd5a245d252e3d671e770b890d7b0218 *C:/Users/RUNNER~1/AppData/Local/Temp/fcoreutils-test-data/random_1k.bin
 
 ```
 **Reproduction:**
@@ -6157,250 +6157,258 @@ echo "fcoreutils exit: $?"
 
 | Tool | GNU (mean) | fcoreutils (mean) | Speedup |
 |------|-----------|-------------------|---------|
-| wc (default 100KB text) | 0.0016s | 0.0081s | **0.2x** |
-| wc (default 1MB text) | 0.0147s | 0.0131s | **1.1x** |
-| wc (default 10MB text) | 0.0509s | 0.0271s | **1.9x** |
-| wc (default 100MB text) | 0.4103s | 0.0931s | **4.4x** |
-| wc (-l 10MB text) | 0.0004s | 0.0026s | **0.1x** |
-| wc (-w 10MB text) | 0.0774s | 0.0494s | **1.6x** |
-| wc (-c 10MB text) | 0.0078s | 0.0056s | **1.4x** |
-| wc (-m 10MB text) | 0.0567s | 0.0208s | **2.7x** |
-| wc (-L 10MB text) | 0.0585s | 0.0401s | **1.5x** |
-| wc (default 10MB binary) | 0.1766s | 0.1042s | **1.7x** |
-| wc (default 10MB repetitive) | 0.0727s | 0.0208s | **3.5x** |
-| wc (10 files) | 0.0039s | 0.0089s | **0.4x** |
-| wc (100 files) | - | 0.0034s | - |
-| cut | - | - | no data |
-| sha256sum (single 100KB text) | 0.0017s | 0.0005s | **3.5x** |
-| sha256sum (single 1MB text) | 0.0045s | 0.0019s | **2.4x** |
-| sha256sum (single 10MB text) | 0.0462s | 0.0116s | **4.0x** |
-| sha256sum (single 10MB binary) | 0.0515s | 0.0054s | **9.5x** |
-| sha256sum (single 100MB text) | 0.3631s | 0.0607s | **6.0x** |
-| sha256sum (10 files) | 0.0025s | 0.0022s | **1.2x** |
-| sha256sum (100 files) | 0.0040s | 0.0043s | **0.9x** |
-| md5sum (single 100KB text) | 0.0021s | 0.0018s | **1.1x** |
-| md5sum (single 1MB text) | 0.0035s | 0.0035s | **1.0x** |
-| md5sum (single 10MB text) | 0.0210s | 0.0189s | **1.1x** |
-| md5sum (single 10MB binary) | 0.0228s | 0.0200s | **1.1x** |
-| md5sum (single 100MB text) | 0.1895s | 0.2163s | **0.9x** |
-| md5sum (10 files) | 0.0083s | 0.0001s | **69.5x** |
-| md5sum (100 files) | 0.0282s | 0.0277s | **1.0x** |
+| wc (default 100KB text) | - | 0.0001s | - |
+| wc (default 1MB text) | 0.0258s | 0.0022s | **11.7x** |
+| wc (default 10MB text) | 0.0248s | 0.0211s | **1.2x** |
+| wc (default 100MB text) | 0.2636s | 0.0778s | **3.4x** |
+| wc (-l 10MB text) | 0.0195s | 0.0013s | **14.6x** |
+| wc (-w 10MB text) | 0.0472s | 0.0474s | **1.0x** |
+| wc (-c 10MB text) | 0.0002s | 0.0013s | **0.1x** |
+| wc (-m 10MB text) | 0.0359s | 0.0059s | **6.1x** |
+| wc (-L 10MB text) | 0.0371s | 0.0281s | **1.3x** |
+| wc (default 10MB binary) | 0.1419s | 0.0781s | **1.8x** |
+| wc (default 10MB repetitive) | 0.0444s | 0.0123s | **3.6x** |
+| wc (10 files) | 0.0020s | 0.0015s | **1.4x** |
+| wc (100 files) | 0.0036s | 0.0041s | **0.9x** |
+| cut (-b1-100 10MB CSV) | 0.0285s | 0.0055s | **5.2x** |
+| cut (-c1-100 10MB CSV) | 0.0312s | 0.0045s | **7.0x** |
+| cut (-d, -f1 10MB CSV) | 0.0186s | 0.0037s | **5.0x** |
+| cut (-d, -f1,3,5 10MB CSV) | 0.0345s | 0.0088s | **3.9x** |
+| cut (-d, -f2-4 10MB CSV) | 0.0343s | 0.0078s | **4.4x** |
+| cut (--complement -d, -f1 10MB CSV) | 0.0546s | 0.0121s | **4.5x** |
+| cut (-d, -f1 100KB text) | 0.0008s | 0.0005s | **1.7x** |
+| cut (-d, -f1 1MB text) | 0.0037s | 0.0010s | **3.8x** |
+| cut (-d: -f1 colon file) | 0.0028s | 0.0014s | **2.0x** |
+| sha256sum | - | - | no data |
+| md5sum (single 100KB text) | 0.0184s | 0.0005s | **40.5x** |
+| md5sum (single 1MB text) | 0.0053s | 0.0022s | **2.4x** |
+| md5sum (single 10MB text) | 0.0209s | 0.0312s | **0.7x** |
+| md5sum (single 10MB binary) | 0.0232s | 0.0291s | **0.8x** |
+| md5sum (single 100MB text) | 0.1882s | 0.1817s | **1.0x** |
+| md5sum (10 files) | 0.0027s | 0.0012s | **2.1x** |
+| md5sum (100 files) | 0.0046s | 0.0032s | **1.4x** |
 | b2sum | - | - | no data |
-| base64 (encode 100KB text) | 0.0004s | 0.0030s | **0.1x** |
-| base64 (encode 1MB text) | 0.0033s | 0.0004s | **9.1x** |
-| base64 (encode 10MB text) | 0.0189s | 0.0071s | **2.7x** |
-| base64 (encode 10MB binary) | 0.0167s | 0.0007s | **22.7x** |
-| base64 (decode 1MB) | 0.0059s | 0.0250s | **0.2x** |
-| base64 (decode 10MB) | 0.0444s | 0.0181s | **2.5x** |
-| base64 (encode -w 76 10MB) | 0.0212s | 0.0076s | **2.8x** |
-| base64 (encode -w 0 (no wrap) 10MB) | 0.0097s | 0.0054s | **1.8x** |
-| sort (lexicographic 1MB) | 0.1278s | 0.0097s | **13.2x** |
-| sort (lexicographic 10MB random) | 0.4813s | 0.0226s | **21.3x** |
-| sort (already sorted 10MB) | 0.2636s | 0.0437s | **6.0x** |
-| sort (reverse sorted 10MB) | 0.2552s | 0.0084s | **30.4x** |
-| sort (-n numeric 10MB) | 0.4270s | 0.0540s | **7.9x** |
-| sort (-r reverse 10MB) | 0.4802s | 0.0435s | **11.0x** |
-| sort (-u unique 10MB) | 0.4998s | 0.0325s | **15.4x** |
-| sort (-t, -k2 CSV 10MB) | 0.6609s | 0.0958s | **6.9x** |
-| sort (repetitive 10MB) | 0.0681s | 0.0254s | **2.7x** |
-| sort (--parallel=4 10MB) | 0.5681s | 0.0787s | **7.2x** |
-| tr (a-z to A-Z 1MB) | 0.0070s | 0.0058s | **1.2x** |
-| tr (a-z to A-Z 10MB) | 0.0272s | 0.0039s | **7.1x** |
-| tr (-d digits 10MB) | 0.0529s | 0.0171s | **3.1x** |
-| tr (-d lowercase 10MB) | 0.0366s | 0.0221s | **1.7x** |
-| tr (-s spaces 10MB) | 0.0661s | 0.0388s | **1.7x** |
-| tr ([:lower:] to [:upper:] 10MB) | 0.0234s | 0.0210s | **1.1x** |
-| tr (-d [:digit:] 10MB CSV) | 0.0416s | 0.0269s | **1.5x** |
-| tr (translate binary 10MB) | 0.0243s | 0.0132s | **1.8x** |
-| uniq (default 10MB many duplicates) | 0.0181s | 0.0151s | **1.2x** |
-| uniq (default 10MB sorted (low dup)) | 0.0112s | 0.0092s | **1.2x** |
-| uniq (-c count 10MB many dups) | 0.0118s | 0.0048s | **2.5x** |
-| uniq (-c count 10MB sorted) | 0.0384s | 0.0131s | **2.9x** |
-| uniq (-d duplicates only 10MB) | 0.0085s | 0.0008s | **11.0x** |
-| uniq (-u unique only 10MB) | 0.0111s | 0.0126s | **0.9x** |
-| uniq (-i case insensitive 10MB) | 0.0165s | 0.0056s | **2.9x** |
-| uniq (repetitive 10MB) | 0.0383s | 0.0174s | **2.2x** |
-| tac | - | - | no data |
+| base64 (encode 100KB text) | 0.0016s | 0.0023s | **0.7x** |
+| base64 (encode 1MB text) | 0.0023s | 0.0021s | **1.1x** |
+| base64 (encode 10MB text) | 0.0153s | 0.0042s | **3.7x** |
+| base64 (encode 10MB binary) | 0.0160s | 0.0046s | **3.5x** |
+| base64 (decode 1MB) | 0.0065s | 0.0031s | **2.1x** |
+| base64 (decode 10MB) | 0.0367s | 0.0209s | **1.8x** |
+| base64 (encode -w 76 10MB) | 0.0150s | 0.0047s | **3.2x** |
+| base64 (encode -w 0 (no wrap) 10MB) | 0.0079s | 0.0056s | **1.4x** |
+| sort (lexicographic 1MB) | 0.1400s | 0.0066s | **21.4x** |
+| sort (lexicographic 10MB random) | 0.4778s | 0.0203s | **23.5x** |
+| sort (already sorted 10MB) | 0.2542s | 0.0210s | **12.1x** |
+| sort (reverse sorted 10MB) | 0.2697s | 0.0219s | **12.3x** |
+| sort (-n numeric 10MB) | 0.4250s | 0.0260s | **16.3x** |
+| sort (-r reverse 10MB) | 0.4576s | 0.0320s | **14.3x** |
+| sort (-u unique 10MB) | 0.5036s | 0.0164s | **30.8x** |
+| sort (-t, -k2 CSV 10MB) | 0.6640s | 0.0923s | **7.2x** |
+| sort (repetitive 10MB) | 0.0686s | 0.0279s | **2.5x** |
+| sort (--parallel=4 10MB) | 0.5033s | 0.0373s | **13.5x** |
+| tr (a-z to A-Z 1MB) | 0.0039s | 0.0082s | **0.5x** |
+| tr (a-z to A-Z 10MB) | 0.0322s | 0.0206s | **1.6x** |
+| tr (-d digits 10MB) | 0.0282s | 0.0232s | **1.2x** |
+| tr (-d lowercase 10MB) | 0.0560s | 0.0273s | **2.1x** |
+| tr (-s spaces 10MB) | 0.0574s | 0.0356s | **1.6x** |
+| tr ([:lower:] to [:upper:] 10MB) | 0.0132s | 0.0130s | **1.0x** |
+| tr (-d [:digit:] 10MB CSV) | 0.0265s | 0.0279s | **1.0x** |
+| tr (translate binary 10MB) | 0.0272s | 0.0293s | **0.9x** |
+| uniq (default 10MB many duplicates) | 0.0132s | 0.0022s | **6.0x** |
+| uniq (default 10MB sorted (low dup)) | 0.0400s | 0.0068s | **5.9x** |
+| uniq (-c count 10MB many dups) | 0.0248s | 0.0195s | **1.3x** |
+| uniq (-c count 10MB sorted) | 0.0444s | 0.0131s | **3.4x** |
+| uniq (-d duplicates only 10MB) | 0.0142s | 0.0133s | **1.1x** |
+| uniq (-u unique only 10MB) | 0.0037s | 0.0080s | **0.5x** |
+| uniq (-i case insensitive 10MB) | 0.0371s | 0.0141s | **2.6x** |
+| uniq (repetitive 10MB) | 0.0393s | 0.0041s | **9.5x** |
+| tac (reverse 100KB text) | 0.0015s | 0.0078s | **0.2x** |
+| tac (reverse 1MB text) | 0.0000s | 0.0024s | - |
+| tac (reverse 10MB text) | 0.0351s | 0.0257s | **1.4x** |
+| tac (reverse 100MB text) | 0.1482s | 0.0812s | **1.8x** |
+| tac (reverse CSV 10MB) | 0.0152s | 0.0114s | **1.3x** |
+| tac (reverse repetitive 10MB) | 0.0347s | 0.0189s | **1.8x** |
+| tac (custom separator 1MB) | 0.0039s | 0.0057s | **0.7x** |
 
 ### Linux_aarch64
 
 | Tool | GNU (mean) | fcoreutils (mean) | Speedup |
 |------|-----------|-------------------|---------|
 | wc (default 100KB text) | 0.0011s | 0.0010s | **1.1x** |
-| wc (default 1MB text) | 0.0039s | 0.0024s | **1.6x** |
-| wc (default 10MB text) | 0.0343s | 0.0066s | **5.2x** |
-| wc (default 100MB text) | 0.2929s | 0.0383s | **7.6x** |
-| wc (-l 10MB text) | 0.0046s | 0.0020s | **2.3x** |
-| wc (-w 10MB text) | 0.0344s | 0.0170s | **2.0x** |
-| wc (-c 10MB text) | 0.0008s | 0.0008s | **0.9x** |
-| wc (-m 10MB text) | 0.0344s | 0.0020s | **17.0x** |
-| wc (-L 10MB text) | 0.0345s | 0.0168s | **2.1x** |
-| wc (default 10MB binary) | 0.2349s | 0.0590s | **4.0x** |
-| wc (default 10MB repetitive) | 0.0517s | 0.0067s | **7.7x** |
-| wc (10 files) | 0.0009s | 0.0009s | **1.0x** |
-| wc (100 files) | 0.0014s | 0.0013s | **1.1x** |
-| cut (-b1-100 10MB CSV) | 0.0190s | 0.0051s | **3.7x** |
-| cut (-c1-100 10MB CSV) | 0.0189s | 0.0051s | **3.7x** |
-| cut (-d, -f1 10MB CSV) | 0.0191s | 0.0033s | **5.7x** |
-| cut (-d, -f1,3,5 10MB CSV) | 0.0217s | 0.0055s | **4.0x** |
-| cut (-d, -f2-4 10MB CSV) | 0.0235s | 0.0051s | **4.6x** |
-| cut (--complement -d, -f1 10MB CSV) | 0.0269s | 0.0070s | **3.9x** |
+| wc (default 1MB text) | 0.0038s | 0.0027s | **1.4x** |
+| wc (default 10MB text) | 0.0345s | 0.0174s | **2.0x** |
+| wc (default 100MB text) | 0.2928s | 0.0373s | **7.8x** |
+| wc (-l 10MB text) | 0.0043s | 0.0026s | **1.7x** |
+| wc (-w 10MB text) | 0.0343s | 0.0172s | **2.0x** |
+| wc (-c 10MB text) | 0.0008s | 0.0008s | **1.0x** |
+| wc (-m 10MB text) | 0.0344s | 0.0019s | **17.7x** |
+| wc (-L 10MB text) | 0.0344s | 0.0164s | **2.1x** |
+| wc (default 10MB binary) | 0.2336s | 0.0588s | **4.0x** |
+| wc (default 10MB repetitive) | 0.0532s | 0.0066s | **8.0x** |
+| wc (10 files) | 0.0008s | 0.0008s | **0.9x** |
+| wc (100 files) | 0.0015s | 0.0016s | **1.0x** |
+| cut (-b1-100 10MB CSV) | 0.0186s | 0.0051s | **3.7x** |
+| cut (-c1-100 10MB CSV) | 0.0186s | 0.0049s | **3.8x** |
+| cut (-d, -f1 10MB CSV) | 0.0188s | 0.0032s | **5.9x** |
+| cut (-d, -f1,3,5 10MB CSV) | 0.0214s | 0.0057s | **3.8x** |
+| cut (-d, -f2-4 10MB CSV) | 0.0232s | 0.0050s | **4.6x** |
+| cut (--complement -d, -f1 10MB CSV) | 0.0265s | 0.0066s | **4.0x** |
 | cut (-d, -f1 100KB text) | 0.0008s | 0.0008s | **1.0x** |
-| cut (-d, -f1 1MB text) | 0.0035s | 0.0013s | **2.6x** |
-| cut (-d: -f1 colon file) | 0.0008s | 0.0008s | **0.9x** |
-| sha256sum (single 100KB text) | 0.0012s | 0.0010s | **1.3x** |
-| sha256sum (single 1MB text) | 0.0018s | 0.0014s | **1.3x** |
-| sha256sum (single 10MB text) | 0.0077s | 0.0070s | **1.1x** |
-| sha256sum (single 10MB binary) | 0.0077s | 0.0072s | **1.1x** |
-| sha256sum (single 100MB text) | 0.0615s | 0.0609s | **1.0x** |
-| sha256sum (10 files) | 0.0012s | 0.0008s | **1.5x** |
-| sha256sum (100 files) | 0.0019s | 0.0013s | **1.4x** |
-| md5sum (single 100KB text) | 0.0014s | 0.0011s | **1.3x** |
-| md5sum (single 1MB text) | 0.0032s | 0.0024s | **1.4x** |
-| md5sum (single 10MB text) | 0.0213s | 0.0160s | **1.3x** |
-| md5sum (single 10MB binary) | 0.0216s | 0.0167s | **1.3x** |
-| md5sum (single 100MB text) | 0.1960s | 0.1503s | **1.3x** |
-| md5sum (10 files) | 0.0012s | 0.0009s | **1.4x** |
+| cut (-d, -f1 1MB text) | 0.0035s | 0.0015s | **2.2x** |
+| cut (-d: -f1 colon file) | 0.0007s | 0.0008s | **0.9x** |
+| sha256sum (single 100KB text) | 0.0012s | 0.0009s | **1.3x** |
+| sha256sum (single 1MB text) | 0.0018s | 0.0018s | **1.0x** |
+| sha256sum (single 10MB text) | 0.0076s | 0.0069s | **1.1x** |
+| sha256sum (single 10MB binary) | 0.0070s | 0.0071s | **1.0x** |
+| sha256sum (single 100MB text) | 0.0613s | 0.0605s | **1.0x** |
+| sha256sum (10 files) | 0.0011s | 0.0008s | **1.3x** |
+| sha256sum (100 files) | 0.0018s | 0.0013s | **1.4x** |
+| md5sum (single 100KB text) | 0.0013s | 0.0010s | **1.4x** |
+| md5sum (single 1MB text) | 0.0030s | 0.0027s | **1.1x** |
+| md5sum (single 10MB text) | 0.0211s | 0.0160s | **1.3x** |
+| md5sum (single 10MB binary) | 0.0213s | 0.0166s | **1.3x** |
+| md5sum (single 100MB text) | 0.1930s | 0.1502s | **1.3x** |
+| md5sum (10 files) | 0.0011s | 0.0009s | **1.3x** |
 | md5sum (100 files) | 0.0017s | 0.0013s | **1.3x** |
 | b2sum (single 100KB text) | 0.0008s | 0.0009s | **0.9x** |
-| b2sum (single 1MB text) | 0.0022s | 0.0021s | **1.1x** |
-| b2sum (single 10MB text) | 0.0144s | 0.0125s | **1.1x** |
-| b2sum (single 10MB binary) | 0.0144s | 0.0129s | **1.1x** |
-| b2sum (single 100MB text) | 0.1280s | 0.1143s | **1.1x** |
-| b2sum (-l 256 10MB) | 0.0143s | 0.0125s | **1.2x** |
-| b2sum (-l 128 10MB) | 0.0142s | 0.0124s | **1.1x** |
-| b2sum (100 files) | 0.0016s | 0.0014s | **1.2x** |
-| base64 (encode 100KB text) | 0.0008s | 0.0010s | **0.8x** |
-| base64 (encode 1MB text) | 0.0018s | 0.0023s | **0.8x** |
-| base64 (encode 10MB text) | 0.0102s | 0.0063s | **1.6x** |
-| base64 (encode 10MB binary) | 0.0099s | 0.0064s | **1.5x** |
-| base64 (decode 1MB) | 0.0039s | 0.0029s | **1.3x** |
-| base64 (decode 10MB) | 0.0309s | 0.0180s | **1.7x** |
-| base64 (encode -w 76 10MB) | 0.0102s | 0.0065s | **1.6x** |
-| base64 (encode -w 0 (no wrap) 10MB) | 0.0082s | 0.0044s | **1.8x** |
-| sort (lexicographic 1MB) | 0.0078s | 0.0039s | **2.0x** |
-| sort (lexicographic 10MB random) | 0.0532s | 0.0207s | **2.6x** |
-| sort (already sorted 10MB) | 0.0252s | 0.0101s | **2.5x** |
-| sort (reverse sorted 10MB) | 0.0243s | 0.0100s | **2.4x** |
-| sort (-n numeric 10MB) | 0.0716s | 0.0380s | **1.9x** |
-| sort (-r reverse 10MB) | 0.0549s | 0.0197s | **2.8x** |
-| sort (-u unique 10MB) | 0.0551s | 0.0187s | **2.9x** |
-| sort (-t, -k2 CSV 10MB) | 0.0746s | 0.0360s | **2.1x** |
-| sort (repetitive 10MB) | 0.0430s | 0.0244s | **1.8x** |
-| sort (--parallel=4 10MB) | 0.0531s | 0.0195s | **2.7x** |
-| tr (a-z to A-Z 1MB) | 0.0019s | 0.0020s | **1.0x** |
-| tr (a-z to A-Z 10MB) | 0.0092s | 0.0069s | **1.3x** |
-| tr (-d digits 10MB) | 0.0109s | 0.0117s | **0.9x** |
-| tr (-d lowercase 10MB) | 0.0187s | 0.0189s | **1.0x** |
-| tr (-s spaces 10MB) | 0.0167s | 0.0160s | **1.0x** |
-| tr ([:lower:] to [:upper:] 10MB) | 0.0087s | 0.0067s | **1.3x** |
-| tr (-d [:digit:] 10MB CSV) | 0.0111s | 0.0116s | **1.0x** |
-| tr (translate binary 10MB) | 0.0095s | 0.0070s | **1.4x** |
-| uniq (default 10MB many duplicates) | 0.0094s | 0.0047s | **2.0x** |
-| uniq (default 10MB sorted (low dup)) | 0.0169s | 0.0056s | **3.0x** |
-| uniq (-c count 10MB many dups) | 0.0096s | 0.0047s | **2.1x** |
-| uniq (-c count 10MB sorted) | 0.0298s | 0.0073s | **4.1x** |
-| uniq (-d duplicates only 10MB) | 0.0097s | 0.0047s | **2.1x** |
-| uniq (-u unique only 10MB) | 0.0096s | 0.0047s | **2.0x** |
-| uniq (-i case insensitive 10MB) | 0.0170s | 0.0062s | **2.7x** |
-| uniq (repetitive 10MB) | 0.0464s | 0.0071s | **6.5x** |
-| tac (reverse 100KB text) | 0.0008s | 0.0010s | **0.8x** |
-| tac (reverse 1MB text) | 0.0017s | 0.0019s | **0.9x** |
-| tac (reverse 10MB text) | 0.0089s | 0.0064s | **1.4x** |
-| tac (reverse 100MB text) | 0.0798s | 0.0576s | **1.4x** |
-| tac (reverse CSV 10MB) | 0.0085s | 0.0068s | **1.3x** |
-| tac (reverse repetitive 10MB) | 0.0172s | 0.0143s | **1.2x** |
-| tac (custom separator 1MB) | 0.0044s | 0.0054s | **0.8x** |
+| b2sum (single 1MB text) | 0.0021s | 0.0022s | **1.0x** |
+| b2sum (single 10MB text) | 0.0141s | 0.0121s | **1.2x** |
+| b2sum (single 10MB binary) | 0.0139s | 0.0126s | **1.1x** |
+| b2sum (single 100MB text) | 0.1275s | 0.1127s | **1.1x** |
+| b2sum (-l 256 10MB) | 0.0141s | 0.0123s | **1.2x** |
+| b2sum (-l 128 10MB) | 0.0140s | 0.0122s | **1.1x** |
+| b2sum (100 files) | 0.0016s | 0.0012s | **1.3x** |
+| base64 (encode 100KB text) | 0.0009s | 0.0009s | **0.9x** |
+| base64 (encode 1MB text) | 0.0016s | 0.0026s | **0.6x** |
+| base64 (encode 10MB text) | 0.0098s | 0.0060s | **1.6x** |
+| base64 (encode 10MB binary) | 0.0096s | 0.0062s | **1.5x** |
+| base64 (decode 1MB) | 0.0038s | 0.0027s | **1.4x** |
+| base64 (decode 10MB) | 0.0308s | 0.0175s | **1.8x** |
+| base64 (encode -w 76 10MB) | 0.0097s | 0.0060s | **1.6x** |
+| base64 (encode -w 0 (no wrap) 10MB) | 0.0076s | 0.0048s | **1.6x** |
+| sort (lexicographic 1MB) | 0.0076s | 0.0037s | **2.1x** |
+| sort (lexicographic 10MB random) | 0.0513s | 0.0168s | **3.0x** |
+| sort (already sorted 10MB) | 0.0241s | 0.0097s | **2.5x** |
+| sort (reverse sorted 10MB) | 0.0242s | 0.0094s | **2.6x** |
+| sort (-n numeric 10MB) | 0.0696s | 0.0326s | **2.1x** |
+| sort (-r reverse 10MB) | 0.0528s | 0.0174s | **3.0x** |
+| sort (-u unique 10MB) | 0.0550s | 0.0183s | **3.0x** |
+| sort (-t, -k2 CSV 10MB) | 0.0715s | 0.0323s | **2.2x** |
+| sort (repetitive 10MB) | 0.0424s | 0.0231s | **1.8x** |
+| sort (--parallel=4 10MB) | 0.0512s | 0.0173s | **2.9x** |
+| tr (a-z to A-Z 1MB) | 0.0018s | 0.0019s | **1.0x** |
+| tr (a-z to A-Z 10MB) | 0.0089s | 0.0066s | **1.3x** |
+| tr (-d digits 10MB) | 0.0112s | 0.0115s | **1.0x** |
+| tr (-d lowercase 10MB) | 0.0190s | 0.0184s | **1.0x** |
+| tr (-s spaces 10MB) | 0.0169s | 0.0159s | **1.1x** |
+| tr ([:lower:] to [:upper:] 10MB) | 0.0089s | 0.0068s | **1.3x** |
+| tr (-d [:digit:] 10MB CSV) | 0.0113s | 0.0116s | **1.0x** |
+| tr (translate binary 10MB) | 0.0095s | 0.0071s | **1.3x** |
+| uniq (default 10MB many duplicates) | 0.0093s | 0.0046s | **2.0x** |
+| uniq (default 10MB sorted (low dup)) | 0.0161s | 0.0053s | **3.1x** |
+| uniq (-c count 10MB many dups) | 0.0094s | 0.0046s | **2.0x** |
+| uniq (-c count 10MB sorted) | 0.0290s | 0.0073s | **4.0x** |
+| uniq (-d duplicates only 10MB) | 0.0094s | 0.0047s | **2.0x** |
+| uniq (-u unique only 10MB) | 0.0093s | 0.0046s | **2.0x** |
+| uniq (-i case insensitive 10MB) | 0.0162s | 0.0061s | **2.7x** |
+| uniq (repetitive 10MB) | 0.0466s | 0.0070s | **6.6x** |
+| tac (reverse 100KB text) | 0.0009s | 0.0010s | **0.8x** |
+| tac (reverse 1MB text) | 0.0017s | 0.0021s | **0.8x** |
+| tac (reverse 10MB text) | 0.0091s | 0.0064s | **1.4x** |
+| tac (reverse 100MB text) | 0.0792s | 0.0562s | **1.4x** |
+| tac (reverse CSV 10MB) | 0.0081s | 0.0066s | **1.2x** |
+| tac (reverse repetitive 10MB) | 0.0171s | 0.0134s | **1.3x** |
+| tac (custom separator 1MB) | 0.0043s | 0.0052s | **0.8x** |
 
 ### Linux_x86_64
 
 | Tool | GNU (mean) | fcoreutils (mean) | Speedup |
 |------|-----------|-------------------|---------|
-| wc (default 100KB text) | 0.0013s | 0.0010s | **1.3x** |
-| wc (default 1MB text) | 0.0057s | 0.0026s | **2.2x** |
-| wc (default 10MB text) | 0.0545s | 0.0086s | **6.3x** |
-| wc (default 100MB text) | 0.4812s | 0.0658s | **7.3x** |
-| wc (-l 10MB text) | 0.0019s | 0.0019s | **1.0x** |
-| wc (-w 10MB text) | 0.0545s | 0.0194s | **2.8x** |
-| wc (-c 10MB text) | 0.0008s | 0.0007s | **1.0x** |
-| wc (-m 10MB text) | 0.0545s | 0.0019s | **28.0x** |
-| wc (-L 10MB text) | 0.0545s | 0.0233s | **2.3x** |
-| wc (default 10MB binary) | 0.3153s | 0.0818s | **3.9x** |
-| wc (default 10MB repetitive) | 0.0730s | 0.0111s | **6.6x** |
-| wc (10 files) | 0.0009s | 0.0009s | **1.0x** |
-| wc (100 files) | 0.0018s | 0.0016s | **1.1x** |
-| cut (-b1-100 10MB CSV) | 0.0218s | 0.0051s | **4.3x** |
-| cut (-c1-100 10MB CSV) | 0.0217s | 0.0050s | **4.3x** |
-| cut (-d, -f1 10MB CSV) | 0.0161s | 0.0043s | **3.7x** |
-| cut (-d, -f1,3,5 10MB CSV) | 0.0215s | 0.0082s | **2.6x** |
-| cut (-d, -f2-4 10MB CSV) | 0.0237s | 0.0075s | **3.2x** |
-| cut (--complement -d, -f1 10MB CSV) | 0.0302s | 0.0115s | **2.6x** |
+| wc (default 100KB text) | 0.0013s | 0.0011s | **1.2x** |
+| wc (default 1MB text) | 0.0056s | 0.0033s | **1.7x** |
+| wc (default 10MB text) | 0.0549s | 0.0209s | **2.6x** |
+| wc (default 100MB text) | 0.4826s | 0.0668s | **7.2x** |
+| wc (-l 10MB text) | 0.0020s | 0.0021s | **0.9x** |
+| wc (-w 10MB text) | 0.0547s | 0.0200s | **2.7x** |
+| wc (-c 10MB text) | 0.0009s | 0.0009s | **1.0x** |
+| wc (-m 10MB text) | 0.0548s | 0.0019s | **29.1x** |
+| wc (-L 10MB text) | 0.0548s | 0.0228s | **2.4x** |
+| wc (default 10MB binary) | 0.3170s | 0.0828s | **3.8x** |
+| wc (default 10MB repetitive) | 0.0729s | 0.0117s | **6.2x** |
+| wc (10 files) | 0.0010s | 0.0009s | **1.0x** |
+| wc (100 files) | 0.0017s | 0.0016s | **1.1x** |
+| cut (-b1-100 10MB CSV) | 0.0221s | 0.0053s | **4.1x** |
+| cut (-c1-100 10MB CSV) | 0.0221s | 0.0052s | **4.3x** |
+| cut (-d, -f1 10MB CSV) | 0.0161s | 0.0043s | **3.8x** |
+| cut (-d, -f1,3,5 10MB CSV) | 0.0214s | 0.0083s | **2.6x** |
+| cut (-d, -f2-4 10MB CSV) | 0.0239s | 0.0076s | **3.2x** |
+| cut (--complement -d, -f1 10MB CSV) | 0.0298s | 0.0112s | **2.7x** |
 | cut (-d, -f1 100KB text) | 0.0008s | 0.0008s | **1.0x** |
-| cut (-d, -f1 1MB text) | 0.0032s | 0.0017s | **1.9x** |
+| cut (-d, -f1 1MB text) | 0.0032s | 0.0025s | **1.3x** |
 | cut (-d: -f1 colon file) | 0.0008s | 0.0008s | **1.0x** |
-| sha256sum (single 100KB text) | 0.0012s | 0.0010s | **1.3x** |
-| sha256sum (single 1MB text) | 0.0019s | 0.0016s | **1.2x** |
-| sha256sum (single 10MB text) | 0.0089s | 0.0082s | **1.1x** |
-| sha256sum (single 10MB binary) | 0.0093s | 0.0086s | **1.1x** |
-| sha256sum (single 100MB text) | 0.0755s | 0.0746s | **1.0x** |
-| sha256sum (10 files) | 0.0013s | 0.0009s | **1.5x** |
+| sha256sum (single 100KB text) | 0.0013s | 0.0010s | **1.4x** |
+| sha256sum (single 1MB text) | 0.0019s | 0.0022s | **0.9x** |
+| sha256sum (single 10MB text) | 0.0087s | 0.0079s | **1.1x** |
+| sha256sum (single 10MB binary) | 0.0089s | 0.0083s | **1.1x** |
+| sha256sum (single 100MB text) | 0.0764s | 0.0732s | **1.0x** |
+| sha256sum (10 files) | 0.0013s | 0.0009s | **1.4x** |
 | sha256sum (100 files) | 0.0022s | 0.0016s | **1.4x** |
-| md5sum (single 100KB text) | 0.0013s | 0.0011s | **1.2x** |
-| md5sum (single 1MB text) | 0.0028s | 0.0028s | **1.0x** |
-| md5sum (single 10MB text) | 0.0177s | 0.0205s | **0.9x** |
-| md5sum (single 10MB binary) | 0.0186s | 0.0216s | **0.9x** |
-| md5sum (single 100MB text) | 0.1615s | 0.1945s | **0.8x** |
-| md5sum (10 files) | 0.0016s | 0.0009s | **1.8x** |
+| md5sum (single 100KB text) | 0.0014s | 0.0011s | **1.3x** |
+| md5sum (single 1MB text) | 0.0028s | 0.0035s | **0.8x** |
+| md5sum (single 10MB text) | 0.0176s | 0.0201s | **0.9x** |
+| md5sum (single 10MB binary) | 0.0182s | 0.0213s | **0.9x** |
+| md5sum (single 100MB text) | 0.1621s | 0.1930s | **0.8x** |
+| md5sum (10 files) | 0.0013s | 0.0009s | **1.4x** |
 | md5sum (100 files) | 0.0021s | 0.0016s | **1.3x** |
-| b2sum (single 100KB text) | 0.0013s | 0.0010s | **1.2x** |
-| b2sum (single 1MB text) | 0.0022s | 0.0019s | **1.2x** |
-| b2sum (single 10MB text) | 0.0153s | 0.0123s | **1.2x** |
-| b2sum (single 10MB binary) | 0.0161s | 0.0127s | **1.3x** |
-| b2sum (single 100MB text) | 0.1430s | 0.1127s | **1.3x** |
-| b2sum (-l 256 10MB) | 0.0155s | 0.0122s | **1.3x** |
-| b2sum (-l 128 10MB) | 0.0152s | 0.0124s | **1.2x** |
-| b2sum (100 files) | 0.0020s | 0.0016s | **1.2x** |
-| base64 (encode 100KB text) | 0.0009s | 0.0011s | **0.8x** |
-| base64 (encode 1MB text) | 0.0019s | 0.0024s | **0.8x** |
-| base64 (encode 10MB text) | 0.0114s | 0.0072s | **1.6x** |
-| base64 (encode 10MB binary) | 0.0120s | 0.0074s | **1.6x** |
-| base64 (decode 1MB) | 0.0038s | 0.0036s | **1.1x** |
-| base64 (decode 10MB) | 0.0313s | 0.0218s | **1.4x** |
-| base64 (encode -w 76 10MB) | 0.0116s | 0.0071s | **1.6x** |
-| base64 (encode -w 0 (no wrap) 10MB) | 0.0096s | 0.0047s | **2.0x** |
-| sort (lexicographic 1MB) | 0.0089s | 0.0040s | **2.2x** |
-| sort (lexicographic 10MB random) | 0.0572s | 0.0212s | **2.7x** |
-| sort (already sorted 10MB) | 0.0268s | 0.0128s | **2.1x** |
-| sort (reverse sorted 10MB) | 0.0285s | 0.0131s | **2.2x** |
-| sort (-n numeric 10MB) | 0.0792s | 0.0424s | **1.9x** |
-| sort (-r reverse 10MB) | 0.0580s | 0.0214s | **2.7x** |
-| sort (-u unique 10MB) | 0.0602s | 0.0218s | **2.8x** |
-| sort (-t, -k2 CSV 10MB) | 0.0714s | 0.0381s | **1.9x** |
-| sort (repetitive 10MB) | 0.0551s | 0.0232s | **2.4x** |
-| sort (--parallel=4 10MB) | 0.0571s | 0.0221s | **2.6x** |
-| tr (a-z to A-Z 1MB) | 0.0021s | 0.0021s | **1.0x** |
-| tr (a-z to A-Z 10MB) | 0.0125s | 0.0090s | **1.4x** |
-| tr (-d digits 10MB) | 0.0161s | 0.0156s | **1.0x** |
-| tr (-d lowercase 10MB) | 0.0289s | 0.0277s | **1.0x** |
-| tr (-s spaces 10MB) | 0.0255s | 0.0313s | **0.8x** |
-| tr ([:lower:] to [:upper:] 10MB) | 0.0114s | 0.0088s | **1.3x** |
-| tr (-d [:digit:] 10MB CSV) | 0.0159s | 0.0157s | **1.0x** |
-| tr (translate binary 10MB) | 0.0093s | 0.0093s | **1.0x** |
-| uniq (default 10MB many duplicates) | 0.0116s | 0.0059s | **2.0x** |
-| uniq (default 10MB sorted (low dup)) | 0.0134s | 0.0050s | **2.7x** |
-| uniq (-c count 10MB many dups) | 0.0118s | 0.0062s | **1.9x** |
-| uniq (-c count 10MB sorted) | 0.0280s | 0.0077s | **3.6x** |
-| uniq (-d duplicates only 10MB) | 0.0118s | 0.0062s | **1.9x** |
-| uniq (-u unique only 10MB) | 0.0118s | 0.0061s | **1.9x** |
-| uniq (-i case insensitive 10MB) | 0.0132s | 0.0062s | **2.1x** |
-| uniq (repetitive 10MB) | 0.0407s | 0.0086s | **4.7x** |
-| tac (reverse 100KB text) | 0.0010s | 0.0012s | **0.8x** |
-| tac (reverse 1MB text) | 0.0018s | 0.0019s | **1.0x** |
-| tac (reverse 10MB text) | 0.0099s | 0.0077s | **1.3x** |
-| tac (reverse 100MB text) | 0.0909s | 0.0553s | **1.6x** |
-| tac (reverse CSV 10MB) | 0.0088s | 0.0078s | **1.1x** |
-| tac (reverse repetitive 10MB) | 0.0209s | 0.0142s | **1.5x** |
-| tac (custom separator 1MB) | 0.0059s | 0.0072s | **0.8x** |
+| b2sum (single 100KB text) | 0.0010s | 0.0010s | **1.0x** |
+| b2sum (single 1MB text) | 0.0023s | 0.0027s | **0.8x** |
+| b2sum (single 10MB text) | 0.0156s | 0.0117s | **1.3x** |
+| b2sum (single 10MB binary) | 0.0159s | 0.0124s | **1.3x** |
+| b2sum (single 100MB text) | 0.1439s | 0.1113s | **1.3x** |
+| b2sum (-l 256 10MB) | 0.0156s | 0.0121s | **1.3x** |
+| b2sum (-l 128 10MB) | 0.0158s | 0.0119s | **1.3x** |
+| b2sum (100 files) | 0.0020s | 0.0017s | **1.2x** |
+| base64 (encode 100KB text) | 0.0010s | 0.0012s | **0.8x** |
+| base64 (encode 1MB text) | 0.0019s | 0.0031s | **0.6x** |
+| base64 (encode 10MB text) | 0.0120s | 0.0059s | **2.0x** |
+| base64 (encode 10MB binary) | 0.0122s | 0.0061s | **2.0x** |
+| base64 (decode 1MB) | 0.0038s | 0.0032s | **1.2x** |
+| base64 (decode 10MB) | 0.0312s | 0.0186s | **1.7x** |
+| base64 (encode -w 76 10MB) | 0.0119s | 0.0059s | **2.0x** |
+| base64 (encode -w 0 (no wrap) 10MB) | 0.0092s | 0.0032s | **2.8x** |
+| sort (lexicographic 1MB) | 0.0090s | 0.0041s | **2.2x** |
+| sort (lexicographic 10MB random) | 0.0582s | 0.0228s | **2.6x** |
+| sort (already sorted 10MB) | 0.0269s | 0.0131s | **2.1x** |
+| sort (reverse sorted 10MB) | 0.0283s | 0.0134s | **2.1x** |
+| sort (-n numeric 10MB) | 0.0783s | 0.0434s | **1.8x** |
+| sort (-r reverse 10MB) | 0.0588s | 0.0226s | **2.6x** |
+| sort (-u unique 10MB) | 0.0620s | 0.0235s | **2.6x** |
+| sort (-t, -k2 CSV 10MB) | 0.0711s | 0.0408s | **1.7x** |
+| sort (repetitive 10MB) | 0.0554s | 0.0232s | **2.4x** |
+| sort (--parallel=4 10MB) | 0.0598s | 0.0226s | **2.6x** |
+| tr (a-z to A-Z 1MB) | 0.0021s | 0.0022s | **1.0x** |
+| tr (a-z to A-Z 10MB) | 0.0116s | 0.0090s | **1.3x** |
+| tr (-d digits 10MB) | 0.0168s | 0.0159s | **1.1x** |
+| tr (-d lowercase 10MB) | 0.0301s | 0.0276s | **1.1x** |
+| tr (-s spaces 10MB) | 0.0285s | 0.0300s | **1.0x** |
+| tr ([:lower:] to [:upper:] 10MB) | 0.0114s | 0.0089s | **1.3x** |
+| tr (-d [:digit:] 10MB CSV) | 0.0156s | 0.0157s | **1.0x** |
+| tr (translate binary 10MB) | 0.0103s | 0.0092s | **1.1x** |
+| uniq (default 10MB many duplicates) | 0.0124s | 0.0061s | **2.0x** |
+| uniq (default 10MB sorted (low dup)) | 0.0135s | 0.0053s | **2.5x** |
+| uniq (-c count 10MB many dups) | 0.0121s | 0.0063s | **1.9x** |
+| uniq (-c count 10MB sorted) | 0.0284s | 0.0081s | **3.5x** |
+| uniq (-d duplicates only 10MB) | 0.0123s | 0.0064s | **1.9x** |
+| uniq (-u unique only 10MB) | 0.0121s | 0.0064s | **1.9x** |
+| uniq (-i case insensitive 10MB) | 0.0135s | 0.0065s | **2.1x** |
+| uniq (repetitive 10MB) | 0.0409s | 0.0085s | **4.8x** |
+| tac (reverse 100KB text) | 0.0009s | 0.0012s | **0.8x** |
+| tac (reverse 1MB text) | 0.0018s | 0.0027s | **0.7x** |
+| tac (reverse 10MB text) | 0.0100s | 0.0073s | **1.4x** |
+| tac (reverse 100MB text) | 0.0914s | 0.0563s | **1.6x** |
+| tac (reverse CSV 10MB) | 0.0090s | 0.0079s | **1.1x** |
+| tac (reverse repetitive 10MB) | 0.0211s | 0.0141s | **1.5x** |
+| tac (custom separator 1MB) | 0.0058s | 0.0073s | **0.8x** |
 
 ### MINGW64_NT-10.0-26100_x86_64
 
