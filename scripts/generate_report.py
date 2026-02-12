@@ -132,15 +132,6 @@ def generate_report():
 
     pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
 
-    if total_failed == 0 and total_tests > 0:
-        recommendation = "READY"
-    elif pass_rate >= 95:
-        recommendation = "NEEDS WORK"
-    elif total_tests == 0:
-        recommendation = "NO DATA"
-    else:
-        recommendation = "NOT READY"
-
     # Compute per-tool best speedup across all platforms (for summary)
     tool_best_speedups = {}
     for platform, tools in bench_platforms.items():
@@ -161,7 +152,6 @@ def generate_report():
     lines.append(f"| Failed | {total_failed} |")
     lines.append(f"| Overall Compatibility | {pass_rate:.1f}% |")
     lines.append(f"| Platforms Tested | {len(compat_platforms)} |")
-    lines.append(f"| Recommendation | **{recommendation}** |")
     lines.append("")
 
     # Performance overview — best speedup per tool
@@ -289,22 +279,6 @@ def generate_report():
     else:
         lines.append("No critical issues found in available test data.\n")
 
-    # Recommendations
-    lines.append("\n## Recommendations\n")
-    if recommendation == "READY":
-        lines.append("Based on test results, fcoreutils appears ready for real-world use as a GNU coreutils replacement.")
-        lines.append("All compatibility tests pass and output is byte-identical to GNU coreutils.")
-    elif recommendation == "NEEDS WORK":
-        lines.append("fcoreutils shows promise but has compatibility gaps that need to be addressed before production use.")
-        lines.append("Review the failed test details above for specific issues.")
-    elif recommendation == "NO DATA":
-        lines.append("Insufficient test data to make a recommendation. Run the CI workflows to generate results.")
-    else:
-        lines.append("fcoreutils is not yet ready for production use as a GNU coreutils replacement.")
-        lines.append("Significant compatibility issues need to be resolved.")
-
-    lines.append("")
-
     # Write report to both REPORT.md and README.md
     report = "\n".join(lines)
     for filename in ("REPORT.md", "README.md"):
@@ -314,7 +288,6 @@ def generate_report():
     print(f"Report generated: REPORT.md + README.md ({len(lines)} lines)")
     print(f"  Compatibility: {total_passed}/{total_tests} passed")
     print(f"  Platforms: {len(compat_platforms)}")
-    print(f"  Recommendation: {recommendation}")
 
 
 if __name__ == "__main__":
