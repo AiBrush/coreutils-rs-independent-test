@@ -63,8 +63,40 @@ def load_results():
     return version_data
 
 
-def generate_plot(version_data):
-    """Generate the speedup history chart."""
+def load_compatibility():
+    """Load compatibility results and compute pass % per version."""
+    compat_dir = os.path.join(os.path.dirname(__file__), "..", "results", "compatibility")
+    if not os.path.isdir(compat_dir):
+        return {}
+
+    compat_data = {}
+    for version_dir in sorted(glob.glob(os.path.join(compat_dir, "v*"))):
+        version = os.path.basename(version_dir)
+        total = 0
+        passed = 0
+
+        for jf in glob.glob(os.path.join(version_dir, "*.json")):
+            try:
+                with open(jf) as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                continue
+
+            summary = data.get("summary", {})
+            t = summary.get("total_tests", 0)
+            p = summary.get("passed", 0)
+            if t > 0:
+                total += t
+                passed += p
+
+        if total > 0:
+            compat_data[version] = passed / total * 100
+
+    return compat_data
+
+
+def generate_plot(version_data, compat_data):
+    """Generate the speedup history chart with compatibility annotations."""
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -82,18 +114,42 @@ def generate_plot(version_data):
     gnu_avgs = [version_data[v]["avg_gnu"] for v in versions]
     f_avgs = [version_data[v]["avg_f"] for v in versions]
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax1 = plt.subplots(figsize=(14, 6))
 
-    ax.plot(versions, gnu_avgs, "r--", linewidth=2, marker="o", markersize=5,
-            label="GNU coreutils (avg time)")
-    ax.plot(versions, f_avgs, "b-", linewidth=2, marker="s", markersize=5,
-            label="fcoreutils (avg time)")
+    # Performance lines on left axis
+    ax1.plot(versions, gnu_avgs, "r--", linewidth=2, marker="o", markersize=5,
+             label="GNU coreutils (avg time)")
+    ax1.plot(versions, f_avgs, "b-", linewidth=2, marker="s", markersize=5,
+             label="fcoreutils (avg time)")
 
-    ax.set_xlabel("Version", fontsize=12)
-    ax.set_ylabel("Average Execution Time (seconds)", fontsize=12)
-    ax.set_title("fcoreutils vs GNU coreutils — Performance Over Versions", fontsize=14)
-    ax.legend(fontsize=11)
-    ax.grid(True, alpha=0.3)
+    ax1.set_xlabel("Version", fontsize=12)
+    ax1.set_ylabel("Average Execution Time (seconds)", fontsize=12)
+    ax1.grid(True, alpha=0.3)
+
+    # Compatibility % on right axis
+    compat_versions = [v for v in versions if v in compat_data]
+    if compat_versions:
+        ax2 = ax1.twinx()
+        compat_pcts = [compat_data[v] for v in compat_versions]
+        ax2.plot(compat_versions, compat_pcts, "g-.", linewidth=1.5, marker="^",
+                 markersize=5, alpha=0.8, label="Compatibility %")
+        ax2.set_ylabel("Compatibility (%)", fontsize=12, color="green")
+        ax2.tick_params(axis="y", labelcolor="green")
+        ax2.set_ylim(0, 105)
+
+        # Annotate each point with the percentage
+        for v, pct in zip(compat_versions, compat_pcts):
+            ax2.annotate(f"{pct:.0f}%", (v, pct), textcoords="offset points",
+                         xytext=(0, 8), ha="center", fontsize=7, color="green")
+
+        # Combined legend
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=10, loc="upper left")
+    else:
+        ax1.legend(fontsize=11)
+
+    ax1.set_title("fcoreutils vs GNU coreutils — Performance Over Versions", fontsize=14)
 
     # Rotate x labels if many versions
     if len(versions) > 10:
@@ -116,7 +172,8 @@ def main():
     if not version_data:
         print("No benchmark data found in results/benchmarks/. Skipping chart generation.")
         return
-    generate_plot(version_data)
+    compat_data = load_compatibility()
+    generate_plot(version_data, compat_data)
 
 
 if __name__ == "__main__":
