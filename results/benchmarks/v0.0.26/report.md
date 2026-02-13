@@ -1,6 +1,6 @@
 # fcoreutils v0.0.26 — Detailed Results
 
-Generated: 2026-02-13 07:08:10 UTC
+Generated: 2026-02-13 08:51:35 UTC
 
 ## Compatibility
 
@@ -14,96 +14,6 @@ Generated: 2026-02-13 07:08:10 UTC
 **Overall: 1201/1239 (96.9%)**
 
 ## Performance
-
-### Darwin_arm64
-
-| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
-|------|------|-----------|-------------------|---------|
-| wc | default 100KB text | 0.0040s | 0.0027s | **1.5x** |
-| wc | default 1MB text | 0.0083s | 0.0045s | **1.8x** |
-| wc | default 10MB text | 0.0307s | 0.0214s | **1.4x** |
-| wc | default 100MB text | 0.2425s | 0.0645s | **3.8x** |
-| wc | -l 10MB text | 0.0064s | 0.0047s | **1.4x** |
-| wc | -w 10MB text | 0.0289s | 0.0212s | **1.4x** |
-| wc | -c 10MB text | 0.0029s | 0.0021s | **1.4x** |
-| wc | -m 10MB text | 0.0290s | 0.0033s | **8.8x** |
-| wc | -L 10MB text | 0.0308s | 0.0199s | **1.6x** |
-| wc | default 10MB binary | 0.1319s | 0.0994s | **1.3x** |
-| wc | default 10MB repetitive | 0.0494s | 0.0137s | **3.6x** |
-| wc | 10 files | 0.0026s | 0.0047s | **0.5x** |
-| wc | 100 files | 0.0102s | 0.0060s | **1.7x** |
-| cut | -b1-100 10MB CSV | 0.0378s | 0.0116s | **3.3x** |
-| cut | -c1-100 10MB CSV | 0.0258s | 0.0118s | **2.2x** |
-| cut | -d, -f1 10MB CSV | 0.0183s | 0.0045s | **4.1x** |
-| cut | -d, -f1,3,5 10MB CSV | 0.0304s | 0.0079s | **3.9x** |
-| cut | -d, -f2-4 10MB CSV | 0.0333s | 0.0077s | **4.3x** |
-| cut | --complement -d, -f1 10MB CSV | 0.0473s | 0.0103s | **4.6x** |
-| cut | -d, -f1 100KB text | 0.0014s | 0.0024s | **0.6x** |
-| cut | -d, -f1 1MB text | 0.0046s | 0.0024s | **2.0x** |
-| cut | -d: -f1 colon file | 0.0024s | 0.0019s | **1.3x** |
-| sha256sum | single 100KB text | 0.0024s | 0.0022s | **1.1x** |
-| sha256sum | single 1MB text | 0.0072s | 0.0028s | **2.6x** |
-| sha256sum | single 10MB text | 0.0371s | 0.0071s | **5.2x** |
-| sha256sum | single 10MB binary | 0.0402s | 0.0091s | **4.4x** |
-| sha256sum | single 100MB text | 0.4034s | 0.0675s | **6.0x** |
-| sha256sum | 10 files | 0.0035s | 0.0045s | **0.8x** |
-| sha256sum | 100 files | 0.0103s | 0.0075s | **1.4x** |
-| md5sum | single 100KB text | 0.0042s | 0.0062s | **0.7x** |
-| md5sum | single 1MB text | 0.0026s | 0.0032s | **0.8x** |
-| md5sum | single 10MB text | 0.0232s | 0.0220s | **1.1x** |
-| md5sum | single 10MB binary | 0.0199s | 0.0212s | **0.9x** |
-| md5sum | single 100MB text | 0.1755s | 0.1773s | **1.0x** |
-| md5sum | 10 files | 0.0021s | 0.0023s | **0.9x** |
-| md5sum | 100 files | 0.0036s | 0.0049s | **0.7x** |
-| b2sum | single 100KB text | 0.0014s | 0.0040s | **0.3x** |
-| b2sum | single 1MB text | 0.0040s | 0.0029s | **1.4x** |
-| b2sum | single 10MB text | 0.0208s | 0.0142s | **1.5x** |
-| b2sum | single 10MB binary | 0.0196s | 0.0212s | **0.9x** |
-| b2sum | single 100MB text | 0.1755s | 0.1488s | **1.2x** |
-| b2sum | -l 256 10MB | 0.0207s | 0.0146s | **1.4x** |
-| b2sum | -l 128 10MB | 0.0242s | 0.0162s | **1.5x** |
-| b2sum | 100 files | 0.0090s | 0.0055s | **1.6x** |
-| base64 | encode 100KB text | 0.0026s | 0.0019s | **1.4x** |
-| base64 | encode 1MB text | 0.0049s | 0.0033s | **1.5x** |
-| base64 | encode 10MB text | 0.0169s | 0.0030s | **5.6x** |
-| base64 | encode 10MB binary | 0.0153s | 0.0051s | **3.0x** |
-| base64 | decode 1MB | 0.0040s | 0.0024s | **1.7x** |
-| base64 | decode 10MB | 0.0299s | 0.0129s | **2.3x** |
-| base64 | encode -w 76 10MB | 0.0152s | 0.0055s | **2.7x** |
-| base64 | encode -w 0 (no wrap) 10MB | 0.0078s | 0.0040s | **2.0x** |
-| sort | lexicographic 1MB | 0.1018s | 0.0039s | **26.0x** |
-| sort | lexicographic 10MB random | 0.4813s | 0.0258s | **18.7x** |
-| sort | already sorted 10MB | 0.2749s | 0.0086s | **32.0x** |
-| sort | reverse sorted 10MB | 0.2271s | 0.0095s | **24.0x** |
-| sort | -n numeric 10MB | 0.4566s | 0.0074s | **61.8x** |
-| sort | -r reverse 10MB | 0.5087s | 0.0203s | **25.1x** |
-| sort | -u unique 10MB | 0.4855s | 0.0148s | **32.8x** |
-| sort | -t, -k2 CSV 10MB | 0.7269s | 0.0516s | **14.1x** |
-| sort | repetitive 10MB | 0.0825s | 0.0170s | **4.8x** |
-| sort | --parallel=4 10MB | 0.4836s | 0.0278s | **17.4x** |
-| tr | a-z to A-Z 1MB | 0.0046s | 0.0037s | **1.3x** |
-| tr | a-z to A-Z 10MB | 0.0213s | 0.0110s | **1.9x** |
-| tr | -d digits 10MB | 0.0272s | 0.0131s | **2.1x** |
-| tr | -d lowercase 10MB | 0.0494s | 0.0296s | **1.7x** |
-| tr | -s spaces 10MB | 0.0556s | 0.0202s | **2.7x** |
-| tr | [:lower:] to [:upper:] 10MB | 0.0250s | 0.0101s | **2.5x** |
-| tr | -d [:digit:] 10MB CSV | 0.0283s | 0.0143s | **2.0x** |
-| tr | translate binary 10MB | 0.0309s | 0.0149s | **2.1x** |
-| uniq | default 10MB many duplicates | 0.0166s | 0.0106s | **1.6x** |
-| uniq | default 10MB sorted (low dup) | 0.0305s | 0.0134s | **2.3x** |
-| uniq | -c count 10MB many dups | 0.0130s | 0.0084s | **1.6x** |
-| uniq | -c count 10MB sorted | 0.0350s | 0.0125s | **2.8x** |
-| uniq | -d duplicates only 10MB | 0.0116s | 0.0100s | **1.2x** |
-| uniq | -u unique only 10MB | 0.0123s | 0.0092s | **1.3x** |
-| uniq | -i case insensitive 10MB | 0.0194s | 0.0108s | **1.8x** |
-| uniq | repetitive 10MB | 0.0385s | 0.0081s | **4.7x** |
-| tac | reverse 100KB text | 0.0029s | 0.0029s | **1.0x** |
-| tac | reverse 1MB text | 0.0047s | 0.0028s | **1.7x** |
-| tac | reverse 10MB text | 0.0153s | 0.0082s | **1.9x** |
-| tac | reverse 100MB text | 0.1321s | 0.0615s | **2.1x** |
-| tac | reverse CSV 10MB | 0.0149s | 0.0091s | **1.6x** |
-| tac | reverse repetitive 10MB | 0.0312s | 0.0191s | **1.6x** |
-| tac | custom separator 1MB | 0.0111s | 0.0089s | **1.2x** |
 
 ### Linux_aarch64
 

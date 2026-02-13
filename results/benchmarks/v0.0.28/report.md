@@ -1,6 +1,6 @@
 # fcoreutils v0.0.28 — Detailed Results
 
-Generated: 2026-02-13 07:08:10 UTC
+Generated: 2026-02-13 08:51:35 UTC
 
 ## Compatibility
 
@@ -13,36 +13,6 @@ Generated: 2026-02-13 07:08:10 UTC
 **Overall: 819/1062 (77.1%)**
 
 ## Performance
-
-### Darwin_arm64
-
-| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
-|------|------|-----------|-------------------|---------|
-| sort | lexicographic 1MB | 0.1281s | 0.0144s | **8.9x** |
-| sort | lexicographic 10MB random | 0.4955s | 0.0336s | **14.7x** |
-| sort | already sorted 10MB | 0.2467s | 0.0007s | **345.5x** |
-| sort | reverse sorted 10MB | 0.2473s | 0.0123s | **20.0x** |
-| sort | -n numeric 10MB | 0.4466s | 0.0123s | **36.4x** |
-| sort | -r reverse 10MB | 0.4116s | 0.0274s | **15.0x** |
-| sort | -u unique 10MB | 0.4591s | 0.0244s | **18.8x** |
-| sort | -t, -k2 CSV 10MB | 0.5373s | 0.0226s | **23.8x** |
-| sort | repetitive 10MB | 0.0537s | 0.0126s | **4.2x** |
-| sort | --parallel=4 10MB | 0.4297s | 0.0260s | **16.5x** |
-| uniq | default 10MB many duplicates | 0.0258s | 0.0092s | **2.8x** |
-| uniq | default 10MB sorted (low dup) | 0.0343s | 0.0131s | **2.6x** |
-| uniq | -c count 10MB many dups | 0.0175s | 0.0157s | **1.1x** |
-| uniq | -c count 10MB sorted | 0.0885s | 0.0268s | **3.3x** |
-| uniq | -d duplicates only 10MB | 0.0147s | 0.0173s | **0.9x** |
-| uniq | -u unique only 10MB | 0.0162s | 0.0165s | **1.0x** |
-| uniq | -i case insensitive 10MB | 0.0276s | 0.0103s | **2.7x** |
-| uniq | repetitive 10MB | 0.0557s | 0.0128s | **4.4x** |
-| tac | reverse 100KB text | 0.0069s | 0.0222s | **0.3x** |
-| tac | reverse 1MB text | 0.0083s | 0.0119s | **0.7x** |
-| tac | reverse 10MB text | 0.0213s | 0.0117s | **1.8x** |
-| tac | reverse 100MB text | 0.1876s | 0.0647s | **2.9x** |
-| tac | reverse CSV 10MB | 0.0130s | 0.0104s | **1.2x** |
-| tac | reverse repetitive 10MB | 0.0288s | 0.0175s | **1.6x** |
-| tac | custom separator 1MB | 0.0034s | 0.0083s | **0.4x** |
 
 ### Linux_aarch64
 

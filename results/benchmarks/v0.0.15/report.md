@@ -1,6 +1,6 @@
 # fcoreutils v0.0.15 — Detailed Results
 
-Generated: 2026-02-13 07:08:10 UTC
+Generated: 2026-02-13 08:51:35 UTC
 
 ## Compatibility
 
@@ -13,19 +13,6 @@ Generated: 2026-02-13 07:08:10 UTC
 **Overall: 1223/1239 (98.7%)**
 
 ## Performance
-
-### Darwin_arm64
-
-| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
-|------|------|-----------|-------------------|---------|
-| uniq | default 10MB many duplicates | 0.0124s | 0.0045s | **2.7x** |
-| uniq | default 10MB sorted (low dup) | 0.0324s | 0.0063s | **5.1x** |
-| uniq | -c count 10MB many dups | 0.0197s | 0.0037s | **5.3x** |
-| uniq | -c count 10MB sorted | 0.0540s | 0.0169s | **3.2x** |
-| uniq | -d duplicates only 10MB | 0.0220s | 0.0065s | **3.4x** |
-| uniq | -u unique only 10MB | 0.0217s | 0.0070s | **3.1x** |
-| uniq | -i case insensitive 10MB | 0.0148s | 0.0134s | **1.1x** |
-| uniq | repetitive 10MB | 0.0502s | 0.0165s | **3.0x** |
 
 ### Linux_aarch64
 

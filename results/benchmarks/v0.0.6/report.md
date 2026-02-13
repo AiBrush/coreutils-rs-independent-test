@@ -1,6 +1,6 @@
 # fcoreutils v0.0.6 — Detailed Results
 
-Generated: 2026-02-13 07:08:10 UTC
+Generated: 2026-02-13 08:51:35 UTC
 
 ## Compatibility
 
@@ -14,38 +14,6 @@ Generated: 2026-02-13 07:08:10 UTC
 **Overall: 545/627 (86.9%)**
 
 ## Performance
-
-### Darwin_arm64
-
-| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
-|------|------|-----------|-------------------|---------|
-| sha256sum | single 100KB text | 0.0018s | 0.0020s | **0.9x** |
-| sha256sum | single 1MB text | 0.0052s | 0.0044s | **1.2x** |
-| sha256sum | single 10MB text | 0.0367s | 0.0325s | **1.1x** |
-| sha256sum | single 10MB binary | 0.0430s | 0.0497s | **0.9x** |
-| sha256sum | single 100MB text | 0.4409s | 0.3343s | **1.3x** |
-| sha256sum | 10 files | 0.0014s | 0.0011s | **1.2x** |
-| sha256sum | 100 files | 0.0029s | 0.0030s | **1.0x** |
-| md5sum | single 100KB text | 0.0013s | 0.0018s | **0.7x** |
-| md5sum | single 1MB text | 0.0036s | 0.0032s | **1.1x** |
-| md5sum | single 10MB text | 0.0210s | 0.0227s | **0.9x** |
-| md5sum | single 10MB binary | 0.0236s | 0.0201s | **1.2x** |
-| md5sum | single 100MB text | 0.2016s | 0.1845s | **1.1x** |
-| md5sum | 10 files | 0.0022s | 0.0026s | **0.8x** |
-| md5sum | 100 files | 0.0100s | 0.0054s | **1.9x** |
-| b2sum | single 100KB text | 0.0021s | 0.0017s | **1.2x** |
-| b2sum | single 1MB text | 0.0023s | 0.0027s | **0.8x** |
-| b2sum | single 10MB text | 0.0261s | 0.0149s | **1.7x** |
-| b2sum | single 10MB binary | 0.0263s | 0.0134s | **2.0x** |
-| b2sum | single 100MB text | 0.1658s | 0.1175s | **1.4x** |
-| b2sum | -l 256 10MB | N/A | - | - |
-| b2sum | -l 128 10MB | N/A | - | - |
-| b2sum | 100 files | 0.0038s | 0.0041s | **0.9x** |
-| base64 | - | - | - | N/A |
-| sort | - | - | - | N/A |
-| tr | - | - | - | N/A |
-| uniq | - | - | - | N/A |
-| tac | - | - | - | N/A |
 
 ### Linux_aarch64
 

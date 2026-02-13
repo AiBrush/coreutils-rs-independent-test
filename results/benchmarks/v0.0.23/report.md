@@ -1,6 +1,6 @@
 # fcoreutils v0.0.23 — Detailed Results
 
-Generated: 2026-02-13 07:08:10 UTC
+Generated: 2026-02-13 08:51:35 UTC
 
 ## Compatibility
 
@@ -13,52 +13,6 @@ Generated: 2026-02-13 07:08:10 UTC
 **Overall: 1200/1239 (96.9%)**
 
 ## Performance
-
-### Darwin_arm64
-
-| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
-|------|------|-----------|-------------------|---------|
-| base64 | encode 100KB text | 0.0035s | 0.0103s | **0.3x** |
-| base64 | encode 1MB text | 0.0020s | 0.0022s | **0.9x** |
-| base64 | encode 10MB text | 0.0204s | 0.0048s | **4.2x** |
-| base64 | encode 10MB binary | 0.0220s | 0.0044s | **5.0x** |
-| base64 | decode 1MB | 0.0080s | 0.0055s | **1.4x** |
-| base64 | decode 10MB | 0.0339s | 0.0211s | **1.6x** |
-| base64 | encode -w 76 10MB | 0.0203s | 0.0053s | **3.8x** |
-| base64 | encode -w 0 (no wrap) 10MB | 0.0072s | 0.0054s | **1.3x** |
-| sort | lexicographic 1MB | 0.1223s | 0.0079s | **15.5x** |
-| sort | lexicographic 10MB random | 0.4774s | 0.0239s | **20.0x** |
-| sort | already sorted 10MB | 0.2449s | 0.0123s | **19.9x** |
-| sort | reverse sorted 10MB | 0.2588s | 0.0119s | **21.8x** |
-| sort | -n numeric 10MB | 0.4971s | 0.0323s | **15.4x** |
-| sort | -r reverse 10MB | 0.5087s | 0.0277s | **18.4x** |
-| sort | -u unique 10MB | 0.5674s | 0.0438s | **13.0x** |
-| sort | -t, -k2 CSV 10MB | 0.7313s | 0.0949s | **7.7x** |
-| sort | repetitive 10MB | 0.0668s | 0.0273s | **2.4x** |
-| sort | --parallel=4 10MB | 0.4718s | 0.0349s | **13.5x** |
-| tr | a-z to A-Z 1MB | 0.0091s | 0.0168s | **0.5x** |
-| tr | a-z to A-Z 10MB | 0.0291s | 0.0230s | **1.3x** |
-| tr | -d digits 10MB | 0.0355s | 0.0174s | **2.0x** |
-| tr | -d lowercase 10MB | 0.0402s | 0.0125s | **3.2x** |
-| tr | -s spaces 10MB | 0.0664s | 0.0243s | **2.7x** |
-| tr | [:lower:] to [:upper:] 10MB | 0.0291s | 0.0144s | **2.0x** |
-| tr | -d [:digit:] 10MB CSV | 0.0205s | 0.0174s | **1.2x** |
-| tr | translate binary 10MB | 0.0094s | 0.0137s | **0.7x** |
-| uniq | default 10MB many duplicates | 0.0149s | 0.0094s | **1.6x** |
-| uniq | default 10MB sorted (low dup) | 0.0214s | 0.0125s | **1.7x** |
-| uniq | -c count 10MB many dups | 0.0149s | 0.0137s | **1.1x** |
-| uniq | -c count 10MB sorted | 0.0415s | 0.0297s | **1.4x** |
-| uniq | -d duplicates only 10MB | 0.0126s | 0.0150s | **0.8x** |
-| uniq | -u unique only 10MB | 0.0273s | 0.0242s | **1.1x** |
-| uniq | -i case insensitive 10MB | 0.0160s | 0.0002s | **80.6x** |
-| uniq | repetitive 10MB | 0.0460s | 0.0101s | **4.5x** |
-| tac | reverse 100KB text | 0.0008s | 0.0057s | **0.1x** |
-| tac | reverse 1MB text | 0.0024s | 0.0040s | **0.6x** |
-| tac | reverse 10MB text | 0.0283s | 0.0055s | **5.2x** |
-| tac | reverse 100MB text | 0.1338s | 0.0765s | **1.7x** |
-| tac | reverse CSV 10MB | 0.0129s | 0.0074s | **1.7x** |
-| tac | reverse repetitive 10MB | 0.0327s | 0.0210s | **1.6x** |
-| tac | custom separator 1MB | 0.0116s | 0.0120s | **1.0x** |
 
 ### Linux_aarch64
 
