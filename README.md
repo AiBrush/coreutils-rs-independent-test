@@ -6,30 +6,30 @@
 
 ![Speedup History](results/speedup-history.png)
 
-## Latest Results (v0.0.38)
+## Latest Results (v0.0.39)
 
 ### Summary
 - **Tools tested:** 10 (wc, cut, sha256sum, md5sum, b2sum, base64, sort, tr, uniq, tac)
-- **Compatibility:** 1230/1239 tests passed (99.3%)
-- **Fastest speedup:** wc at 33.9x faster than GNU
+- **Compatibility:** 823/826 tests passed (99.6%)
+- **Fastest speedup:** wc at 33.7x faster than GNU
 
 ### Performance Highlights
 
 | Tool | Speedup (vs GNU) |
 |------|----------------:|
-| wc | **33.9x** |
-| cut | **6.4x** |
-| sha256sum | **1.2x** |
+| wc | **33.7x** |
+| cut | **5.9x** |
+| sha256sum | **1.0x** |
 | md5sum | **1.3x** |
 | b2sum | **1.3x** |
-| base64 | **3.0x** |
-| sort | **7.1x** |
+| base64 | **2.2x** |
+| sort | **8.8x** |
 | tr | **1.8x** |
-| uniq | **13.1x** |
-| tac | **2.3x** |
+| uniq | **10.9x** |
+| tac | **2.4x** |
 
 ### Known Issues
-- 9 compatibility test failures across 3 platforms
+- 3 compatibility test failures across 2 platforms
 
 ## Per-Version Details
 
@@ -37,7 +37,7 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
-- Runs 1239+ compatibility tests comparing output byte-for-byte against GNU coreutils
+- Runs 826+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Tests run across multiple platforms via GitHub Actions
 
