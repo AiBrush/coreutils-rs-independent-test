@@ -318,15 +318,14 @@ jobs:
           ARCH=$(uname -m)
           PLATFORM_TAG="${OS_NAME}_${ARCH}"
 
-          # Parse JSON array into newline-separated list (portable, no readarray)
+          # Parse JSON array into space-separated list
           VERSION_LIST=$(echo "$VERSIONS" | python3 -c "
           import sys, json
           versions = json.load(sys.stdin)
-          for v in versions:
-              print(v)
+          print(' '.join(versions))
           ")
 
-          echo "$VERSION_LIST" | while IFS= read -r VERSION; do
+          for VERSION in $VERSION_LIST; do
               [[ -z "$VERSION" ]] && continue
               echo ""
               echo "============================================================"
@@ -334,7 +333,7 @@ jobs:
               echo "============================================================"
 
               # Install this version (skip if no asset available)
-              if ! INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "$VERSION"; then
+              if ! INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "$VERSION" < /dev/null; then
                   echo "WARNING: Could not install $VERSION — skipping"
                   continue
               fi
@@ -347,7 +346,7 @@ jobs:
               export BENCH_WARMUP=3
               export BENCH_RUNS=10
               mkdir -p "$RESULTS_DIR"
-              bash tests/benchmarks/run_all.sh || true
+              bash tests/benchmarks/run_all.sh < /dev/null || true
 
               # Copy aggregate results to versioned directory
               DEST_DIR="${GITHUB_WORKSPACE}/versioned_results/benchmarks/${VERSION}"
@@ -360,7 +359,7 @@ jobs:
               # Run compatibility tests too
               export RESULTS_DIR="${GITHUB_WORKSPACE}/compat_tmp"
               mkdir -p "$RESULTS_DIR"
-              bash tests/compatibility/run_all.sh || true
+              bash tests/compatibility/run_all.sh < /dev/null || true
 
               COMPAT_DEST="${GITHUB_WORKSPACE}/versioned_results/compatibility/${VERSION}"
               mkdir -p "$COMPAT_DEST"
