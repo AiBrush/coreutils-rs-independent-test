@@ -250,13 +250,6 @@ jobs:
           - os: ubuntu-24.04-arm
             arch: arm64
             name: Linux ARM64
-          - os: macos-latest
-            arch: arm64
-            name: macOS ARM64
-          - os: windows-latest
-            arch: x86_64
-            name: Windows x86_64
-          # windows-11-arm excluded: no pre-built ARM64 Windows binaries available
 
     runs-on: ${{ matrix.os }}
     name: Bench - ${{ matrix.name }}
@@ -284,17 +277,6 @@ jobs:
           if ! command -v hyperfine &>/dev/null; then
             cargo install hyperfine
           fi
-
-      - name: Install GNU coreutils (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install coreutils
-          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
-            if command -v g$tool &>/dev/null; then
-              sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
-            fi
-          done
-          echo "/usr/local/bin" >> $GITHUB_PATH
 
       - name: Install Python 3
         uses: actions/setup-python@v5

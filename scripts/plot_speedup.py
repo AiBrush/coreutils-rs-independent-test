@@ -26,7 +26,7 @@ def load_results():
     version_data = {}
     for version_dir in sorted(glob.glob(os.path.join(results_dir, "v*"))):
         version = os.path.basename(version_dir)
-        json_files = glob.glob(os.path.join(version_dir, "*.json"))
+        json_files = glob.glob(os.path.join(version_dir, "linux_*.json"))
         if not json_files:
             continue
 
@@ -75,7 +75,7 @@ def load_compatibility():
         total = 0
         passed = 0
 
-        for jf in glob.glob(os.path.join(version_dir, "*.json")):
+        for jf in glob.glob(os.path.join(version_dir, "linux_*.json")):
             try:
                 with open(jf) as f:
                     data = json.load(f)

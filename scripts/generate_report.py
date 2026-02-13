@@ -41,7 +41,7 @@ def load_benchmark_data(version):
     if not os.path.isdir(bench_dir):
         return platforms
 
-    for jf in glob.glob(os.path.join(bench_dir, "*.json")):
+    for jf in glob.glob(os.path.join(bench_dir, "linux_*.json")):
         try:
             with open(jf) as f:
                 data = json.load(f)
