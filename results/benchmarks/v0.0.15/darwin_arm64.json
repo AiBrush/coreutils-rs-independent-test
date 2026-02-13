@@ -1,0 +1,64 @@
+{
+  "type": "benchmark",
+  "platform": "Darwin_arm64",
+  "timestamp": "2026-02-13T00:10:52Z",
+  "tools": {
+    "uniq": {
+      "tool": "uniq",
+      "platform": "Darwin_arm64",
+      "timestamp": "2026-02-13T00:10:41Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 10MB many duplicates",
+          "gnu_mean": 0.012387,
+          "f_mean": 0.004536,
+          "speedup": 2.7
+        },
+        {
+          "name": "default 10MB sorted (low dup)",
+          "gnu_mean": 0.032414,
+          "f_mean": 0.006339,
+          "speedup": 5.1
+        },
+        {
+          "name": "-c count 10MB many dups",
+          "gnu_mean": 0.019738,
+          "f_mean": 0.003692,
+          "speedup": 5.3
+        },
+        {
+          "name": "-c count 10MB sorted",
+          "gnu_mean": 0.053959,
+          "f_mean": 0.016852,
+          "speedup": 3.2
+        },
+        {
+          "name": "-d duplicates only 10MB",
+          "gnu_mean": 0.022006,
+          "f_mean": 0.006519,
+          "speedup": 3.4
+        },
+        {
+          "name": "-u unique only 10MB",
+          "gnu_mean": 0.021706,
+          "f_mean": 0.007034,
+          "speedup": 3.1
+        },
+        {
+          "name": "-i case insensitive 10MB",
+          "gnu_mean": 0.014846,
+          "f_mean": 0.013374,
+          "speedup": 1.1
+        },
+        {
+          "name": "repetitive 10MB",
+          "gnu_mean": 0.05015,
+          "f_mean": 0.016545,
+          "speedup": 3.0
+        }
+      ]
+    }
+  }
+}
