@@ -6,27 +6,27 @@
 
 ![Speedup History](results/speedup-history.png)
 
-## Latest Results (v0.0.50)
+## Latest Results (v0.0.53)
 
 ### Summary
 - **Tools tested:** 10 (wc, cut, sha256sum, md5sum, b2sum, base64, sort, tr, uniq, tac)
 - **Compatibility:** 823/826 tests passed (99.6%)
-- **Fastest speedup:** wc at 30.1x faster than GNU
+- **Fastest speedup:** wc at 33.2x faster than GNU
 
 ### Performance Highlights
 
 | Tool | Speedup (vs GNU) |
 |------|----------------:|
-| wc | **30.1x** |
-| cut | **7.1x** |
-| sha256sum | **1.2x** |
+| wc | **33.2x** |
+| cut | **6.5x** |
+| sha256sum | **1.1x** |
 | md5sum | **1.4x** |
 | b2sum | **1.3x** |
-| base64 | **2.9x** |
-| sort | **8.6x** |
-| tr | **2.8x** |
+| base64 | **3.1x** |
+| sort | **8.7x** |
+| tr | **3.7x** |
 | uniq | **11.3x** |
-| tac | **2.7x** |
+| tac | **2.6x** |
 
 ### Known Issues
 - 3 compatibility test failures across 2 platforms
