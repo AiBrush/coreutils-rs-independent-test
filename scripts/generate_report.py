@@ -173,9 +173,10 @@ def generate_readme(latest_version, bench_platforms, compat_platforms, tool_spee
             fastest_speedup = s
             fastest_tool = tool
 
-    # Build speedup table
+    # Build speedup table (sorted highest to lowest)
     speedup_rows = []
-    for tool in TOOLS:
+    sorted_tools = sorted(TOOLS, key=lambda t: tool_speedups.get(t, 0), reverse=True)
+    for tool in sorted_tools:
         if tool in tool_speedups:
             speedup_rows.append(f"| {tool} | **{tool_speedups[tool]:.1f}x** |")
         else:

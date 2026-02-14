@@ -46,6 +46,8 @@
 - [x] Install from GitHub releases (no more cargo install / crates.io)
 - [x] Versioned results: `results/benchmarks/v{X.Y.Z}/{platform}.json`
 - [x] REPORT.md removed (README.md is the single report)
+- [x] Benchmarks restricted to Linux only (macOS/Windows removed from bench matrix, kept in compatibility)
+- [x] Scripts filter to `linux_*.json` so chart and README reflect Linux performance only
 
 ## Status: COMPLETE
 All 10 tools have compatibility tests, benchmark scripts, and stress tests.
