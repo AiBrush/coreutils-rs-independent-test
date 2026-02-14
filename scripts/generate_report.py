@@ -84,11 +84,10 @@ def load_compatibility_data(version):
 def compute_speedups(bench_platforms):
     """Compute best speedup per tool across all platforms.
 
-    Returns (tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu) dicts.
+    Returns (tool_speedups, tool_f_vs_uutils) dicts.
     """
     tool_speedups = {}
     tool_f_vs_uutils = {}
-    tool_uutils_vs_gnu = {}
     for platform, tools in bench_platforms.items():
         for tool, data in tools.items():
             if not isinstance(data, dict) or data.get("status") == "NOT_IMPLEMENTED":
@@ -102,11 +101,7 @@ def compute_speedups(bench_platforms):
                 if isinstance(fvu, (int, float)) and fvu > 0:
                     if tool not in tool_f_vs_uutils or fvu > tool_f_vs_uutils[tool]:
                         tool_f_vs_uutils[tool] = fvu
-                uvg = b.get("uutils_vs_gnu")
-                if isinstance(uvg, (int, float)) and uvg > 0:
-                    if tool not in tool_uutils_vs_gnu or uvg > tool_uutils_vs_gnu[tool]:
-                        tool_uutils_vs_gnu[tool] = uvg
-    return tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu
+    return tool_speedups, tool_f_vs_uutils
 
 
 def generate_version_report(version, bench_platforms, compat_platforms, tool_results):
@@ -199,7 +194,7 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
 
 
 def generate_readme(latest_version, bench_platforms, compat_platforms,
-                    tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu):
+                    tool_speedups, tool_f_vs_uutils):
     """Generate the simplified README.md."""
     total_tests = sum(p.get("total_tests", 0) for p in compat_platforms.values())
     total_passed = sum(p.get("passed", 0) for p in compat_platforms.values())
@@ -223,14 +218,13 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
         fvg = f"**{tool_speedups[tool]:.1f}x**" if tool in tool_speedups else "-"
         if has_uutils:
             fvu = f"**{tool_f_vs_uutils[tool]:.1f}x**" if tool in tool_f_vs_uutils else "N/A"
-            uvg = f"{tool_uutils_vs_gnu[tool]:.1f}x" if tool in tool_uutils_vs_gnu else "N/A"
-            speedup_rows.append(f"| {tool} | {fvg} | {fvu} | {uvg} |")
+            speedup_rows.append(f"| {tool} | {fvg} | {fvu} |")
         else:
             speedup_rows.append(f"| {tool} | {fvg} |")
     speedup_table = "\n".join(speedup_rows)
 
     if has_uutils:
-        speedup_header = "| Tool | f* vs GNU | f* vs uutils | uutils vs GNU |\n|------|----------:|-------------:|--------------:|"
+        speedup_header = "| Tool | f* vs GNU | f* vs uutils |\n|------|----------:|-------------:|"
     else:
         speedup_header = "| Tool | Speedup (vs GNU) |\n|------|----------------:|"
 
@@ -345,14 +339,14 @@ def main():
     latest = versions[-1]
     bench_platforms = load_benchmark_data(latest)
     compat_platforms, _ = load_compatibility_data(latest)
-    tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu = compute_speedups(bench_platforms)
+    tool_speedups, tool_f_vs_uutils = compute_speedups(bench_platforms)
 
     # Generate chart
     run_plot_script()
 
     # Generate README
     generate_readme(latest, bench_platforms, compat_platforms,
-                    tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu)
+                    tool_speedups, tool_f_vs_uutils)
 
 
 if __name__ == "__main__":

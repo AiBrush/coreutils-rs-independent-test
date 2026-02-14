@@ -154,7 +154,7 @@ print(f\"{d['results'][0]['mean']:.6f}\")
             -n "f$TOOL_NAME" "$f_cmd" \
             -n "uutils $TOOL_NAME" "$uutils_cmd" 2>&1; then
 
-            local gnu_mean f_mean uutils_mean speedup f_vs_uutils uutils_vs_gnu
+            local gnu_mean f_mean uutils_mean speedup f_vs_uutils
             gnu_mean=$(python3 -c "
 import json
 d = json.load(open('$json_file'))
@@ -178,14 +178,10 @@ print(f'{gnu/f:.1f}' if f > 0 else 'N/A')
 u=$uutils_mean; f=$f_mean
 print(f'{u/f:.1f}' if f > 0 else 'N/A')
 " 2>/dev/null || echo "N/A")
-            uutils_vs_gnu=$(python3 -c "
-gnu=$gnu_mean; u=$uutils_mean
-print(f'{gnu/u:.1f}' if u > 0 else 'N/A')
-" 2>/dev/null || echo "N/A")
 
             echo -e "  GNU: ${gnu_mean}s  |  F: ${f_mean}s  |  uutils: ${uutils_mean}s  |  ${GREEN}f vs GNU: ${speedup}x  |  f vs uutils: ${f_vs_uutils}x${NC}"
 
-            local entry="{\"name\":\"$name\",\"gnu_mean\":$gnu_mean,\"f_mean\":$f_mean,\"uutils_mean\":$uutils_mean,\"speedup\":$speedup,\"f_vs_uutils\":$f_vs_uutils,\"uutils_vs_gnu\":$uutils_vs_gnu}"
+            local entry="{\"name\":\"$name\",\"gnu_mean\":$gnu_mean,\"f_mean\":$f_mean,\"uutils_mean\":$uutils_mean,\"speedup\":$speedup,\"f_vs_uutils\":$f_vs_uutils}"
             if [[ "$BENCH_RESULTS_JSON" == "[]" ]]; then
                 BENCH_RESULTS_JSON="[$entry]"
             else
