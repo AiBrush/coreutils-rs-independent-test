@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="wc"
 F_TOOL="fwc"
+U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/wc}"
 run_wc_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -23,20 +24,24 @@ run_wc_benchmarks() {
 
     run_benchmark "default 100KB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'"
+        "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
+        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_100k.txt'}"
 
     run_benchmark "default 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
+        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
+        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_1m.txt'}"
 
     run_benchmark "default 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'"
+        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
+        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_10m.txt'}"
 
     if [[ -f "$TEST_DATA_DIR/text_100m.txt" ]]; then
         run_benchmark "default 100MB text" \
             "$GNU_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
-            "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'"
+            "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
+            "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_100m.txt'}"
     fi
 
     echo ""
@@ -44,49 +49,56 @@ run_wc_benchmarks() {
 
     run_benchmark "-l 10MB text" \
         "$GNU_TOOL -l '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -l '$TEST_DATA_DIR/text_10m.txt'"
+        "$F_TOOL -l '$TEST_DATA_DIR/text_10m.txt'" \
+        "${U_TOOL:+$U_TOOL -l '$TEST_DATA_DIR/text_10m.txt'}"
 
     echo ""
     echo "=== Words only (-w) ==="
 
     run_benchmark "-w 10MB text" \
         "$GNU_TOOL -w '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -w '$TEST_DATA_DIR/text_10m.txt'"
+        "$F_TOOL -w '$TEST_DATA_DIR/text_10m.txt'" \
+        "${U_TOOL:+$U_TOOL -w '$TEST_DATA_DIR/text_10m.txt'}"
 
     echo ""
     echo "=== Bytes only (-c) ==="
 
     run_benchmark "-c 10MB text" \
         "$GNU_TOOL -c '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -c '$TEST_DATA_DIR/text_10m.txt'"
+        "$F_TOOL -c '$TEST_DATA_DIR/text_10m.txt'" \
+        "${U_TOOL:+$U_TOOL -c '$TEST_DATA_DIR/text_10m.txt'}"
 
     echo ""
     echo "=== Characters (-m) ==="
 
     run_benchmark "-m 10MB text" \
         "$GNU_TOOL -m '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -m '$TEST_DATA_DIR/text_10m.txt'"
+        "$F_TOOL -m '$TEST_DATA_DIR/text_10m.txt'" \
+        "${U_TOOL:+$U_TOOL -m '$TEST_DATA_DIR/text_10m.txt'}"
 
     echo ""
     echo "=== Max line length (-L) ==="
 
     run_benchmark "-L 10MB text" \
         "$GNU_TOOL -L '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -L '$TEST_DATA_DIR/text_10m.txt'"
+        "$F_TOOL -L '$TEST_DATA_DIR/text_10m.txt'" \
+        "${U_TOOL:+$U_TOOL -L '$TEST_DATA_DIR/text_10m.txt'}"
 
     echo ""
     echo "=== Binary data ==="
 
     run_benchmark "default 10MB binary" \
         "$GNU_TOOL '$TEST_DATA_DIR/random_10m.bin'" \
-        "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'"
+        "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'" \
+        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/random_10m.bin'}"
 
     echo ""
     echo "=== Repetitive content ==="
 
     run_benchmark "default 10MB repetitive" \
         "$GNU_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'"
+        "$F_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'" \
+        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'}"
 
     echo ""
     echo "=== Multiple files ==="
@@ -98,7 +110,8 @@ run_wc_benchmarks() {
 
     run_benchmark "10 files" \
         "eval $GNU_TOOL $ten_files" \
-        "eval $F_TOOL $ten_files"
+        "eval $F_TOOL $ten_files" \
+        "${U_TOOL:+eval $U_TOOL $ten_files}"
 
     local hundred_files=""
     for f in "$TEST_DATA_DIR/many_files"/file_*.txt; do
@@ -107,7 +120,8 @@ run_wc_benchmarks() {
 
     run_benchmark "100 files" \
         "eval $GNU_TOOL $hundred_files" \
-        "eval $F_TOOL $hundred_files"
+        "eval $F_TOOL $hundred_files" \
+        "${U_TOOL:+eval $U_TOOL $hundred_files}"
 
     save_benchmark_results
 }

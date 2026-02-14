@@ -82,8 +82,13 @@ def load_compatibility_data(version):
 
 
 def compute_speedups(bench_platforms):
-    """Compute best speedup per tool across all platforms."""
+    """Compute best speedup per tool across all platforms.
+
+    Returns (tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu) dicts.
+    """
     tool_speedups = {}
+    tool_f_vs_uutils = {}
+    tool_uutils_vs_gnu = {}
     for platform, tools in bench_platforms.items():
         for tool, data in tools.items():
             if not isinstance(data, dict) or data.get("status") == "NOT_IMPLEMENTED":
@@ -93,7 +98,15 @@ def compute_speedups(bench_platforms):
                 if isinstance(s, (int, float)) and s > 0:
                     if tool not in tool_speedups or s > tool_speedups[tool]:
                         tool_speedups[tool] = s
-    return tool_speedups
+                fvu = b.get("f_vs_uutils")
+                if isinstance(fvu, (int, float)) and fvu > 0:
+                    if tool not in tool_f_vs_uutils or fvu > tool_f_vs_uutils[tool]:
+                        tool_f_vs_uutils[tool] = fvu
+                uvg = b.get("uutils_vs_gnu")
+                if isinstance(uvg, (int, float)) and uvg > 0:
+                    if tool not in tool_uutils_vs_gnu or uvg > tool_uutils_vs_gnu[tool]:
+                        tool_uutils_vs_gnu[tool] = uvg
+    return tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu
 
 
 def generate_version_report(version, bench_platforms, compat_platforms, tool_results):
@@ -123,17 +136,35 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
     # Benchmark results
     if bench_platforms:
         lines.append("## Performance\n")
+
+        # Check if any benchmark in this version has uutils data
+        has_uutils = False
+        for platform, tools in bench_platforms.items():
+            for tool, data in tools.items():
+                if isinstance(data, dict):
+                    for b in data.get("benchmarks", []):
+                        if isinstance(b.get("uutils_mean"), (int, float)):
+                            has_uutils = True
+                            break
+
         for platform in sorted(bench_platforms.keys()):
             lines.append(f"### {platform}\n")
-            lines.append("| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |")
-            lines.append("|------|------|-----------|-------------------|---------|")
+            if has_uutils:
+                lines.append("| Tool | Test | GNU (mean) | fcoreutils (mean) | uutils (mean) | f* vs GNU | f* vs uutils |")
+                lines.append("|------|------|-----------|-------------------|---------------|----------:|-------------:|")
+            else:
+                lines.append("| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |")
+                lines.append("|------|------|-----------|-------------------|---------|")
 
             for tool in TOOLS:
                 data = bench_platforms[platform].get(tool, {})
                 if not isinstance(data, dict):
                     continue
                 if data.get("status") == "NOT_IMPLEMENTED":
-                    lines.append(f"| {tool} | - | - | - | N/A |")
+                    if has_uutils:
+                        lines.append(f"| {tool} | - | - | - | - | N/A | N/A |")
+                    else:
+                        lines.append(f"| {tool} | - | - | - | N/A |")
                     continue
                 for b in data.get("benchmarks", []):
                     name = b.get("name", "")
@@ -143,7 +174,15 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
                     gnu_str = f"{gnu_t:.4f}s" if isinstance(gnu_t, (int, float)) and gnu_t > 0 else "N/A"
                     f_str = f"{f_t:.4f}s" if isinstance(f_t, (int, float)) and f_t > 0 else "-"
                     sp_str = f"**{speedup:.1f}x**" if isinstance(speedup, (int, float)) and speedup > 0 else "-"
-                    lines.append(f"| {tool} | {name} | {gnu_str} | {f_str} | {sp_str} |")
+
+                    if has_uutils:
+                        uutils_t = b.get("uutils_mean")
+                        fvu = b.get("f_vs_uutils")
+                        u_str = f"{uutils_t:.4f}s" if isinstance(uutils_t, (int, float)) and uutils_t > 0 else "N/A"
+                        fvu_str = f"**{fvu:.1f}x**" if isinstance(fvu, (int, float)) and fvu > 0 else "N/A"
+                        lines.append(f"| {tool} | {name} | {gnu_str} | {f_str} | {u_str} | {sp_str} | {fvu_str} |")
+                    else:
+                        lines.append(f"| {tool} | {name} | {gnu_str} | {f_str} | {sp_str} |")
             lines.append("")
 
     # Write to the benchmarks version dir (or compatibility dir as fallback)
@@ -159,7 +198,8 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
     print(f"  Version report: {report_path}")
 
 
-def generate_readme(latest_version, bench_platforms, compat_platforms, tool_speedups):
+def generate_readme(latest_version, bench_platforms, compat_platforms,
+                    tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu):
     """Generate the simplified README.md."""
     total_tests = sum(p.get("total_tests", 0) for p in compat_platforms.values())
     total_passed = sum(p.get("passed", 0) for p in compat_platforms.values())
@@ -173,15 +213,26 @@ def generate_readme(latest_version, bench_platforms, compat_platforms, tool_spee
             fastest_speedup = s
             fastest_tool = tool
 
-    # Build speedup table (sorted highest to lowest)
+    # Check if we have any uutils data
+    has_uutils = bool(tool_f_vs_uutils)
+
+    # Build speedup table (sorted highest to lowest by f* vs GNU)
     speedup_rows = []
     sorted_tools = sorted(TOOLS, key=lambda t: tool_speedups.get(t, 0), reverse=True)
     for tool in sorted_tools:
-        if tool in tool_speedups:
-            speedup_rows.append(f"| {tool} | **{tool_speedups[tool]:.1f}x** |")
+        fvg = f"**{tool_speedups[tool]:.1f}x**" if tool in tool_speedups else "-"
+        if has_uutils:
+            fvu = f"**{tool_f_vs_uutils[tool]:.1f}x**" if tool in tool_f_vs_uutils else "N/A"
+            uvg = f"{tool_uutils_vs_gnu[tool]:.1f}x" if tool in tool_uutils_vs_gnu else "N/A"
+            speedup_rows.append(f"| {tool} | {fvg} | {fvu} | {uvg} |")
         else:
-            speedup_rows.append(f"| {tool} | - |")
+            speedup_rows.append(f"| {tool} | {fvg} |")
     speedup_table = "\n".join(speedup_rows)
+
+    if has_uutils:
+        speedup_header = "| Tool | f* vs GNU | f* vs uutils | uutils vs GNU |\n|------|----------:|-------------:|--------------:|"
+    else:
+        speedup_header = "| Tool | Speedup (vs GNU) |\n|------|----------------:|"
 
     # Known issues
     total_failed = sum(p.get("failed", 0) for p in compat_platforms.values())
@@ -195,6 +246,12 @@ def generate_readme(latest_version, bench_platforms, compat_platforms, tool_spee
     chart_section = "![Speedup History](results/speedup-history.png)"
     if not os.path.exists(chart_path):
         chart_section = "_No chart available yet. Run `python3 scripts/plot_speedup.py` after benchmarking multiple versions._"
+
+    # Sources section
+    sources = """## Sources
+- [fcoreutils](https://github.com/AiBrush/coreutils-rs) — installed from GitHub Releases
+- [uutils/coreutils](https://github.com/uutils/coreutils) — built from source (latest main)
+- GNU coreutils — system-installed baseline"""
 
     readme = f"""# fcoreutils vs GNU coreutils — Independent Benchmark
 
@@ -213,8 +270,7 @@ def generate_readme(latest_version, bench_platforms, compat_platforms, tool_spee
 
 ### Performance Highlights
 
-| Tool | Speedup (vs GNU) |
-|------|----------------:|
+{speedup_header}
 {speedup_table}
 
 ### Known Issues
@@ -224,15 +280,18 @@ def generate_readme(latest_version, bench_platforms, compat_platforms, tool_spee
 
 Detailed results for each version (benchmarks, compatibility, failures) are in the [`results/`](results/) directory.
 
+{sources}
+
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
+- Builds uutils/coreutils from source for comparison
 - Runs {total_tests}+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Tests run across multiple platforms via GitHub Actions
 
 ## Running Locally
 ```bash
-# Run benchmarks for the latest version
+# Run benchmarks for the latest version (includes uutils build)
 ./scripts/install_from_github.sh
 ./tests/benchmarks/run_all.sh
 
@@ -286,13 +345,14 @@ def main():
     latest = versions[-1]
     bench_platforms = load_benchmark_data(latest)
     compat_platforms, _ = load_compatibility_data(latest)
-    tool_speedups = compute_speedups(bench_platforms)
+    tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu = compute_speedups(bench_platforms)
 
     # Generate chart
     run_plot_script()
 
     # Generate README
-    generate_readme(latest, bench_platforms, compat_platforms, tool_speedups)
+    generate_readme(latest, bench_platforms, compat_platforms,
+                    tool_speedups, tool_f_vs_uutils, tool_uutils_vs_gnu)
 
 
 if __name__ == "__main__":

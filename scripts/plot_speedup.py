@@ -32,6 +32,7 @@ def load_results():
 
         gnu_times = []
         f_times = []
+        uutils_times = []
 
         for jf in json_files:
             try:
@@ -49,16 +50,22 @@ def load_results():
                 for bench in tool_data.get("benchmarks", []):
                     gnu_mean = bench.get("gnu_mean")
                     f_mean = bench.get("f_mean")
+                    uutils_mean = bench.get("uutils_mean")
                     if (isinstance(gnu_mean, (int, float)) and gnu_mean > 0 and
                             isinstance(f_mean, (int, float)) and f_mean > 0):
                         gnu_times.append(gnu_mean)
                         f_times.append(f_mean)
+                    if isinstance(uutils_mean, (int, float)) and uutils_mean > 0:
+                        uutils_times.append(uutils_mean)
 
         if gnu_times and f_times:
-            version_data[version] = {
+            entry = {
                 "avg_gnu": sum(gnu_times) / len(gnu_times),
                 "avg_f": sum(f_times) / len(f_times),
             }
+            if uutils_times:
+                entry["avg_uutils"] = sum(uutils_times) / len(uutils_times)
+            version_data[version] = entry
 
     return version_data
 
@@ -114,6 +121,10 @@ def generate_plot(version_data, compat_data):
     gnu_avgs = [version_data[v]["avg_gnu"] for v in versions]
     f_avgs = [version_data[v]["avg_f"] for v in versions]
 
+    # Collect uutils data (only for versions that have it)
+    uutils_versions = [v for v in versions if "avg_uutils" in version_data[v]]
+    uutils_avgs = [version_data[v]["avg_uutils"] for v in uutils_versions]
+
     fig, ax1 = plt.subplots(figsize=(14, 6))
 
     # Performance lines on left axis
@@ -121,6 +132,12 @@ def generate_plot(version_data, compat_data):
              label="GNU coreutils (avg time)")
     ax1.plot(versions, f_avgs, "b-", linewidth=2, marker="s", markersize=5,
              label="fcoreutils (avg time)")
+
+    # uutils line (only for versions that have data)
+    if uutils_versions:
+        ax1.plot(uutils_versions, uutils_avgs, color="#f58231", linestyle="-",
+                 linewidth=2, marker="s", markersize=5,
+                 label="uutils/coreutils (avg time)")
 
     ax1.set_xlabel("Version", fontsize=12)
     ax1.set_ylabel("Average Execution Time (seconds)", fontsize=12)

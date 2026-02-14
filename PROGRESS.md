@@ -49,6 +49,16 @@
 - [x] Benchmarks restricted to Linux only (macOS/Windows removed from bench matrix, kept in compatibility)
 - [x] Scripts filter to `linux_*.json` so chart and README reflect Linux performance only
 
+## uutils/coreutils Integration (3-way comparison)
+- [x] `scripts/install_uutils.sh` — Clone and build uutils from source, export UUTILS_DIR
+- [x] `tests/benchmarks/bench_common.sh` — Extended `run_benchmark()` and `run_stdin_benchmark()` with optional 4th uutils command arg
+- [x] All 10 `bench_*.sh` scripts — Added uutils commands as 4th arg to every benchmark call
+- [x] `tests/benchmarks/run_all.sh` — Auto-builds uutils before benchmarks, graceful fallback
+- [x] `scripts/plot_speedup.py` — Orange uutils line on chart, handles missing data from old versions
+- [x] `scripts/generate_report.py` — 3-column Performance Highlights table (f* vs GNU, f* vs uutils, uutils vs GNU), uutils columns in per-version reports, Sources section
+- [x] `.github/workflows/ci.yml` — Build uutils once before benchmark version loop, cargo cache for uutils
+
 ## Status: COMPLETE
 All 10 tools have compatibility tests, benchmark scripts, and stress tests.
 CI workflow discovers un-benchmarked versions, runs benchmarks, persists results, generates chart + README.
+uutils/coreutils added as third competitor for 3-way performance comparison.
