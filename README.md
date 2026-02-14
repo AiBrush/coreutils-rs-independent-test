@@ -18,15 +18,15 @@
 | Tool | Speedup (vs GNU) |
 |------|----------------:|
 | wc | **31.0x** |
+| sort | **15.1x** |
+| uniq | **11.3x** |
 | cut | **6.2x** |
-| sha256sum | **1.1x** |
+| tr | **4.1x** |
+| base64 | **3.1x** |
+| tac | **2.4x** |
 | md5sum | **1.4x** |
 | b2sum | **1.3x** |
-| base64 | **3.1x** |
-| sort | **15.1x** |
-| tr | **4.1x** |
-| uniq | **11.3x** |
-| tac | **2.4x** |
+| sha256sum | **1.1x** |
 
 ### Known Issues
 - No known issues
