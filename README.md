@@ -6,7 +6,7 @@
 
 ![Speedup History](results/speedup-history.png)
 
-## Latest Results (v0.1.8)
+## Latest Results (v0.1.9)
 
 ### Summary
 - **Tools tested:** 10 (wc, cut, sha256sum, md5sum, b2sum, base64, sort, tr, uniq, tac)
@@ -17,16 +17,16 @@
 
 | Tool | f* vs GNU | f* vs uutils |
 |------|----------:|-------------:|
-| wc | **34.6x** | **22.7x** |
-| sort | **17.9x** | **15.5x** |
-| uniq | **13.7x** | **4.1x** |
-| cut | **8.3x** | **5.0x** |
-| tr | **4.4x** | **4.1x** |
-| tac | **4.4x** | **2.2x** |
-| base64 | **3.8x** | **3.3x** |
+| wc | **34.6x** | **18.3x** |
+| sort | **17.5x** | **16.2x** |
+| uniq | **14.4x** | **4.6x** |
+| cut | **8.7x** | **5.3x** |
+| tr | **5.6x** | **5.1x** |
+| tac | **4.3x** | **2.3x** |
+| base64 | **3.6x** | **3.3x** |
 | md5sum | **1.4x** | **1.3x** |
 | b2sum | **1.3x** | **1.3x** |
-| sha256sum | **1.2x** | **4.8x** |
+| sha256sum | **1.2x** | **4.7x** |
 
 ### Known Issues
 - No known issues
