@@ -54,6 +54,18 @@ clone_or_update() {
         git -C "$BUILD_DIR" pull --ff-only 2>/dev/null || {
             echo "WARNING: git pull failed, using existing checkout"
         }
+    elif [[ -d "$BUILD_DIR" ]]; then
+        # Directory exists but no .git (e.g. from CI cache restoring target/).
+        # Preserve cached target/, clone fresh, then restore target/.
+        echo "Directory $BUILD_DIR exists without .git (cache artifact). Cloning source..."
+        if [[ -d "$BUILD_DIR/target" ]]; then
+            mv "$BUILD_DIR/target" /tmp/uutils-target-cache
+        fi
+        rm -rf "$BUILD_DIR"
+        git clone --depth 1 "$UUTILS_REPO" "$BUILD_DIR"
+        if [[ -d /tmp/uutils-target-cache ]]; then
+            mv /tmp/uutils-target-cache "$BUILD_DIR/target"
+        fi
     else
         echo "Cloning uutils/coreutils into $BUILD_DIR..."
         mkdir -p "$(dirname "$BUILD_DIR")"
