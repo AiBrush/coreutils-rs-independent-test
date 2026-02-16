@@ -105,13 +105,77 @@ echo "  Tools tested:  $TOOLS_TESTED"
 echo "  Tools skipped: $TOOLS_SKIPPED"
 echo "============================================================"
 
-# Write overall results JSON for new tools
-cat > "$RESULTS_DIR/new_tools_compatibility_results.json" <<EOF
+# Write overall results JSON for new tools (with per-tool detail)
+python3 -c "
+import json, os, glob
+
+results_dir = '$RESULTS_DIR'
+tool_details = {}
+
+# Collect per-tool results from individual JSON files
+for f in sorted(glob.glob(os.path.join(results_dir, '*_results.json'))):
+    basename = os.path.basename(f)
+    # Skip the aggregate file itself
+    if basename == 'new_tools_compatibility_results.json':
+        continue
+    tool_name = basename.replace('_results.json', '')
+    try:
+        data = json.load(open(f))
+        status = data.get('status', '')
+        if status == 'NOT_IMPLEMENTED':
+            tool_details[tool_name] = {
+                'status': 'NOT_IMPLEMENTED',
+                'total': 0, 'passed': 0, 'failed': 0, 'skipped': 0,
+                'failed_tests': []
+            }
+        else:
+            s = data.get('summary', {})
+            failed_tests = []
+            for t in data.get('tests', []):
+                if t.get('status') == 'FAIL':
+                    failed_tests.append(t.get('name', '?'))
+            tool_details[tool_name] = {
+                'status': 'tested',
+                'total': s.get('total', 0),
+                'passed': s.get('passed', 0),
+                'failed': s.get('failed', 0),
+                'skipped': s.get('skipped', 0),
+                'failed_tests': failed_tests
+            }
+    except Exception as e:
+        tool_details[tool_name] = {
+            'status': 'error',
+            'error': str(e),
+            'total': 0, 'passed': 0, 'failed': 0, 'skipped': 0,
+            'failed_tests': []
+        }
+
+aggregate = {
+    'type': 'new_tools_compatibility',
+    'platform': '$(uname -s)_$(uname -m)',
+    'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
+    'note': 'These results are for new tools and are NOT included in the main performance/compatibility metrics',
+    'summary': {
+        'total_tests': $TOTAL_RUN,
+        'passed': $TOTAL_PASSED,
+        'failed': $TOTAL_FAILED,
+        'skipped': $TOTAL_SKIPPED,
+        'tools_tested': $TOOLS_TESTED,
+        'tools_skipped': $TOOLS_SKIPPED
+    },
+    'tools': tool_details
+}
+
+with open(os.path.join(results_dir, 'new_tools_compatibility_results.json'), 'w') as f:
+    json.dump(aggregate, f, indent=2)
+print('Aggregate results with per-tool details saved.')
+" 2>/dev/null || {
+    echo "Warning: Python aggregation failed, writing basic JSON"
+    cat > "$RESULTS_DIR/new_tools_compatibility_results.json" <<FALLBACK
 {
     "type": "new_tools_compatibility",
     "platform": "$(uname -s)_$(uname -m)",
     "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-    "note": "These results are for new tools and are NOT included in the main performance/compatibility metrics",
     "summary": {
         "total_tests": $TOTAL_RUN,
         "passed": $TOTAL_PASSED,
@@ -119,9 +183,11 @@ cat > "$RESULTS_DIR/new_tools_compatibility_results.json" <<EOF
         "skipped": $TOTAL_SKIPPED,
         "tools_tested": $TOOLS_TESTED,
         "tools_skipped": $TOOLS_SKIPPED
-    }
+    },
+    "tools": {}
 }
-EOF
+FALLBACK
+}
 
 echo ""
 echo "Results saved to $RESULTS_DIR/new_tools_compatibility_results.json"
