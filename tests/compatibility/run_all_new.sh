@@ -47,6 +47,10 @@ NEW_TOOLS=(
     env timeout nice nohup sleep sync
     # Utility Commands
     true false link unlink basename dirname pathchk realpath readlink dircolors
+    # PR #241 additions
+    echo users printf test expr factor split numfmt fmt csplit od ptx
+    stat who pinky date df du stty chmod chown chgrp shred dd
+    rm cp mv install pr ls stdbuf
 )
 
 for tool in "${NEW_TOOLS[@]}"; do
