@@ -79,9 +79,10 @@ run_ln_tests() {
     echo ""
     echo "=== Verbose (-v) ==="
 
-    run_stdout_test "verbose output" \
-        "$GNU_TOOL -sv '$WORK_DIR/source.txt' '$WORK_DIR/gnu_verbose_link'" \
-        "$F_TOOL -sv '$WORK_DIR/source.txt' '$WORK_DIR/f_verbose_link'"
+    # Normalize filenames in verbose output to avoid false diff on gnu_/f_ prefix
+    run_test "verbose output" \
+        "$GNU_TOOL -sv '$WORK_DIR/source.txt' '$WORK_DIR/gnu_verbose_link' 2>&1 | sed 's|gnu_verbose_link|_verbose_link|g'" \
+        "$F_TOOL -sv '$WORK_DIR/source.txt' '$WORK_DIR/f_verbose_link' 2>&1 | sed 's|f_verbose_link|_verbose_link|g'"
 
     echo ""
     echo "=== Link into Directory ==="

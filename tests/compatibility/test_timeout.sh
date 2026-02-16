@@ -66,13 +66,14 @@ run_timeout_tests() {
         "$GNU_TOOL --signal=TERM 0.1 sleep 100; echo \$?" \
         "$F_TOOL --signal=TERM 0.1 sleep 100; echo \$?"
 
+    # Redirect stderr to suppress shell "Killed" messages which include command name/PID
     run_test "--signal KILL" \
-        "$GNU_TOOL --signal=KILL 0.1 sleep 100; echo \$?" \
-        "$F_TOOL --signal=KILL 0.1 sleep 100; echo \$?"
+        "$GNU_TOOL --signal=KILL 0.1 sleep 100 2>/dev/null; echo \$?" \
+        "$F_TOOL --signal=KILL 0.1 sleep 100 2>/dev/null; echo \$?"
 
     run_test "-s 9 (KILL)" \
-        "$GNU_TOOL -s 9 0.1 sleep 100; echo \$?" \
-        "$F_TOOL -s 9 0.1 sleep 100; echo \$?"
+        "$GNU_TOOL -s 9 0.1 sleep 100 2>/dev/null; echo \$?" \
+        "$F_TOOL -s 9 0.1 sleep 100 2>/dev/null; echo \$?"
 
     echo ""
     echo "=== Kill After (--kill-after / -k) ==="
