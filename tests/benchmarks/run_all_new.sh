@@ -57,6 +57,10 @@ NEW_TOOLS=(
     id groups whoami logname uname uptime arch hostid tty nproc pwd
     env timeout nice nohup sleep sync
     true false link unlink basename dirname pathchk realpath readlink dircolors
+    # I/O & Text tools
+    echo factor expr test
+    # File Ops tools
+    cp mv rm dd split csplit install shred chmod chown chgrp
 )
 BENCH_SUMMARIES=""
 
