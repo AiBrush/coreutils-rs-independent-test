@@ -6,30 +6,30 @@
 
 ![Speedup History](results/speedup-history.png)
 
-## Latest Results (v0.6.8)
+## Latest Results (v0.7.0)
 
 ### Summary
 - **Tools tested:** 10 (wc, cut, sha256sum, md5sum, b2sum, base64, sort, tr, uniq, tac)
-- **Compatibility:** 820/826 tests passed (99.3%)
-- **Fastest speedup:** wc at 34.9x faster than GNU
+- **Compatibility:** 826/826 tests passed (100.0%)
+- **Fastest speedup:** wc at 33.0x faster than GNU
 
 ### Performance Highlights
 
 | Tool | f* vs GNU | f* vs uutils |
 |------|----------:|-------------:|
-| wc | **34.9x** | **19.1x** |
-| sort | **19.1x** | **16.5x** |
-| uniq | **16.5x** | **6.6x** |
-| base64 | **7.1x** | **7.0x** |
-| tr | **6.9x** | **7.2x** |
-| cut | **6.5x** | **3.3x** |
-| tac | **3.8x** | **2.0x** |
+| wc | **33.0x** | **18.1x** |
+| sort | **18.8x** | **16.1x** |
+| uniq | **16.7x** | **6.5x** |
+| base64 | **7.5x** | **7.2x** |
+| tr | **7.0x** | **6.9x** |
+| cut | **6.9x** | **3.2x** |
+| tac | **3.9x** | **1.9x** |
 | md5sum | **1.4x** | **1.3x** |
-| b2sum | **1.3x** | **1.2x** |
+| b2sum | **1.3x** | **1.3x** |
 | sha256sum | **1.0x** | **4.0x** |
 
 ### Known Issues
-- 6 compatibility test failures across 2 platforms
+- No known issues
 
 ## Per-Version Details
 
