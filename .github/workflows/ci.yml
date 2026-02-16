@@ -130,6 +130,74 @@ jobs:
           INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "${{ needs.discover-versions.outputs.latest }}"
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            /tmp/coreutils-rs-build/target
+          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-fcoreutils-v1
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-cargo-fcoreutils-
+
+      - name: Build missing fcoreutils from source
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          INSTALL_DIR="$HOME/.local/bin"
+          NEW_TOOLS=(fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin)
+          MISSING=()
+
+          for tool in "${NEW_TOOLS[@]}"; do
+            if ! command -v "$tool" &>/dev/null && [[ ! -x "$INSTALL_DIR/$tool" ]] && [[ ! -x "$INSTALL_DIR/${tool}.exe" ]]; then
+              MISSING+=("$tool")
+            fi
+          done
+
+          if [[ ${#MISSING[@]} -eq 0 ]]; then
+            echo "All new tools already installed, skipping build"
+            exit 0
+          fi
+
+          echo "Missing tools: ${MISSING[*]}"
+          echo "Building from source..."
+
+          BUILD_DIR="/tmp/coreutils-rs-build"
+          if [[ ! -d "$BUILD_DIR/.git" ]]; then
+            git clone --depth 1 https://github.com/AiBrush/coreutils-rs.git "$BUILD_DIR"
+          else
+            cd "$BUILD_DIR" && git pull --ff-only && cd -
+          fi
+
+          cd "$BUILD_DIR"
+          BUILD_ARGS=""
+          for tool in "${MISSING[@]}"; do
+            BUILD_ARGS="$BUILD_ARGS --bin $tool"
+          done
+          echo "Building ${#MISSING[@]} tools..."
+          cargo build --release $BUILD_ARGS
+          cd -
+
+          # Copy built binaries
+          mkdir -p "$INSTALL_DIR"
+          for tool in "${MISSING[@]}"; do
+            if [[ -f "$BUILD_DIR/target/release/$tool" ]]; then
+              cp "$BUILD_DIR/target/release/$tool" "$INSTALL_DIR/"
+              chmod +x "$INSTALL_DIR/$tool"
+              echo "  Installed $tool"
+            elif [[ -f "$BUILD_DIR/target/release/${tool}.exe" ]]; then
+              cp "$BUILD_DIR/target/release/${tool}.exe" "$INSTALL_DIR/"
+              echo "  Installed ${tool}.exe"
+            else
+              echo "  WARNING: $tool not found after build"
+            fi
+          done
+
       - name: Install GNU coreutils (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -344,6 +412,41 @@ jobs:
           else
             echo "WARNING: uutils build failed. Benchmarks will run without uutils."
           fi
+
+      - name: Build missing fcoreutils from source
+        shell: bash
+        run: |
+          INSTALL_DIR="$HOME/.local/bin"
+          mkdir -p "$INSTALL_DIR"
+          NEW_TOOLS=(fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin)
+
+          echo "Building new tools from source for benchmarks..."
+          BUILD_DIR="/tmp/coreutils-rs-build"
+          if [[ ! -d "$BUILD_DIR/.git" ]]; then
+            git clone --depth 1 https://github.com/AiBrush/coreutils-rs.git "$BUILD_DIR"
+          else
+            cd "$BUILD_DIR" && git pull --ff-only && cd -
+          fi
+
+          cd "$BUILD_DIR"
+          BUILD_ARGS=""
+          for tool in "${NEW_TOOLS[@]}"; do
+            BUILD_ARGS="$BUILD_ARGS --bin $tool"
+          done
+          echo "Building ${#NEW_TOOLS[@]} tools..."
+          cargo build --release $BUILD_ARGS
+          cd -
+
+          for tool in "${NEW_TOOLS[@]}"; do
+            if [[ -f "$BUILD_DIR/target/release/$tool" ]]; then
+              cp "$BUILD_DIR/target/release/$tool" "$INSTALL_DIR/"
+              chmod +x "$INSTALL_DIR/$tool"
+              echo "  Installed $tool"
+            else
+              echo "  WARNING: $tool not found after build"
+            fi
+          done
+          echo "$INSTALL_DIR" >> $GITHUB_PATH
 
       - name: Benchmark all new versions
         shell: bash

@@ -155,7 +155,7 @@ install_version() {
 # Verify installation
 verify_install() {
     local found=0
-    for tool in fwc fsort fcut ftr funiq ftac fbase64 fsha256sum fmd5sum fb2sum; do
+    for tool in fwc fsort fcut ftr funiq ftac fbase64 fsha256sum fmd5sum fb2sum fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
         if [[ -x "${INSTALL_DIR}/${tool}" ]] || [[ -x "${INSTALL_DIR}/${tool}.exe" ]] || command -v "$tool" &>/dev/null; then
             found=$((found + 1))
         fi
