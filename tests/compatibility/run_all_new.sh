@@ -31,8 +31,23 @@ TOOLS_TESTED=0
 TOOLS_SKIPPED=0
 TOOL_SUMMARIES=""
 
-# The 11 new tools
-NEW_TOOLS=(head tail cat rev expand unexpand fold paste nl comm join)
+# All new tools (original 11 + 40 additional tools from v0.5.10+)
+NEW_TOOLS=(
+    # Original 11 new tools (v0.5.9)
+    head tail cat rev expand unexpand fold paste nl comm join
+    # Encoding/Decoding
+    basenc base32
+    # File Operations
+    ln touch truncate mkdir rmdir mknod mkfifo mktemp
+    # Text/Data Processing
+    seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum
+    # System Information
+    id groups whoami logname uname uptime arch hostid tty nproc pwd
+    # Process/Environment
+    env timeout nice nohup sleep sync
+    # Utility Commands
+    true false link unlink basename dirname pathchk realpath readlink dircolors
+)
 
 for tool in "${NEW_TOOLS[@]}"; do
     script="$SCRIPT_DIR/test_${tool}.sh"
