@@ -5,11 +5,16 @@ set -euo pipefail
 
 UUTILS_REPO="https://github.com/uutils/coreutils.git"
 BUILD_DIR="${UUTILS_BUILD_DIR:-/tmp/uutils-build}"
+TOOL_SET="original"
 
 usage() {
-    echo "Usage: $0 [--build-dir DIR]"
+    echo "Usage: $0 [--build-dir DIR] [--tools TOOLSET]"
     echo ""
-    echo "  --build-dir DIR   Directory to clone/build uutils in. Default: /tmp/uutils-build"
+    echo "  --build-dir DIR     Directory to clone/build uutils in. Default: /tmp/uutils-build"
+    echo "  --tools TOOLSET     Which tools to build: original, new, or all. Default: original"
+    echo "                        original: wc, sort, uniq, cut, tr, base64, tac, md5sum, b2sum, sha256sum"
+    echo "                        new: head, tail, cat, expand, unexpand, fold, paste, nl, comm, join"
+    echo "                        all: both original and new"
     echo ""
     exit 1
 }
@@ -19,6 +24,10 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --build-dir)
             BUILD_DIR="$2"
+            shift 2
+            ;;
+        --tools)
+            TOOL_SET="$2"
             shift 2
             ;;
         --help|-h)
@@ -73,14 +82,29 @@ clone_or_update() {
     fi
 }
 
-# Build only the 10 tools we benchmark
+# Build the requested tools
 build_tools() {
-    echo "Building uutils tools (release mode)..."
+    echo "Building uutils tools (release mode, set: $TOOL_SET)..."
     cd "$BUILD_DIR"
 
-    cargo build --release \
-        -p uu_wc -p uu_sort -p uu_uniq -p uu_cut -p uu_tr \
-        -p uu_base64 -p uu_tac -p uu_md5sum -p uu_b2sum -p uu_sha256sum
+    local packages=()
+
+    if [[ "$TOOL_SET" == "original" || "$TOOL_SET" == "all" ]]; then
+        packages+=(
+            -p uu_wc -p uu_sort -p uu_uniq -p uu_cut -p uu_tr
+            -p uu_base64 -p uu_tac -p uu_md5sum -p uu_b2sum -p uu_sha256sum
+        )
+    fi
+
+    if [[ "$TOOL_SET" == "new" || "$TOOL_SET" == "all" ]]; then
+        packages+=(
+            -p uu_head -p uu_tail -p uu_cat
+            -p uu_expand -p uu_unexpand -p uu_fold
+            -p uu_paste -p uu_nl -p uu_comm -p uu_join
+        )
+    fi
+
+    cargo build --release "${packages[@]}"
 
     echo "Build complete."
 }
@@ -104,7 +128,17 @@ get_version() {
 verify_build() {
     local release_dir="$BUILD_DIR/target/release"
     local found=0
-    local tools=(wc sort uniq cut tr base64 tac md5sum b2sum sha256sum)
+    local tools=()
+
+    if [[ "$TOOL_SET" == "original" || "$TOOL_SET" == "all" ]]; then
+        tools+=(wc sort uniq cut tr base64 tac md5sum b2sum sha256sum)
+    fi
+
+    if [[ "$TOOL_SET" == "new" || "$TOOL_SET" == "all" ]]; then
+        tools+=(head tail cat expand unexpand fold paste nl comm join)
+    fi
+
+    local total=${#tools[@]}
 
     for tool in "${tools[@]}"; do
         if [[ -x "$release_dir/$tool" ]]; then
@@ -119,7 +153,7 @@ verify_build() {
         return 1
     fi
 
-    echo "Successfully built $found/10 uutils binaries"
+    echo "Successfully built $found/$total uutils binaries"
 }
 
 # Main

@@ -213,11 +213,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
 
+      - name: Cache uutils build
+        uses: actions/cache@v4
+        with:
+          path: /tmp/uutils-build/target
+          key: ${{ runner.os }}-${{ matrix.arch }}-uutils-new-tools-build
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-uutils-new-tools-build
+
       - name: Install hyperfine
         shell: bash
         run: |
           if ! command -v hyperfine &>/dev/null; then
             cargo install hyperfine
+          fi
+
+      - name: Make scripts executable
+        shell: bash
+        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh scripts/*.sh 2>/dev/null || true
+
+      - name: Build uutils/coreutils
+        shell: bash
+        run: |
+          echo "Building uutils/coreutils new tools from source..."
+          if ./scripts/install_uutils.sh --tools new; then
+            export UUTILS_DIR="/tmp/uutils-build/target/release"
+            echo "UUTILS_DIR=$UUTILS_DIR" >> $GITHUB_ENV
+            echo "uutils built successfully at $UUTILS_DIR"
+            ls -la "$UUTILS_DIR"/{head,tail,cat,expand,unexpand,fold,paste,nl,comm,join} 2>/dev/null || true
+          else
+            echo "WARNING: uutils build failed. Benchmarks will run without uutils comparison."
           fi
 
       - name: Build fcoreutils from source
@@ -263,10 +288,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-
-      - name: Make scripts executable
-        shell: bash
-        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh 2>/dev/null || true
 
       - name: Run new tools benchmarks
         shell: bash
