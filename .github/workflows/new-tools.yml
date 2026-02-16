@@ -294,15 +294,95 @@ jobs:
           echo "## New Tools Benchmarks - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [[ -f "results/new_tools_benchmark_results.json" ]]; then
-            python3 -c "
+            python3 << 'PYEOF' >> $GITHUB_STEP_SUMMARY
           import json
+
           d = json.load(open('results/new_tools_benchmark_results.json'))
           s = d.get('summary', {})
-          print(f\"| Metric | Value |\")
-          print(f\"|--------|-------|\")
-          print(f\"| Tools Benchmarked | {s.get('tools_benchmarked', 'N/A')} |\")
-          print(f\"| Tools Skipped | {s.get('tools_skipped', 'N/A')} |\")
-          " >> $GITHUB_STEP_SUMMARY
+          ts = s.get('tool_summaries', {})
+
+          print(f"| Metric | Value |")
+          print(f"|--------|-------|")
+          print(f"| Tools Benchmarked | {s.get('tools_benchmarked', 0)} |")
+          print(f"| Tools Skipped | {s.get('tools_skipped', 0)} |")
+          print()
+
+          # Per-tool overview table
+          has_uutils = any(
+              t.get('avg_speedup_vs_uutils') is not None
+              for t in ts.values() if isinstance(t, dict)
+          )
+
+          if has_uutils:
+              print("### Performance Overview")
+              print()
+              print("| Tool | Benchmarks | Avg Speedup vs GNU | Avg Speedup vs uutils |")
+              print("|------|-----------|--------------------|-----------------------|")
+          else:
+              print("### Performance Overview")
+              print()
+              print("| Tool | Benchmarks | Avg Speedup vs GNU |")
+              print("|------|-----------|-------------------|")
+
+          for tool in ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']:
+              info = ts.get(tool, {})
+              status = info.get('status', 'no_file')
+              if status == 'benchmarked':
+                  n = info.get('num_benchmarks', 0)
+                  gnu_sp = info.get('avg_speedup_vs_gnu')
+                  gnu_str = f"{gnu_sp}x" if gnu_sp is not None else "N/A"
+                  if has_uutils:
+                      u_sp = info.get('avg_speedup_vs_uutils')
+                      u_str = f"{u_sp}x" if u_sp is not None else "N/A"
+                      print(f"| {tool} | {n} | {gnu_str} | {u_str} |")
+                  else:
+                      print(f"| {tool} | {n} | {gnu_str} |")
+              else:
+                  reason = status.replace('_', ' ')
+                  if has_uutils:
+                      print(f"| {tool} | - | _{reason}_ | _{reason}_ |")
+                  else:
+                      print(f"| {tool} | - | _{reason}_ |")
+
+          # Detailed per-benchmark breakdown
+          print()
+          print("<details>")
+          print("<summary>Detailed benchmark results</summary>")
+          print()
+
+          for tool in ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']:
+              info = ts.get(tool, {})
+              if info.get('status') != 'benchmarked':
+                  continue
+              benchmarks = info.get('benchmarks', [])
+              if not benchmarks:
+                  continue
+
+              print(f"#### {tool}")
+              print()
+              any_uutils = any(b.get('uutils_mean_s') is not None for b in benchmarks)
+              if any_uutils:
+                  print("| Benchmark | GNU (s) | fcoreutils (s) | uutils (s) | vs GNU | vs uutils |")
+                  print("|-----------|---------|---------------|------------|--------|-----------|")
+              else:
+                  print("| Benchmark | GNU (s) | fcoreutils (s) | vs GNU |")
+                  print("|-----------|---------|---------------|--------|")
+
+              for b in benchmarks:
+                  name = b.get('name', '?')
+                  gnu = f"{b['gnu_mean_s']:.6f}" if b.get('gnu_mean_s') is not None else "N/A"
+                  f_m = f"{b['f_mean_s']:.6f}" if b.get('f_mean_s') is not None else "N/A"
+                  vs_gnu = f"{b['vs_gnu']}x" if b.get('vs_gnu') is not None else "N/A"
+                  if any_uutils:
+                      u_m = f"{b['uutils_mean_s']:.6f}" if b.get('uutils_mean_s') is not None else "N/A"
+                      vs_u = f"{b['vs_uutils']}x" if b.get('vs_uutils') is not None else "N/A"
+                      print(f"| {name} | {gnu} | {f_m} | {u_m} | {vs_gnu} | {vs_u} |")
+                  else:
+                      print(f"| {name} | {gnu} | {f_m} | {vs_gnu} |")
+              print()
+
+          print("</details>")
+          PYEOF
           else
             echo "No benchmark results file found." >> $GITHUB_STEP_SUMMARY
           fi

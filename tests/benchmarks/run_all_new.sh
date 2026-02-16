@@ -75,20 +75,72 @@ import json, glob, os
 
 new_tools = ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']
 results = {}
+tools_benchmarked = 0
+tools_skipped = 0
+tool_summaries = {}
+
 for tool in new_tools:
     f_path = '$RESULTS_DIR/{}_benchmark.json'.format(tool)
     if os.path.exists(f_path):
         try:
             data = json.load(open(f_path))
             results[tool] = data
-        except:
-            pass
+            if data.get('status') == 'NOT_IMPLEMENTED':
+                tools_skipped += 1
+                tool_summaries[tool] = {'status': 'skipped'}
+            else:
+                benchmarks = data.get('benchmarks', [])
+                valid = [b for b in benchmarks if not b.get('error')]
+                if not valid:
+                    tools_skipped += 1
+                    tool_summaries[tool] = {'status': 'no_results'}
+                else:
+                    tools_benchmarked += 1
+                    # Compute average speedup vs GNU
+                    gnu_speedups = [b['speedup'] for b in valid if b.get('speedup') is not None and isinstance(b.get('speedup'), (int, float))]
+                    avg_gnu_speedup = sum(gnu_speedups) / len(gnu_speedups) if gnu_speedups else None
+                    # Compute average speedup vs uutils
+                    uutils_speedups = [b['f_vs_uutils'] for b in valid if b.get('f_vs_uutils') is not None and isinstance(b.get('f_vs_uutils'), (int, float))]
+                    avg_uutils_speedup = sum(uutils_speedups) / len(uutils_speedups) if uutils_speedups else None
+                    # Collect individual benchmark details
+                    bench_details = []
+                    for b in valid:
+                        detail = {'name': b.get('name', '?')}
+                        if b.get('gnu_mean') is not None:
+                            detail['gnu_mean_s'] = round(b['gnu_mean'], 6)
+                        if b.get('f_mean') is not None:
+                            detail['f_mean_s'] = round(b['f_mean'], 6)
+                        if b.get('uutils_mean') is not None:
+                            detail['uutils_mean_s'] = round(b['uutils_mean'], 6)
+                        if b.get('speedup') is not None:
+                            detail['vs_gnu'] = b['speedup']
+                        if b.get('f_vs_uutils') is not None:
+                            detail['vs_uutils'] = b['f_vs_uutils']
+                        bench_details.append(detail)
+                    tool_summaries[tool] = {
+                        'status': 'benchmarked',
+                        'num_benchmarks': len(valid),
+                        'avg_speedup_vs_gnu': round(avg_gnu_speedup, 2) if avg_gnu_speedup else None,
+                        'avg_speedup_vs_uutils': round(avg_uutils_speedup, 2) if avg_uutils_speedup else None,
+                        'benchmarks': bench_details,
+                    }
+        except Exception as e:
+            tools_skipped += 1
+            tool_summaries[tool] = {'status': 'error', 'message': str(e)}
+    else:
+        tools_skipped += 1
+        tool_summaries[tool] = {'status': 'no_file'}
 
 aggregate = {
     'type': 'new_tools_benchmark',
     'platform': '$(uname -s)_$(uname -m)',
     'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
     'note': 'These results are for new tools and are NOT included in the main performance metrics',
+    'summary': {
+        'tools_benchmarked': tools_benchmarked,
+        'tools_skipped': tools_skipped,
+        'tool_summaries': tool_summaries,
+    },
     'tools': results
 }
 
