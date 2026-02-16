@@ -130,79 +130,11 @@ jobs:
           INSTALL_DIR="$HOME/.local/bin" ./scripts/install_from_github.sh --version "${{ needs.discover-versions.outputs.latest }}"
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            /tmp/coreutils-rs-build/target
-          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-fcoreutils-v1
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-cargo-fcoreutils-
-
-      - name: Build missing fcoreutils from source
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          INSTALL_DIR="$HOME/.local/bin"
-          NEW_TOOLS=(fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin)
-          MISSING=()
-
-          for tool in "${NEW_TOOLS[@]}"; do
-            if ! command -v "$tool" &>/dev/null && [[ ! -x "$INSTALL_DIR/$tool" ]] && [[ ! -x "$INSTALL_DIR/${tool}.exe" ]]; then
-              MISSING+=("$tool")
-            fi
-          done
-
-          if [[ ${#MISSING[@]} -eq 0 ]]; then
-            echo "All new tools already installed, skipping build"
-            exit 0
-          fi
-
-          echo "Missing tools: ${MISSING[*]}"
-          echo "Building from source..."
-
-          BUILD_DIR="/tmp/coreutils-rs-build"
-          if [[ ! -d "$BUILD_DIR/.git" ]]; then
-            git clone --depth 1 https://github.com/AiBrush/coreutils-rs.git "$BUILD_DIR"
-          else
-            cd "$BUILD_DIR" && git pull --ff-only && cd -
-          fi
-
-          cd "$BUILD_DIR"
-          BUILD_ARGS=""
-          for tool in "${MISSING[@]}"; do
-            BUILD_ARGS="$BUILD_ARGS --bin $tool"
-          done
-          echo "Building ${#MISSING[@]} tools..."
-          cargo build --release $BUILD_ARGS
-          cd -
-
-          # Copy built binaries
-          mkdir -p "$INSTALL_DIR"
-          for tool in "${MISSING[@]}"; do
-            if [[ -f "$BUILD_DIR/target/release/$tool" ]]; then
-              cp "$BUILD_DIR/target/release/$tool" "$INSTALL_DIR/"
-              chmod +x "$INSTALL_DIR/$tool"
-              echo "  Installed $tool"
-            elif [[ -f "$BUILD_DIR/target/release/${tool}.exe" ]]; then
-              cp "$BUILD_DIR/target/release/${tool}.exe" "$INSTALL_DIR/"
-              echo "  Installed ${tool}.exe"
-            else
-              echo "  WARNING: $tool not found after build"
-            fi
-          done
-
       - name: Install GNU coreutils (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install coreutils
-          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join; do
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
             if command -v g$tool &>/dev/null; then
               sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
             fi
@@ -219,7 +151,7 @@ jobs:
       - name: Verify tool installation
         shell: bash
         run: |
-          echo "=== fcoreutils (original) ==="
+          echo "=== fcoreutils ==="
           for tool in fwc fcut fsha256sum fmd5sum fb2sum fbase64 fsort ftr funiq ftac; do
             if command -v $tool &>/dev/null; then
               echo "  $tool: $(which $tool)"
@@ -229,18 +161,8 @@ jobs:
           done
 
           echo ""
-          echo "=== fcoreutils (new tools) ==="
-          for tool in fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
-            if command -v $tool &>/dev/null; then
-              echo "  $tool: $(which $tool)"
-            else
-              echo "  $tool: NOT FOUND"
-            fi
-          done
-
-          echo ""
           echo "=== GNU coreutils ==="
-          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join; do
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
             if command -v $tool &>/dev/null; then
               echo "  $tool: $(which $tool)"
             else
@@ -264,15 +186,6 @@ jobs:
           export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
           mkdir -p "$RESULTS_DIR"
           bash tests/compatibility/run_all.sh || true
-
-      - name: Run new tools compatibility tests (non-blocking)
-        shell: bash
-        run: |
-          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
-          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
-          mkdir -p "$RESULTS_DIR"
-          # New tools tests always exit 0 — failures do NOT block CI
-          bash tests/compatibility/run_all_new.sh || true
 
       - name: Run stress tests
         shell: bash
@@ -320,26 +233,6 @@ jobs:
           " >> $GITHUB_STEP_SUMMARY
           else
             echo "No results file found." >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### New Tools (non-blocking)" >> $GITHUB_STEP_SUMMARY
-          if [[ -f "results/new_tools_compatibility_results.json" ]]; then
-            python3 -c "
-          import json
-          d = json.load(open('results/new_tools_compatibility_results.json'))
-          s = d['summary']
-          print(f\"| Metric | Value |\")
-          print(f\"|--------|-------|\")
-          print(f\"| Total Tests | {s['total_tests']} |\")
-          print(f\"| Passed | {s['passed']} |\")
-          print(f\"| Failed | {s['failed']} |\")
-          print(f\"| Skipped | {s['skipped']} |\")
-          print(f\"| Tools Tested | {s['tools_tested']} |\")
-          print(f\"| Tools Skipped | {s['tools_skipped']} |\")
-          " >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No new tools results." >> $GITHUB_STEP_SUMMARY
           fi
 
   benchmarks:
@@ -413,41 +306,6 @@ jobs:
             echo "WARNING: uutils build failed. Benchmarks will run without uutils."
           fi
 
-      - name: Build missing fcoreutils from source
-        shell: bash
-        run: |
-          INSTALL_DIR="$HOME/.local/bin"
-          mkdir -p "$INSTALL_DIR"
-          NEW_TOOLS=(fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin)
-
-          echo "Building new tools from source for benchmarks..."
-          BUILD_DIR="/tmp/coreutils-rs-build"
-          if [[ ! -d "$BUILD_DIR/.git" ]]; then
-            git clone --depth 1 https://github.com/AiBrush/coreutils-rs.git "$BUILD_DIR"
-          else
-            cd "$BUILD_DIR" && git pull --ff-only && cd -
-          fi
-
-          cd "$BUILD_DIR"
-          BUILD_ARGS=""
-          for tool in "${NEW_TOOLS[@]}"; do
-            BUILD_ARGS="$BUILD_ARGS --bin $tool"
-          done
-          echo "Building ${#NEW_TOOLS[@]} tools..."
-          cargo build --release $BUILD_ARGS
-          cd -
-
-          for tool in "${NEW_TOOLS[@]}"; do
-            if [[ -f "$BUILD_DIR/target/release/$tool" ]]; then
-              cp "$BUILD_DIR/target/release/$tool" "$INSTALL_DIR/"
-              chmod +x "$INSTALL_DIR/$tool"
-              echo "  Installed $tool"
-            else
-              echo "  WARNING: $tool not found after build"
-            fi
-          done
-          echo "$INSTALL_DIR" >> $GITHUB_PATH
-
       - name: Benchmark all new versions
         shell: bash
         env:
@@ -498,19 +356,6 @@ jobs:
                   cp "$RESULTS_DIR/benchmark_results.json" "$DEST_DIR/${PLATFORM_TAG}.json"
                   echo "Saved: $DEST_DIR/${PLATFORM_TAG}.json"
               fi
-
-              # Run new tools benchmarks (non-blocking, results saved separately)
-              export RESULTS_DIR="${GITHUB_WORKSPACE}/bench_new_tmp"
-              mkdir -p "$RESULTS_DIR"
-              bash tests/benchmarks/run_all_new.sh < /dev/null || true
-
-              NEW_BENCH_DEST="${GITHUB_WORKSPACE}/versioned_results/new_tools_benchmarks/${VERSION}"
-              mkdir -p "$NEW_BENCH_DEST"
-              if [[ -f "$RESULTS_DIR/new_tools_benchmark_results.json" ]]; then
-                  cp "$RESULTS_DIR/new_tools_benchmark_results.json" "$NEW_BENCH_DEST/${PLATFORM_TAG}.json"
-                  echo "Saved new tools benchmarks: $NEW_BENCH_DEST/${PLATFORM_TAG}.json"
-              fi
-              rm -rf "${GITHUB_WORKSPACE}/bench_new_tmp"
 
               # Run compatibility tests too
               export RESULTS_DIR="${GITHUB_WORKSPACE}/compat_tmp"
@@ -592,16 +437,6 @@ jobs:
               for version_dir in new_results/compatibility/v*/; do
                   version=$(basename "$version_dir")
                   dest="results/compatibility/${version}"
-                  mkdir -p "$dest"
-                  cp -v "$version_dir"*.json "$dest/" 2>/dev/null || true
-              done
-          fi
-
-          # Merge new tools results (kept separate from main results)
-          if [[ -d "new_results/new_tools_benchmarks" ]]; then
-              for version_dir in new_results/new_tools_benchmarks/v*/; do
-                  version=$(basename "$version_dir")
-                  dest="results/new_tools_benchmarks/${version}"
                   mkdir -p "$dest"
                   cp -v "$version_dir"*.json "$dest/" 2>/dev/null || true
               done

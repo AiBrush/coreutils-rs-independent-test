@@ -1,0 +1,308 @@
+name: New Tools Tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test-new-tools:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+            name: Linux x86_64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            name: Linux ARM64
+          - os: macos-latest
+            arch: arm64
+            name: macOS ARM64
+          - os: windows-latest
+            arch: x86_64
+            name: Windows x86_64
+
+    runs-on: ${{ matrix.os }}
+    name: New Tools - ${{ matrix.name }}
+
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-new-tools-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-cargo-new-tools-
+
+      - name: Cache coreutils-rs build
+        uses: actions/cache@v4
+        with:
+          path: /tmp/coreutils-rs-build/target
+          key: ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
+
+      - name: Build fcoreutils from source
+        shell: bash
+        run: |
+          CLONE_DIR="/tmp/coreutils-rs-build"
+          INSTALL_DIR="$HOME/.local/bin"
+          mkdir -p "$INSTALL_DIR"
+
+          if [[ -d "$CLONE_DIR/.git" ]]; then
+              echo "Updating existing clone..."
+              cd "$CLONE_DIR"
+              git fetch origin
+              git reset --hard origin/main
+          else
+              echo "Cloning coreutils-rs..."
+              rm -rf "$CLONE_DIR"
+              git clone https://github.com/AiBrush/coreutils-rs.git "$CLONE_DIR"
+              cd "$CLONE_DIR"
+          fi
+
+          echo "Building all fcoreutils binaries..."
+          cargo build --release 2>&1
+
+          # Copy all f* binaries to install dir
+          if [[ "$(uname -s)" == MINGW* ]] || [[ "$(uname -s)" == MSYS* ]] || [[ "$(uname -s)" == CYGWIN* ]]; then
+              find target/release -maxdepth 1 -name "f*.exe" -type f -exec cp {} "$INSTALL_DIR/" \;
+          else
+              for bin in target/release/f*; do
+                  [[ -x "$bin" && ! -d "$bin" && ! "$bin" == *.d ]] && cp "$bin" "$INSTALL_DIR/"
+              done
+          fi
+
+          echo "$INSTALL_DIR" >> $GITHUB_PATH
+          export PATH="$INSTALL_DIR:$PATH"
+
+          echo ""
+          echo "=== Installed fcoreutils binaries ==="
+          for tool in fwc fcut fsha256sum fmd5sum fb2sum fbase64 fsort ftr funiq ftac fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
+              if command -v "$tool" &>/dev/null; then
+                  echo "  $tool: $(which $tool)"
+              elif [[ -x "$INSTALL_DIR/$tool" ]] || [[ -x "$INSTALL_DIR/$tool.exe" ]]; then
+                  echo "  $tool: $INSTALL_DIR/$tool"
+              else
+                  echo "  $tool: NOT FOUND"
+              fi
+          done
+
+      - name: Install GNU coreutils (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join; do
+            if command -v g$tool &>/dev/null; then
+              sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
+            fi
+          done
+          echo "/usr/local/bin" >> $GITHUB_PATH
+
+      - name: Install GNU coreutils (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "Using system coreutils from Git Bash"
+          for tool in wc cut sha256sum md5sum sort tr uniq head tail cat rev expand unexpand fold paste nl comm join; do
+            if command -v $tool &>/dev/null; then
+              echo "  $tool: $(which $tool)"
+            else
+              echo "  $tool: NOT FOUND"
+            fi
+          done
+
+      - name: Install Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Make test scripts executable
+        shell: bash
+        run: chmod +x tests/compatibility/*.sh tests/helpers/*.sh tests/stress/*.sh tests/benchmarks/*.sh 2>/dev/null || true
+
+      - name: Run new tools compatibility tests
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          mkdir -p "$RESULTS_DIR"
+          bash tests/compatibility/run_all_new.sh || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-tools-results-${{ matrix.os }}-${{ matrix.arch }}
+          path: results/
+          retention-days: 30
+
+      - name: Print summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## New Tools Compatibility - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -f "results/new_tools_compatibility_results.json" ]]; then
+            python3 -c "
+          import json
+          d = json.load(open('results/new_tools_compatibility_results.json'))
+          s = d['summary']
+          print(f\"| Metric | Value |\")
+          print(f\"|--------|-------|\")
+          print(f\"| Total Tests | {s['total_tests']} |\")
+          print(f\"| Passed | {s['passed']} |\")
+          print(f\"| Failed | {s['failed']} |\")
+          print(f\"| Skipped | {s['skipped']} |\")
+          print(f\"| Tools Tested | {s['tools_tested']} |\")
+          print(f\"| Tools Skipped | {s['tools_skipped']} |\")
+          " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No results file found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  bench-new-tools:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+            name: Linux x86_64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            name: Linux ARM64
+
+    runs-on: ${{ matrix.os }}
+    name: Bench New Tools - ${{ matrix.name }}
+
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-new-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-cargo-new-bench-
+
+      - name: Cache coreutils-rs build
+        uses: actions/cache@v4
+        with:
+          path: /tmp/coreutils-rs-build/target
+          key: ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
+
+      - name: Install hyperfine
+        shell: bash
+        run: |
+          if ! command -v hyperfine &>/dev/null; then
+            cargo install hyperfine
+          fi
+
+      - name: Build fcoreutils from source
+        shell: bash
+        run: |
+          CLONE_DIR="/tmp/coreutils-rs-build"
+          INSTALL_DIR="$HOME/.local/bin"
+          mkdir -p "$INSTALL_DIR"
+
+          if [[ -d "$CLONE_DIR/.git" ]]; then
+              echo "Updating existing clone..."
+              cd "$CLONE_DIR"
+              git fetch origin
+              git reset --hard origin/main
+          else
+              echo "Cloning coreutils-rs..."
+              rm -rf "$CLONE_DIR"
+              git clone https://github.com/AiBrush/coreutils-rs.git "$CLONE_DIR"
+              cd "$CLONE_DIR"
+          fi
+
+          echo "Building all fcoreutils binaries..."
+          cargo build --release 2>&1
+
+          for bin in target/release/f*; do
+              [[ -x "$bin" && ! -d "$bin" && ! "$bin" == *.d ]] && cp "$bin" "$INSTALL_DIR/"
+          done
+
+          echo "$INSTALL_DIR" >> $GITHUB_PATH
+          export PATH="$INSTALL_DIR:$PATH"
+
+          echo ""
+          echo "=== Installed fcoreutils binaries ==="
+          for tool in fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
+              if command -v "$tool" &>/dev/null; then
+                  echo "  $tool: $(which $tool)"
+              else
+                  echo "  $tool: NOT FOUND"
+              fi
+          done
+
+      - name: Install Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Make scripts executable
+        shell: bash
+        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh 2>/dev/null || true
+
+      - name: Run new tools benchmarks
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          export GENERATE_LARGE=true
+          export BENCH_WARMUP=3
+          export BENCH_RUNS=10
+          mkdir -p "$RESULTS_DIR"
+          bash tests/benchmarks/run_all_new.sh || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-tools-bench-${{ matrix.os }}-${{ matrix.arch }}
+          path: results/
+          retention-days: 30
+
+      - name: Print summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## New Tools Benchmarks - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -f "results/new_tools_benchmark_results.json" ]]; then
+            python3 -c "
+          import json
+          d = json.load(open('results/new_tools_benchmark_results.json'))
+          s = d.get('summary', {})
+          print(f\"| Metric | Value |\")
+          print(f\"|--------|-------|\")
+          print(f\"| Tools Benchmarked | {s.get('tools_benchmarked', 'N/A')} |\")
+          print(f\"| Tools Skipped | {s.get('tools_skipped', 'N/A')} |\")
+          " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No benchmark results file found." >> $GITHUB_STEP_SUMMARY
+          fi
