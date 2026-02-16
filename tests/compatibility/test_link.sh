@@ -39,9 +39,12 @@ run_link_tests() {
         "$GNU_TOOL '$WORK_DIR/source.txt' '$WORK_DIR/gnu_link2.txt' && test \$(stat -c '%i' '$WORK_DIR/source.txt') -eq \$(stat -c '%i' '$WORK_DIR/gnu_link2.txt') && echo 'SAME'" \
         "$F_TOOL '$WORK_DIR/source.txt' '$WORK_DIR/f_link2.txt' && test \$(stat -c '%i' '$WORK_DIR/source.txt') -eq \$(stat -c '%i' '$WORK_DIR/f_link2.txt') && echo 'SAME'"
 
+    # Use separate source files to avoid cumulative nlink count differences
+    echo "source content" > "$WORK_DIR/gnu_nlink_src.txt"
+    echo "source content" > "$WORK_DIR/f_nlink_src.txt"
     run_test "link increases nlink count" \
-        "$GNU_TOOL '$WORK_DIR/source.txt' '$WORK_DIR/gnu_link3.txt' && stat -c '%h' '$WORK_DIR/source.txt'" \
-        "$F_TOOL '$WORK_DIR/source.txt' '$WORK_DIR/f_link3.txt' && stat -c '%h' '$WORK_DIR/source.txt'"
+        "$GNU_TOOL '$WORK_DIR/gnu_nlink_src.txt' '$WORK_DIR/gnu_link3.txt' && stat -c '%h' '$WORK_DIR/gnu_nlink_src.txt'" \
+        "$F_TOOL '$WORK_DIR/f_nlink_src.txt' '$WORK_DIR/f_link3.txt' && stat -c '%h' '$WORK_DIR/f_nlink_src.txt'"
 
     echo ""
     echo "=== Error Handling ==="

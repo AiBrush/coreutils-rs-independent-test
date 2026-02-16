@@ -88,9 +88,10 @@ run_tee_tests() {
     echo ""
     echo "=== Large Data ==="
 
+    # Strip filenames from md5sum output to avoid false diff on gnu_/f_ prefix
     run_test "large input checksum" \
-        "cat '$TEST_DATA_DIR/text_1m.txt' | $GNU_TOOL '$WORK_DIR/gnu_large.txt' | md5sum && md5sum '$WORK_DIR/gnu_large.txt'" \
-        "cat '$TEST_DATA_DIR/text_1m.txt' | $F_TOOL '$WORK_DIR/f_large.txt' | md5sum && md5sum '$WORK_DIR/f_large.txt'"
+        "cat '$TEST_DATA_DIR/text_1m.txt' | $GNU_TOOL '$WORK_DIR/gnu_large.txt' | md5sum | cut -d' ' -f1 && md5sum '$WORK_DIR/gnu_large.txt' | cut -d' ' -f1" \
+        "cat '$TEST_DATA_DIR/text_1m.txt' | $F_TOOL '$WORK_DIR/f_large.txt' | md5sum | cut -d' ' -f1 && md5sum '$WORK_DIR/f_large.txt' | cut -d' ' -f1"
 
     echo ""
     echo "=== Unicode ==="

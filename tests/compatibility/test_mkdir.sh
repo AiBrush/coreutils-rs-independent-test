@@ -74,13 +74,14 @@ run_mkdir_tests() {
     echo ""
     echo "=== Verbose (-v) ==="
 
-    run_stdout_test "-v create directory" \
-        "$GNU_TOOL -v '$WORK_DIR/gnu_verbose_dir'" \
-        "$F_TOOL -v '$WORK_DIR/f_verbose_dir'"
+    # Normalize directory names in verbose output to avoid false diff on gnu_/f_ prefix
+    run_test "-v create directory" \
+        "$GNU_TOOL -v '$WORK_DIR/gnu_verbose_dir' 2>&1 | sed 's|gnu_verbose_dir|_verbose_dir|g'" \
+        "$F_TOOL -v '$WORK_DIR/f_verbose_dir' 2>&1 | sed 's|f_verbose_dir|_verbose_dir|g'"
 
-    run_stdout_test "-pv create nested" \
-        "$GNU_TOOL -pv '$WORK_DIR/gnu_vp/sub1/sub2'" \
-        "$F_TOOL -pv '$WORK_DIR/f_vp/sub1/sub2'"
+    run_test "-pv create nested" \
+        "$GNU_TOOL -pv '$WORK_DIR/gnu_vp/sub1/sub2' 2>&1 | sed 's|gnu_vp|_vp|g'" \
+        "$F_TOOL -pv '$WORK_DIR/f_vp/sub1/sub2' 2>&1 | sed 's|f_vp|_vp|g'"
 
     echo ""
     echo "=== Error Handling ==="

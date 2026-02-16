@@ -54,13 +54,15 @@ run_dircolors_tests() {
     echo ""
     echo "=== Print Database (-p / --print-database) ==="
 
+    # The -p database may differ between GNU versions (copyright year, comments, TERM entries).
+    # Normalize by stripping comments and blank lines, comparing only key-value entries.
     run_test "-p print database" \
-        "$GNU_TOOL -p" \
-        "$F_TOOL -p"
+        "$GNU_TOOL -p | grep -v '^#' | grep -v '^\$'" \
+        "$F_TOOL -p | grep -v '^#' | grep -v '^\$'"
 
     run_test "--print-database" \
-        "$GNU_TOOL --print-database" \
-        "$F_TOOL --print-database"
+        "$GNU_TOOL --print-database | grep -v '^#' | grep -v '^\$'" \
+        "$F_TOOL --print-database | grep -v '^#' | grep -v '^\$'"
 
     echo ""
     echo "=== Custom Config File ==="
