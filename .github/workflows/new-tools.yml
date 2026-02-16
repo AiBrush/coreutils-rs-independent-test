@@ -96,7 +96,10 @@ jobs:
               fseq fshuf ftsort ftee fsum fcksum fsha1sum fsha224sum fsha384sum fsha512sum \
               fid fgroups fwhoami flogname funame fuptime farch fhostid ftty fnproc fpwd \
               fenv ftimeout fnice fnohup fsleep fsync ftrue ffalse flink funlink \
-              fbasename fdirname fpathchk frealpath freadlink fdircolors; do
+              fbasename fdirname fpathchk frealpath freadlink fdircolors \
+              fecho fusers fprintf ftest fexpr ffactor fsplit fnumfmt ffmt fcsplit fod fptx \
+              fstat fwho fpinky fdate fdf fdu fstty fchmod fchown fchgrp fshred fdd \
+              frm fcp fmv finstall fpr fls fstdbuf; do
               if command -v "$tool" &>/dev/null; then
                   echo "  $tool: $(which $tool)"
               elif [[ -x "$INSTALL_DIR/$tool" ]] || [[ -x "$INSTALL_DIR/$tool.exe" ]]; then
@@ -115,7 +118,10 @@ jobs:
               seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum \
               id groups whoami logname uname uptime arch hostid tty nproc pwd \
               env timeout nice nohup sleep sync true false link unlink \
-              basename dirname pathchk realpath readlink dircolors; do
+              basename dirname pathchk realpath readlink dircolors \
+              echo printf test expr factor split numfmt fmt csplit od ptx \
+              stat who pinky date df du stty chmod chown chgrp shred dd \
+              rm cp mv install pr ls stdbuf users; do
             if command -v g$tool &>/dev/null; then
               sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
             fi
@@ -202,6 +208,9 @@ jobs:
                   ('System Information', ['id', 'groups', 'whoami', 'logname', 'uname', 'uptime', 'arch', 'hostid', 'tty', 'nproc', 'pwd']),
                   ('Process/Environment', ['env', 'timeout', 'nice', 'nohup', 'sleep', 'sync']),
                   ('Utility Commands', ['true', 'false', 'link', 'unlink', 'basename', 'dirname', 'pathchk', 'realpath', 'readlink', 'dircolors']),
+                  ('PR #241 - I/O & Text', ['echo', 'printf', 'pr', 'fmt', 'ptx', 'od', 'numfmt', 'factor', 'expr', 'test']),
+                  ('PR #241 - File Ops', ['cp', 'mv', 'rm', 'dd', 'split', 'csplit', 'install', 'shred', 'chmod', 'chown', 'chgrp']),
+                  ('PR #241 - System & FS', ['ls', 'stat', 'df', 'du', 'date', 'who', 'users', 'pinky', 'stty', 'stdbuf']),
               ]
 
               print("### Per-Tool Results")
@@ -375,7 +384,10 @@ jobs:
               fseq fshuf ftsort ftee fsum fcksum fsha1sum fsha224sum fsha384sum fsha512sum \
               fid fgroups fwhoami flogname funame fuptime farch fhostid ftty fnproc fpwd \
               fenv ftimeout fnice fnohup fsleep fsync ftrue ffalse flink funlink \
-              fbasename fdirname fpathchk frealpath freadlink fdircolors; do
+              fbasename fdirname fpathchk frealpath freadlink fdircolors \
+              fecho fusers fprintf ftest fexpr ffactor fsplit fnumfmt ffmt fcsplit fod fptx \
+              fstat fwho fpinky fdate fdf fdu fstty fchmod fchown fchgrp fshred fdd \
+              frm fcp fmv finstall fpr fls fstdbuf; do
               if command -v "$tool" &>/dev/null; then
                   echo "  $tool: $(which $tool)"
               else
