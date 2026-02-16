@@ -49,15 +49,15 @@ for tool in "${NEW_TOOLS[@]}"; do
         # Read results from JSON
         result_file="$RESULTS_DIR/${tool}_results.json"
         if [[ -f "$result_file" ]]; then
-            status=$(python3 -c "import json; d=json.load(open('$result_file')); print(d.get('status',''))" 2>/dev/null || echo "")
+            status=$(python3 -c "import json; d=json.load(open('$result_file')); print(d.get('status',''))" 2>/dev/null | tr -d '\r' || echo "")
             if [[ "$status" == "NOT_IMPLEMENTED" ]]; then
                 TOOLS_SKIPPED=$((TOOLS_SKIPPED + 1))
                 TOOL_SUMMARIES="${TOOL_SUMMARIES}\n  $tool: NOT IMPLEMENTED (skipped)"
             else
-                passed=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['passed'])" 2>/dev/null || echo "0")
-                failed=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['failed'])" 2>/dev/null || echo "0")
-                skipped=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['skipped'])" 2>/dev/null || echo "0")
-                total=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['total'])" 2>/dev/null || echo "0")
+                passed=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['passed'])" 2>/dev/null | tr -d '\r' || echo "0")
+                failed=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['failed'])" 2>/dev/null | tr -d '\r' || echo "0")
+                skipped=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['skipped'])" 2>/dev/null | tr -d '\r' || echo "0")
+                total=$(python3 -c "import json; d=json.load(open('$result_file')); print(d['summary']['total'])" 2>/dev/null | tr -d '\r' || echo "0")
 
                 TOTAL_PASSED=$((TOTAL_PASSED + passed))
                 TOTAL_FAILED=$((TOTAL_FAILED + failed))
