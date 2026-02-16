@@ -45,8 +45,10 @@ if [[ -z "${UUTILS_DIR:-}" ]]; then
     echo ""
 fi
 
-# All new tools — run bench scripts for any that exist
+# All tools — run bench scripts for any that exist
 NEW_TOOLS=(
+    # Original main tools (v0.5.8 and earlier)
+    wc cut sha256sum md5sum b2sum base64 sort tr uniq tac
     # Original 11 new tools (v0.5.9)
     head tail cat rev expand unexpand fold paste nl comm join
     # Additional tools (v0.5.10+) — bench scripts added as needed

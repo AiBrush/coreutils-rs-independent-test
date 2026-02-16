@@ -338,12 +338,12 @@ jobs:
       - name: Build uutils/coreutils
         shell: bash
         run: |
-          echo "Building uutils/coreutils new tools from source..."
-          if ./scripts/install_uutils.sh --tools new; then
+          echo "Building uutils/coreutils from source..."
+          if ./scripts/install_uutils.sh --tools all; then
             export UUTILS_DIR="/tmp/uutils-build/target/release"
             echo "UUTILS_DIR=$UUTILS_DIR" >> $GITHUB_ENV
             echo "uutils built successfully at $UUTILS_DIR"
-            ls -la "$UUTILS_DIR"/{head,tail,cat,expand,unexpand,fold,paste,nl,comm,join} 2>/dev/null || true
+            ls -la "$UUTILS_DIR"/{wc,sort,uniq,cut,tr,base64,tac,md5sum,b2sum,sha256sum,head,tail,cat,expand,unexpand,fold,paste,nl,comm,join} 2>/dev/null || true
           else
             echo "WARNING: uutils build failed. Benchmarks will run without uutils comparison."
           fi
