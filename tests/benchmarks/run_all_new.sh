@@ -45,8 +45,17 @@ if [[ -z "${UUTILS_DIR:-}" ]]; then
     echo ""
 fi
 
-# The 11 new tools
-NEW_TOOLS=(head tail cat rev expand unexpand fold paste nl comm join)
+# All new tools — run bench scripts for any that exist
+NEW_TOOLS=(
+    # Original 11 new tools (v0.5.9)
+    head tail cat rev expand unexpand fold paste nl comm join
+    # Additional tools (v0.5.10+) — bench scripts added as needed
+    basenc base32 ln touch truncate mkdir rmdir mknod mkfifo mktemp
+    seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum
+    id groups whoami logname uname uptime arch hostid tty nproc pwd
+    env timeout nice nohup sleep sync
+    true false link unlink basename dirname pathchk realpath readlink dircolors
+)
 BENCH_SUMMARIES=""
 
 for tool in "${NEW_TOOLS[@]}"; do
@@ -73,7 +82,16 @@ echo ""
 python3 -c "
 import json, glob, os
 
-new_tools = ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']
+# Dynamically discover all benchmark result files
+import re
+new_tools = []
+for f_name in sorted(os.listdir('$RESULTS_DIR')):
+    m = re.match(r'^(.+)_benchmark\.json$', f_name)
+    if m and f_name != 'new_tools_benchmark_results.json':
+        new_tools.append(m.group(1))
+# Fallback: if no files found, use the known list
+if not new_tools:
+    new_tools = ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']
 results = {}
 tools_benchmarked = 0
 tools_skipped = 0

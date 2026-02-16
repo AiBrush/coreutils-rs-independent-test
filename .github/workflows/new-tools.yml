@@ -172,19 +172,97 @@ jobs:
           echo "## New Tools Compatibility - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [[ -f "results/new_tools_compatibility_results.json" ]]; then
-            python3 -c "
+            python3 << 'PYEOF' >> $GITHUB_STEP_SUMMARY
           import json
+
           d = json.load(open('results/new_tools_compatibility_results.json'))
           s = d['summary']
-          print(f\"| Metric | Value |\")
-          print(f\"|--------|-------|\")
-          print(f\"| Total Tests | {s['total_tests']} |\")
-          print(f\"| Passed | {s['passed']} |\")
-          print(f\"| Failed | {s['failed']} |\")
-          print(f\"| Skipped | {s['skipped']} |\")
-          print(f\"| Tools Tested | {s['tools_tested']} |\")
-          print(f\"| Tools Skipped | {s['tools_skipped']} |\")
-          " >> $GITHUB_STEP_SUMMARY
+          tools = d.get('tools', {})
+
+          # Overall summary table
+          print("| Metric | Value |")
+          print("|--------|-------|")
+          print(f"| Total Tests | {s['total_tests']} |")
+          print(f"| Passed | {s['passed']} |")
+          print(f"| Failed | {s['failed']} |")
+          print(f"| Skipped | {s['skipped']} |")
+          print(f"| Tools Tested | {s['tools_tested']} |")
+          print(f"| Tools Skipped | {s['tools_skipped']} |")
+          print()
+
+          if not tools:
+              print("_No per-tool data available._")
+          else:
+              # Group tools by category for readability
+              categories = [
+                  ('Text Processing (original)', ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']),
+                  ('Encoding/Decoding', ['basenc', 'base32']),
+                  ('File Operations', ['ln', 'touch', 'truncate', 'mkdir', 'rmdir', 'mknod', 'mkfifo', 'mktemp']),
+                  ('Text/Data Processing', ['seq', 'shuf', 'tsort', 'tee', 'sum', 'cksum', 'sha1sum', 'sha224sum', 'sha384sum', 'sha512sum']),
+                  ('System Information', ['id', 'groups', 'whoami', 'logname', 'uname', 'uptime', 'arch', 'hostid', 'tty', 'nproc', 'pwd']),
+                  ('Process/Environment', ['env', 'timeout', 'nice', 'nohup', 'sleep', 'sync']),
+                  ('Utility Commands', ['true', 'false', 'link', 'unlink', 'basename', 'dirname', 'pathchk', 'realpath', 'readlink', 'dircolors']),
+              ]
+
+              print("### Per-Tool Results")
+              print()
+
+              for cat_name, cat_tools in categories:
+                  # Check if any tool in this category has data
+                  has_data = any(t in tools for t in cat_tools)
+                  if not has_data:
+                      continue
+
+                  print(f"#### {cat_name}")
+                  print()
+                  print("| Tool | Status | Passed | Failed | Skipped | Total |")
+                  print("|------|--------|--------|--------|---------|-------|")
+
+                  for tool in cat_tools:
+                      info = tools.get(tool, {})
+                      status = info.get('status', 'no_data')
+                      if status == 'NOT_IMPLEMENTED':
+                          print(f"| {tool} | :white_circle: skipped | - | - | - | - |")
+                      elif status == 'tested':
+                          p = info.get('passed', 0)
+                          fl = info.get('failed', 0)
+                          sk = info.get('skipped', 0)
+                          t = info.get('total', 0)
+                          if fl == 0:
+                              icon = ':white_check_mark:'
+                          else:
+                              icon = ':x:'
+                          f_str = f"**{fl}**" if fl > 0 else str(fl)
+                          print(f"| {tool} | {icon} | {p} | {f_str} | {sk} | {t} |")
+                      elif status == 'error':
+                          print(f"| {tool} | :warning: error | - | - | - | - |")
+                      else:
+                          print(f"| {tool} | :grey_question: no data | - | - | - | - |")
+                  print()
+
+              # Show failed test details in collapsible section
+              any_failures = any(
+                  info.get('failed', 0) > 0
+                  for info in tools.values()
+                  if info.get('status') == 'tested'
+              )
+              if any_failures:
+                  print("<details>")
+                  print("<summary>:x: Failed test details</summary>")
+                  print()
+                  for tool in sorted(tools.keys()):
+                      info = tools[tool]
+                      if info.get('status') == 'tested' and info.get('failed', 0) > 0:
+                          failed_tests = info.get('failed_tests', [])
+                          print(f"**{tool}** ({info['failed']} failed):")
+                          if failed_tests:
+                              for ft in failed_tests:
+                                  print(f"- `{ft}`")
+                          else:
+                              print("- _(test names not available)_")
+                          print()
+                  print("</details>")
+          PYEOF
           else
             echo "No results file found." >> $GITHUB_STEP_SUMMARY
           fi
@@ -366,8 +444,10 @@ jobs:
               print("| Tool | Benchmarks | Avg Speedup vs GNU |")
               print("|------|-----------|-------------------|")
 
-          for tool in ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']:
+          for tool in sorted(ts.keys()):
               info = ts.get(tool, {})
+              if not isinstance(info, dict):
+                  continue
               status = info.get('status', 'no_file')
               if status == 'benchmarked':
                   n = info.get('num_benchmarks', 0)
@@ -392,7 +472,7 @@ jobs:
           print("<summary>Detailed benchmark results</summary>")
           print()
 
-          for tool in ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']:
+          for tool in sorted(ts.keys()):
               info = ts.get(tool, {})
               if info.get('status') != 'benchmarked':
                   continue
