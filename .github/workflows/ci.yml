@@ -134,7 +134,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install coreutils
-          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join; do
             if command -v g$tool &>/dev/null; then
               sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
             fi
@@ -151,7 +151,7 @@ jobs:
       - name: Verify tool installation
         shell: bash
         run: |
-          echo "=== fcoreutils ==="
+          echo "=== fcoreutils (original) ==="
           for tool in fwc fcut fsha256sum fmd5sum fb2sum fbase64 fsort ftr funiq ftac; do
             if command -v $tool &>/dev/null; then
               echo "  $tool: $(which $tool)"
@@ -161,8 +161,18 @@ jobs:
           done
 
           echo ""
+          echo "=== fcoreutils (new tools) ==="
+          for tool in fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
+            if command -v $tool &>/dev/null; then
+              echo "  $tool: $(which $tool)"
+            else
+              echo "  $tool: NOT FOUND"
+            fi
+          done
+
+          echo ""
           echo "=== GNU coreutils ==="
-          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac; do
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join; do
             if command -v $tool &>/dev/null; then
               echo "  $tool: $(which $tool)"
             else
@@ -186,6 +196,15 @@ jobs:
           export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
           mkdir -p "$RESULTS_DIR"
           bash tests/compatibility/run_all.sh || true
+
+      - name: Run new tools compatibility tests (non-blocking)
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          mkdir -p "$RESULTS_DIR"
+          # New tools tests always exit 0 — failures do NOT block CI
+          bash tests/compatibility/run_all_new.sh || true
 
       - name: Run stress tests
         shell: bash
@@ -233,6 +252,26 @@ jobs:
           " >> $GITHUB_STEP_SUMMARY
           else
             echo "No results file found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### New Tools (non-blocking)" >> $GITHUB_STEP_SUMMARY
+          if [[ -f "results/new_tools_compatibility_results.json" ]]; then
+            python3 -c "
+          import json
+          d = json.load(open('results/new_tools_compatibility_results.json'))
+          s = d['summary']
+          print(f\"| Metric | Value |\")
+          print(f\"|--------|-------|\")
+          print(f\"| Total Tests | {s['total_tests']} |\")
+          print(f\"| Passed | {s['passed']} |\")
+          print(f\"| Failed | {s['failed']} |\")
+          print(f\"| Skipped | {s['skipped']} |\")
+          print(f\"| Tools Tested | {s['tools_tested']} |\")
+          print(f\"| Tools Skipped | {s['tools_skipped']} |\")
+          " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No new tools results." >> $GITHUB_STEP_SUMMARY
           fi
 
   benchmarks:
@@ -357,6 +396,19 @@ jobs:
                   echo "Saved: $DEST_DIR/${PLATFORM_TAG}.json"
               fi
 
+              # Run new tools benchmarks (non-blocking, results saved separately)
+              export RESULTS_DIR="${GITHUB_WORKSPACE}/bench_new_tmp"
+              mkdir -p "$RESULTS_DIR"
+              bash tests/benchmarks/run_all_new.sh < /dev/null || true
+
+              NEW_BENCH_DEST="${GITHUB_WORKSPACE}/versioned_results/new_tools_benchmarks/${VERSION}"
+              mkdir -p "$NEW_BENCH_DEST"
+              if [[ -f "$RESULTS_DIR/new_tools_benchmark_results.json" ]]; then
+                  cp "$RESULTS_DIR/new_tools_benchmark_results.json" "$NEW_BENCH_DEST/${PLATFORM_TAG}.json"
+                  echo "Saved new tools benchmarks: $NEW_BENCH_DEST/${PLATFORM_TAG}.json"
+              fi
+              rm -rf "${GITHUB_WORKSPACE}/bench_new_tmp"
+
               # Run compatibility tests too
               export RESULTS_DIR="${GITHUB_WORKSPACE}/compat_tmp"
               mkdir -p "$RESULTS_DIR"
@@ -437,6 +489,16 @@ jobs:
               for version_dir in new_results/compatibility/v*/; do
                   version=$(basename "$version_dir")
                   dest="results/compatibility/${version}"
+                  mkdir -p "$dest"
+                  cp -v "$version_dir"*.json "$dest/" 2>/dev/null || true
+              done
+          fi
+
+          # Merge new tools results (kept separate from main results)
+          if [[ -d "new_results/new_tools_benchmarks" ]]; then
+              for version_dir in new_results/new_tools_benchmarks/v*/; do
+                  version=$(basename "$version_dir")
+                  dest="results/new_tools_benchmarks/${version}"
                   mkdir -p "$dest"
                   cp -v "$version_dir"*.json "$dest/" 2>/dev/null || true
               done

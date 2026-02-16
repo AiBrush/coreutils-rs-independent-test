@@ -383,6 +383,351 @@ echo "readable" > "$TEST_DATA_DIR/readable.txt"
 echo "unreadable" > "$TEST_DATA_DIR/unreadable.txt"
 chmod 000 "$TEST_DATA_DIR/unreadable.txt" 2>/dev/null || true
 
+# ── head / tail test data ──────────────────────────────────────────────────
+python3 -c "
+for i in range(1, 101):
+    print(f'Line {i}: The quick brown fox jumps over the lazy dog')
+" > "$TEST_DATA_DIR/numbered_100.txt"
+
+python3 -c "
+for i in range(1, 10001):
+    print(f'Line {i}')
+" > "$TEST_DATA_DIR/numbered_10k.txt"
+
+# Single line no newline for head/tail edge cases
+printf 'single line no newline' > "$TEST_DATA_DIR/single_line_no_nl.txt"
+
+# ── cat test data ─────────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/cat_special_chars.txt" <<'CATEOF'
+Line with tab	here
+Line with trailing spaces
+   Leading spaces line
+
+Blank line above and below
+
+Last line
+CATEOF
+
+# File with non-printing chars for cat -v
+printf 'visible\x01\x02\x03hidden\x7f\n' > "$TEST_DATA_DIR/cat_nonprinting.txt"
+# File with consecutive blank lines for cat -s
+printf 'line1\n\n\n\nline2\n\n\nline3\n' > "$TEST_DATA_DIR/cat_squeeze.txt"
+
+# ── rev test data ─────────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/rev_simple.txt" <<'EOF'
+hello
+world
+12345
+abcdef
+EOF
+
+printf 'no newline at end' > "$TEST_DATA_DIR/rev_no_newline.txt"
+printf '\n\n\n' > "$TEST_DATA_DIR/rev_blank_lines.txt"
+
+# ── expand / unexpand test data ───────────────────────────────────────────
+printf 'no\ttabs\there\n' > "$TEST_DATA_DIR/expand_simple.txt"
+printf '\ttab at start\n' > "$TEST_DATA_DIR/expand_leading.txt"
+printf 'a\tb\tc\td\te\n' > "$TEST_DATA_DIR/expand_multi.txt"
+printf '\t\t\tdouble\t\ttabs\n' > "$TEST_DATA_DIR/expand_consecutive.txt"
+printf '12345678\tnext\n1234567\tnext\n123456\tnext\n1\tnext\n' > "$TEST_DATA_DIR/expand_alignment.txt"
+# Mixed tabs and spaces
+printf '  \tspaces then tab\n\t  tab then spaces\n' > "$TEST_DATA_DIR/expand_mixed.txt"
+# File with only tabs
+printf '\t\t\t\t\n' > "$TEST_DATA_DIR/expand_only_tabs.txt"
+# Spaces for unexpand
+printf '        eight spaces\n    four spaces\n            twelve spaces\n' > "$TEST_DATA_DIR/unexpand_spaces.txt"
+printf '        word1        word2        word3\n' > "$TEST_DATA_DIR/unexpand_multi_stops.txt"
+
+# ── fold test data ────────────────────────────────────────────────────────
+python3 -c "print('A' * 200)" > "$TEST_DATA_DIR/fold_long_line.txt"
+python3 -c "print('word ' * 40)" > "$TEST_DATA_DIR/fold_words.txt"
+printf 'short\n' > "$TEST_DATA_DIR/fold_short.txt"
+printf 'a b c d e f g h i j k l m n o p q r s t u v w x y z\n' > "$TEST_DATA_DIR/fold_alphabet.txt"
+# Line with tabs for fold -b vs fold
+printf 'abc\tdef\tghi\tjkl\tmno\tpqr\tstu\tvwx\n' > "$TEST_DATA_DIR/fold_tabs.txt"
+
+# ── paste test data ───────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/paste_file1.txt" <<'EOF'
+alpha
+bravo
+charlie
+delta
+echo
+EOF
+
+cat > "$TEST_DATA_DIR/paste_file2.txt" <<'EOF'
+1
+2
+3
+4
+5
+EOF
+
+cat > "$TEST_DATA_DIR/paste_file3.txt" <<'EOF'
+red
+green
+blue
+EOF
+
+# Unequal length files
+printf 'A\nB\n' > "$TEST_DATA_DIR/paste_short.txt"
+printf 'X\nY\nZ\nW\n' > "$TEST_DATA_DIR/paste_long.txt"
+
+# ── nl test data ──────────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/nl_simple.txt" <<'EOF'
+First line
+Second line
+Third line
+Fourth line
+Fifth line
+EOF
+
+cat > "$TEST_DATA_DIR/nl_blank_lines.txt" <<'EOF'
+Line one
+
+Line three
+
+
+Line six
+EOF
+
+# nl section delimiters
+cat > "$TEST_DATA_DIR/nl_sections.txt" <<'NLEOF'
+\:\:\:
+Header line 1
+Header line 2
+\:\:
+Body line 1
+Body line 2
+Body line 3
+\:
+Footer line 1
+Footer line 2
+\:\:\:
+Header 2 line 1
+\:\:
+Body 2 line 1
+Body 2 line 2
+\:
+Footer 2 line 1
+NLEOF
+
+# ── comm test data ────────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/comm_file1.txt" <<'EOF'
+apple
+banana
+cherry
+date
+fig
+grape
+EOF
+
+cat > "$TEST_DATA_DIR/comm_file2.txt" <<'EOF'
+banana
+cherry
+elderberry
+fig
+honeydew
+EOF
+
+# Files with no overlap
+cat > "$TEST_DATA_DIR/comm_disjoint1.txt" <<'EOF'
+alpha
+bravo
+charlie
+EOF
+
+cat > "$TEST_DATA_DIR/comm_disjoint2.txt" <<'EOF'
+delta
+echo
+foxtrot
+EOF
+
+# Identical files
+cat > "$TEST_DATA_DIR/comm_identical.txt" <<'EOF'
+one
+two
+three
+EOF
+
+# ── join test data ────────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/join_file1.txt" <<'EOF'
+1 Alice Engineering
+2 Bob Sales
+3 Charlie Marketing
+4 Diana HR
+5 Eve Finance
+EOF
+
+cat > "$TEST_DATA_DIR/join_file2.txt" <<'EOF'
+1 50000
+2 60000
+3 55000
+5 70000
+6 45000
+EOF
+
+# Join with custom delimiter
+cat > "$TEST_DATA_DIR/join_csv1.txt" <<'EOF'
+1,Alice,Engineering
+2,Bob,Sales
+3,Charlie,Marketing
+4,Diana,HR
+EOF
+
+cat > "$TEST_DATA_DIR/join_csv2.txt" <<'EOF'
+1,50000,New York
+2,60000,London
+3,55000,Paris
+5,70000,Tokyo
+EOF
+
+# Join on different fields
+cat > "$TEST_DATA_DIR/join_byname1.txt" <<'EOF'
+Alice Engineering
+Bob Sales
+Charlie Marketing
+Diana HR
+EOF
+
+cat > "$TEST_DATA_DIR/join_byname2.txt" <<'EOF'
+Alice 50000
+Bob 60000
+Charlie 55000
+Eve 70000
+EOF
+
+# ── Large files for new tools benchmarks ──────────────────────────────────
+
+# Tabbed text 10MB (for expand/unexpand benchmarks)
+if [[ ! -f "$TEST_DATA_DIR/tabbed_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+words = ['the','quick','brown','fox','jumps','over','lazy','dog','lorem','ipsum']
+size = 0
+while size < 10000000:
+    line = '\t'.join(random.choices(words, k=random.randint(3,8)))
+    print(line)
+    size += len(line) + 1
+" > "$TEST_DATA_DIR/tabbed_10m.txt"
+fi
+
+# Wide lines 10MB (for fold benchmarks)
+if [[ ! -f "$TEST_DATA_DIR/wide_lines_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+words = ['the','quick','brown','fox','jumps','over','lazy','dog']
+size = 0
+while size < 10000000:
+    line = ' '.join(random.choices(words, k=random.randint(20,60)))
+    print(line)
+    size += len(line) + 1
+" > "$TEST_DATA_DIR/wide_lines_10m.txt"
+fi
+
+# Numbered lines 10MB (for nl benchmarks)
+if [[ ! -f "$TEST_DATA_DIR/nl_bench_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+words = ['the','quick','brown','fox','jumps','over','lazy','dog','lorem','ipsum']
+size = 0
+i = 0
+while size < 10000000:
+    if i % 5 == 0:
+        print('')  # blank line every 5 lines
+    else:
+        line = ' '.join(random.choices(words, k=random.randint(5,15)))
+        print(line)
+        size += len(line) + 1
+    i += 1
+" > "$TEST_DATA_DIR/nl_bench_10m.txt"
+fi
+
+# Sorted pair files 10MB each (for comm/join benchmarks)
+if [[ ! -f "$TEST_DATA_DIR/comm_bench_file1_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+lines = set()
+while len(lines) < 200000:
+    lines.add(''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(8,30))))
+lines = sorted(lines)
+# First file: every other line + some unique
+for i, line in enumerate(lines):
+    if i % 2 == 0 or i % 7 == 0:
+        print(line)
+" > "$TEST_DATA_DIR/comm_bench_file1_10m.txt"
+fi
+
+if [[ ! -f "$TEST_DATA_DIR/comm_bench_file2_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+lines = set()
+while len(lines) < 200000:
+    lines.add(''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(8,30))))
+lines = sorted(lines)
+# Second file: odd lines + some unique
+for i, line in enumerate(lines):
+    if i % 2 == 1 or i % 5 == 0:
+        print(line)
+" > "$TEST_DATA_DIR/comm_bench_file2_10m.txt"
+fi
+
+# Join benchmark files (sorted, keyed)
+if [[ ! -f "$TEST_DATA_DIR/join_bench_file1_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+for i in range(1, 400001, 2):
+    name = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(5,15)))
+    print(f'{i} {name} {random.randint(20,65)}')
+" > "$TEST_DATA_DIR/join_bench_file1_10m.txt"
+fi
+
+if [[ ! -f "$TEST_DATA_DIR/join_bench_file2_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+for i in range(1, 400001, 3):
+    dept = random.choice(['Engineering','Sales','Marketing','HR','Finance'])
+    print(f'{i} {dept} {random.randint(30000,150000)}')
+" > "$TEST_DATA_DIR/join_bench_file2_10m.txt"
+fi
+
+# Paste benchmark files (many columns)
+if [[ ! -f "$TEST_DATA_DIR/paste_bench_col1_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(42)
+words = ['alpha','bravo','charlie','delta','echo','foxtrot','golf','hotel']
+for _ in range(500000):
+    print(random.choice(words))
+" > "$TEST_DATA_DIR/paste_bench_col1_10m.txt"
+fi
+
+if [[ ! -f "$TEST_DATA_DIR/paste_bench_col2_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(43)
+for _ in range(500000):
+    print(random.randint(1, 99999))
+" > "$TEST_DATA_DIR/paste_bench_col2_10m.txt"
+fi
+
+if [[ ! -f "$TEST_DATA_DIR/paste_bench_col3_10m.txt" ]]; then
+    python3 -c "
+import random
+random.seed(44)
+cities = ['NYC','LON','PAR','TKY','SYD','BER','TOR','MUM']
+for _ in range(500000):
+    print(random.choice(cities))
+" > "$TEST_DATA_DIR/paste_bench_col3_10m.txt"
+fi
+
 echo "Test data generation complete: $TEST_DATA_DIR"
 ls -la "$TEST_DATA_DIR/" | head -30
 echo "..."
