@@ -90,7 +90,13 @@ jobs:
 
           echo ""
           echo "=== Installed fcoreutils binaries ==="
-          for tool in fwc fcut fsha256sum fmd5sum fb2sum fbase64 fsort ftr funiq ftac fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
+          for tool in fwc fcut fsha256sum fmd5sum fb2sum fbase64 fsort ftr funiq ftac \
+              fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin \
+              fbasenc fbase32 fln ftouch ftruncate fmkdir frmdir fmknod fmkfifo fmktemp \
+              fseq fshuf ftsort ftee fsum fcksum fsha1sum fsha224sum fsha384sum fsha512sum \
+              fid fgroups fwhoami flogname funame fuptime farch fhostid ftty fnproc fpwd \
+              fenv ftimeout fnice fnohup fsleep fsync ftrue ffalse flink funlink \
+              fbasename fdirname fpathchk frealpath freadlink fdircolors; do
               if command -v "$tool" &>/dev/null; then
                   echo "  $tool: $(which $tool)"
               elif [[ -x "$INSTALL_DIR/$tool" ]] || [[ -x "$INSTALL_DIR/$tool.exe" ]]; then
@@ -104,7 +110,12 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install coreutils
-          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join; do
+          for tool in wc cut sha256sum md5sum b2sum base64 sort tr uniq tac head tail cat rev expand unexpand fold paste nl comm join \
+              basenc base32 ln touch truncate mkdir rmdir mknod mkfifo mktemp \
+              seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum \
+              id groups whoami logname uname uptime arch hostid tty nproc pwd \
+              env timeout nice nohup sleep sync true false link unlink \
+              basename dirname pathchk realpath readlink dircolors; do
             if command -v g$tool &>/dev/null; then
               sudo ln -sf "$(which g$tool)" "/usr/local/bin/$tool"
             fi
@@ -116,7 +127,12 @@ jobs:
         shell: bash
         run: |
           echo "Using system coreutils from Git Bash"
-          for tool in wc cut sha256sum md5sum sort tr uniq head tail cat rev expand unexpand fold paste nl comm join; do
+          for tool in wc cut sha256sum md5sum sort tr uniq head tail cat rev expand unexpand fold paste nl comm join \
+              basenc base32 ln touch truncate mkdir rmdir mktemp \
+              seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum \
+              id groups whoami uname arch nproc pwd \
+              env timeout sleep true false link unlink \
+              basename dirname realpath readlink; do
             if command -v $tool &>/dev/null; then
               echo "  $tool: $(which $tool)"
             else
@@ -276,7 +292,12 @@ jobs:
 
           echo ""
           echo "=== Installed fcoreutils binaries ==="
-          for tool in fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin; do
+          for tool in fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin \
+              fbasenc fbase32 fln ftouch ftruncate fmkdir frmdir fmknod fmkfifo fmktemp \
+              fseq fshuf ftsort ftee fsum fcksum fsha1sum fsha224sum fsha384sum fsha512sum \
+              fid fgroups fwhoami flogname funame fuptime farch fhostid ftty fnproc fpwd \
+              fenv ftimeout fnice fnohup fsleep fsync ftrue ffalse flink funlink \
+              fbasename fdirname fpathchk frealpath freadlink fdircolors; do
               if command -v "$tool" &>/dev/null; then
                   echo "  $tool: $(which $tool)"
               else

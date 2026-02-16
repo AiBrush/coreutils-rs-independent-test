@@ -728,6 +728,75 @@ for _ in range(500000):
 " > "$TEST_DATA_DIR/paste_bench_col3_10m.txt"
 fi
 
+# ── basenc / base32 test data ────────────────────────────────────────────────
+printf 'Hello, World!\n' > "$TEST_DATA_DIR/basenc_input.txt"
+printf 'Short' > "$TEST_DATA_DIR/basenc_short.txt"
+dd if=/dev/urandom of="$TEST_DATA_DIR/basenc_binary.bin" bs=256 count=1 2>/dev/null
+printf '' > "$TEST_DATA_DIR/basenc_empty.txt"
+printf 'JBSWY3DPEB3W64TMMQ======\n' > "$TEST_DATA_DIR/base32_encoded.txt"
+printf 'Line one\nLine two\nLine three\n' > "$TEST_DATA_DIR/basenc_multiline.txt"
+
+# ── seq test data ────────────────────────────────────────────────────────────
+# (seq generates its own data, but we need reference files for some tests)
+
+# ── tsort test data ──────────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/tsort_simple.txt" <<'EOF'
+a b
+b c
+c d
+EOF
+
+cat > "$TEST_DATA_DIR/tsort_diamond.txt" <<'EOF'
+a b
+a c
+b d
+c d
+EOF
+
+cat > "$TEST_DATA_DIR/tsort_single.txt" <<'EOF'
+a a
+EOF
+
+cat > "$TEST_DATA_DIR/tsort_multi_roots.txt" <<'EOF'
+a c
+b c
+c d
+d e
+EOF
+
+cat > "$TEST_DATA_DIR/tsort_cycle.txt" <<'EOF'
+a b
+b c
+c a
+EOF
+
+# ── dircolors test data ─────────────────────────────────────────────────────
+cat > "$TEST_DATA_DIR/dircolors_custom.txt" <<'EOF'
+# Custom dircolors configuration
+TERM xterm
+TERM xterm-256color
+NORMAL 0
+FILE 0
+DIR 01;34
+LINK 01;36
+EXEC 01;32
+.tar 01;31
+.gz 01;31
+.zip 01;31
+.jpg 01;35
+.png 01;35
+.mp3 00;36
+EOF
+
+# ── Symlink targets for readlink/realpath tests ──────────────────────────────
+mkdir -p "$TEST_DATA_DIR/symlink_tests"
+echo "target content" > "$TEST_DATA_DIR/symlink_tests/target.txt"
+ln -sf "$TEST_DATA_DIR/symlink_tests/target.txt" "$TEST_DATA_DIR/symlink_tests/link1" 2>/dev/null || true
+ln -sf "$TEST_DATA_DIR/symlink_tests/link1" "$TEST_DATA_DIR/symlink_tests/link2" 2>/dev/null || true
+ln -sf "/nonexistent/path" "$TEST_DATA_DIR/symlink_tests/broken_link" 2>/dev/null || true
+ln -sf "relative_target.txt" "$TEST_DATA_DIR/symlink_tests/relative_link" 2>/dev/null || true
+echo "relative target" > "$TEST_DATA_DIR/symlink_tests/relative_target.txt"
+
 echo "Test data generation complete: $TEST_DATA_DIR"
 ls -la "$TEST_DATA_DIR/" | head -30
 echo "..."
