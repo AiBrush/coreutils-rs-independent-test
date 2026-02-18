@@ -51,6 +51,8 @@ NEW_TOOLS=(
     echo users printf test expr factor split numfmt fmt csplit od ptx
     stat who pinky date df du stty chmod chown chgrp shred dd
     rm cp mv install pr ls stdbuf
+    # Assembly-optimized tools
+    yes
 )
 
 for tool in "${NEW_TOOLS[@]}"; do

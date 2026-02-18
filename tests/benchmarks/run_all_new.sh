@@ -61,6 +61,8 @@ NEW_TOOLS=(
     echo factor expr test
     # File Ops tools
     cp mv rm dd split csplit install shred chmod chown chgrp
+    # Assembly-optimized tools
+    yes
 )
 BENCH_SUMMARIES=""
 
