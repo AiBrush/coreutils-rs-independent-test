@@ -110,9 +110,15 @@ jobs:
               gnu_path = which(tool)
               uu_path  = os.path.join(UUTILS_DIR, tool)
 
+              f_size = get_size(f_path)
+              # Only record this tool if the f* binary exists in the release;
+              # otherwise let source_sizes.json provide the fallback value.
+              if f_size is None:
+                  continue
+
               rows[tool] = {
-                  "f_bytes":     get_size(f_path),
-                  "gnu_bytes":   get_size(gnu_path) if gnu_path else None,
+                  "f_bytes":      f_size,
+                  "gnu_bytes":    get_size(gnu_path) if gnu_path else None,
                   "uutils_bytes": get_size(uu_path),
               }
 
