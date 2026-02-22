@@ -28,31 +28,13 @@ TOOLS_TESTED=0
 TOOLS_SKIPPED=0
 TOOL_SUMMARIES=""
 
-# All tools
-TOOLS=(
-    # Original core tools
-    wc cut sha256sum md5sum b2sum base64 sort tr uniq tac
-    # Text processing
-    head tail cat rev expand unexpand fold paste nl comm join
-    # Encoding/Decoding
-    basenc base32
-    # File operations
-    ln touch truncate mkdir rmdir mknod mkfifo mktemp
-    # Text/Data processing
-    seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum
-    # System information
-    id groups whoami logname uname uptime arch hostid tty nproc pwd
-    # Process/Environment
-    env timeout nice nohup sleep sync
-    # Utility commands
-    true false link unlink basename dirname pathchk realpath readlink dircolors
-    # PR #241 additions
-    echo users printf test expr factor split numfmt fmt csplit od ptx
-    stat who pinky date df du stty chmod chown chgrp shred dd
-    rm cp mv install pr ls stdbuf
-    # Assembly-optimized
-    yes
-)
+# Auto-discover all test scripts alphabetically
+TOOLS=()
+for script in $(ls "$SCRIPT_DIR"/test_*.sh 2>/dev/null | sort); do
+    tool=$(basename "$script" .sh)
+    tool="${tool#test_}"
+    TOOLS+=("$tool")
+done
 
 for tool in "${TOOLS[@]}"; do
     script="$SCRIPT_DIR/test_${tool}.sh"

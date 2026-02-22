@@ -184,6 +184,25 @@ run_numfmt_tests() {
         "$F_TOOL --to=si" \
         "$multi_input"
 
+    echo ""
+    echo "=== Additional numfmt Tests ==="
+
+    run_stdout_test "from SI to human" \
+        "$GNU_TOOL --from=si 1K" \
+        "$F_TOOL --from=si 1K"
+
+    run_stdout_test "to IEC" \
+        "$GNU_TOOL --to=iec 1048576" \
+        "$F_TOOL --to=iec 1048576"
+
+    run_stdout_test "padding" \
+        "$GNU_TOOL --padding=10 1000" \
+        "$F_TOOL --padding=10 1000"
+
+    run_stdout_test "field selection" \
+        "echo '100 200' | $GNU_TOOL --field=2 --to=iec" \
+        "echo '100 200' | $F_TOOL --field=2 --to=iec"
+
     finish_test_suite
 }
 

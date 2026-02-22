@@ -44,31 +44,15 @@ if [[ -z "${UUTILS_DIR:-}" ]]; then
     echo ""
 fi
 
-# All tools — run bench scripts for any that exist
-TOOLS=(
-    # Original core tools
-    wc cut sha256sum md5sum b2sum base64 sort tr uniq tac
-    # Text processing
-    head tail cat rev expand unexpand fold paste nl comm join
-    # Encoding/Decoding
-    basenc base32
-    # File operations
-    ln touch truncate mkdir rmdir mknod mkfifo mktemp
-    # Text/Data processing
-    seq shuf tsort tee sum cksum sha1sum sha224sum sha384sum sha512sum
-    # System information
-    id groups whoami logname uname uptime arch hostid tty nproc pwd
-    # Process/Environment
-    env timeout nice nohup sleep sync
-    # Utility commands
-    true false link unlink basename dirname pathchk realpath readlink dircolors
-    # I/O & Text
-    echo factor expr test
-    # File ops
-    cp mv rm dd split csplit install shred chmod chown chgrp
-    # Assembly-optimized
-    yes
-)
+# Auto-discover all benchmark scripts alphabetically
+TOOLS=()
+for script in $(ls "$SCRIPT_DIR"/bench_*.sh 2>/dev/null | sort); do
+    tool=$(basename "$script" .sh)
+    tool="${tool#bench_}"
+    # Skip bench_common.sh
+    [[ "$tool" == "common" ]] && continue
+    TOOLS+=("$tool")
+done
 BENCH_SUMMARIES=""
 
 for tool in "${TOOLS[@]}"; do

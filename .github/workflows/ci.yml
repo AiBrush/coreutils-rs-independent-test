@@ -385,12 +385,40 @@ jobs:
           path: results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 4: Report — publish results to repo
+  # Job 4: GNU Upstream Tests — run GNU's own test suite against fcoreutils
+  # ─────────────────────────────────────────────────────────────────────────────
+  gnu_upstream:
+    name: GNU Upstream Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fcoreutils ${{ github.event.inputs.version }}
+        run: |
+          bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run GNU upstream tests
+        run: bash tests/gnu_upstream/run.sh
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: gnu-upstream-results
+          path: results/gnu_upstream_results.json
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 5: Report — publish results to repo
   # ─────────────────────────────────────────────────────────────────────────────
   report:
     name: Publish Report
     runs-on: ubuntu-latest
-    needs: [compatibility, benchmarks, functional]
+    needs: [compatibility, benchmarks, functional, gnu_upstream]
     if: always()
     permissions:
       contents: write

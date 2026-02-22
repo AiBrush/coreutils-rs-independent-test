@@ -294,6 +294,21 @@ run_ls_tests() {
         "$GNU_TOOL --help" \
         "$F_TOOL --help"
 
+    echo ""
+    echo "=== Additional ls Tests ==="
+
+    run_stdout_test "sort by size -S" \
+        "$LS_ENV $GNU_TOOL -S /tmp 2>/dev/null | head -5" \
+        "$LS_ENV $F_TOOL -S /tmp 2>/dev/null | head -5"
+
+    run_stdout_test "no color output" \
+        "$LS_ENV $GNU_TOOL --color=never /tmp 2>/dev/null | head -5" \
+        "$LS_ENV $F_TOOL --color=never /tmp 2>/dev/null | head -5"
+
+    run_stdout_test "numeric uid/gid -n" \
+        "$LS_ENV $GNU_TOOL -n /tmp 2>/dev/null | head -3" \
+        "$LS_ENV $F_TOOL -n /tmp 2>/dev/null | head -3"
+
     # Cleanup
     rm -rf "$test_dir"
 

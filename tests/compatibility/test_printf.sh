@@ -288,6 +288,33 @@ run_printf_tests() {
         "$GNU_TOOL '%q\n' 'it'\''s'" \
         "$F_TOOL '%q\n' 'it'\''s'"
 
+    echo ""
+    echo "=== Format String Edge Cases ==="
+
+    run_stdout_test "%b escape sequences" \
+        "$GNU_TOOL '%b' 'hello\nworld'" \
+        "$F_TOOL '%b' 'hello\nworld'"
+
+    run_stdout_test "octal escape in format" \
+        "$GNU_TOOL '%s\n' '\101\102\103'" \
+        "$F_TOOL '%s\n' '\101\102\103'"
+
+    run_stdout_test "hex escape" \
+        "$GNU_TOOL '%x\n' 255" \
+        "$F_TOOL '%x\n' 255"
+
+    run_stdout_test "width and precision" \
+        "$GNU_TOOL '%10.3f\n' 3.14159" \
+        "$F_TOOL '%10.3f\n' 3.14159"
+
+    run_stdout_test "zero padding" \
+        "$GNU_TOOL '%05d\n' 42" \
+        "$F_TOOL '%05d\n' 42"
+
+    run_stdout_test "left justify" \
+        "$GNU_TOOL '%-10s|\n' hello" \
+        "$F_TOOL '%-10s|\n' hello"
+
     finish_test_suite
 }
 

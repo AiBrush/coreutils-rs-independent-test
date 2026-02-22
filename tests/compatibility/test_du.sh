@@ -172,6 +172,17 @@ run_du_tests() {
         "$GNU_TOOL --help" \
         "$F_TOOL --help"
 
+    echo ""
+    echo "=== Additional du Tests ==="
+
+    run_stdout_test "max depth 1" \
+        "$GNU_TOOL --max-depth=1 /tmp 2>/dev/null | wc -l" \
+        "$F_TOOL --max-depth=1 /tmp 2>/dev/null | wc -l"
+
+    run_stdout_test "apparent size" \
+        "echo 'hello' > /tmp/du_apparent_test.txt && $GNU_TOOL --apparent-size /tmp/du_apparent_test.txt 2>/dev/null | awk '{print \$1}'" \
+        "echo 'hello' > /tmp/du_apparent_test.txt && $F_TOOL --apparent-size /tmp/du_apparent_test.txt 2>/dev/null | awk '{print \$1}'"
+
     # Cleanup
     rm -rf "$test_dir"
 

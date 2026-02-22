@@ -255,6 +255,23 @@ run_split_tests() {
         "$GNU_TOOL /tmp/nonexistent_$$ 2>&1" \
         "$F_TOOL /tmp/nonexistent_$$ 2>&1"
 
+    echo ""
+    echo "=== Additional split Tests ==="
+
+    # Numeric suffixes
+    gnu_dir="$test_dir/gnu_numsuf"; f_dir="$test_dir/f_numsuf"
+    mkdir -p "$gnu_dir" "$f_dir"
+    (cd "$gnu_dir" && echo 'test' | $GNU_TOOL -l1 --numeric-suffixes)
+    (cd "$f_dir" && echo 'test' | $F_TOOL -l1 --numeric-suffixes)
+    compare_split_dirs "split -l1 --numeric-suffixes" "$gnu_dir" "$f_dir"
+
+    # Suffix length
+    gnu_dir="$test_dir/gnu_suflen"; f_dir="$test_dir/f_suflen"
+    mkdir -p "$gnu_dir" "$f_dir"
+    (cd "$gnu_dir" && printf 'a\nb\nc\n' | $GNU_TOOL -l1 --suffix-length=3)
+    (cd "$f_dir" && printf 'a\nb\nc\n' | $F_TOOL -l1 --suffix-length=3)
+    compare_split_dirs "split -l1 --suffix-length=3" "$gnu_dir" "$f_dir"
+
     # Cleanup
     rm -rf "$test_dir"
 

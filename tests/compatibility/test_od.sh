@@ -209,6 +209,33 @@ run_od_tests() {
         "$GNU_TOOL --help" \
         "$F_TOOL --help"
 
+    echo ""
+    echo "=== Output Format Tests ==="
+
+    run_stdout_test "character format -c" \
+        "printf 'ABC' | $GNU_TOOL -c" \
+        "printf 'ABC' | $F_TOOL -c"
+
+    run_stdout_test "hex format -x" \
+        "printf 'ABC' | $GNU_TOOL -x" \
+        "printf 'ABC' | $F_TOOL -x"
+
+    run_stdout_test "octal bytes -b" \
+        "printf 'ABC' | $GNU_TOOL -b" \
+        "printf 'ABC' | $F_TOOL -b"
+
+    run_stdout_test "no address -An" \
+        "printf 'ABCD' | $GNU_TOOL -An -tx1" \
+        "printf 'ABCD' | $F_TOOL -An -tx1"
+
+    run_stdout_test "skip bytes -j" \
+        "printf 'ABCDEF' | $GNU_TOOL -j2 -c" \
+        "printf 'ABCDEF' | $F_TOOL -j2 -c"
+
+    run_stdout_test "limit bytes -N" \
+        "printf 'ABCDEF' | $GNU_TOOL -N3 -c" \
+        "printf 'ABCDEF' | $F_TOOL -N3 -c"
+
     # Cleanup
     rm -rf "$test_dir"
 

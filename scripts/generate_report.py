@@ -8,35 +8,32 @@ import subprocess
 import sys
 from datetime import datetime
 
-# All fcoreutils tools in canonical order
-ALL_TOOLS = [
-    # Original core tools
-    "wc", "cut", "sha256sum", "md5sum", "b2sum", "base64", "sort", "tr", "uniq", "tac",
-    # Text processing
-    "head", "tail", "cat", "rev", "expand", "unexpand", "fold", "paste", "nl", "comm", "join",
-    # Encoding/Decoding
-    "basenc", "base32",
-    # File operations
-    "ln", "touch", "truncate", "mkdir", "rmdir", "mknod", "mkfifo", "mktemp",
-    # Text/Data processing
-    "seq", "shuf", "tsort", "tee", "sum", "cksum", "sha1sum", "sha224sum", "sha384sum", "sha512sum",
-    # System information
-    "id", "groups", "whoami", "logname", "uname", "uptime", "arch", "hostid", "tty", "nproc", "pwd",
-    # Process/Environment
-    "env", "timeout", "nice", "nohup", "sleep", "sync",
-    # Utility commands
-    "true", "false", "link", "unlink", "basename", "dirname", "pathchk", "realpath", "readlink", "dircolors",
-    # I/O & Text
-    "echo", "factor", "expr", "test",
-    # File ops
-    "cp", "mv", "rm", "dd", "split", "csplit", "install", "shred", "chmod", "chown", "chgrp",
-    # Assembly-optimized
-    "yes",
-]
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(SCRIPT_DIR, "..")
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
+
+# Load canonical tool list from tests/gnu_tools.txt
+_GNU_TOOLS_FILE = os.path.join(PROJECT_ROOT, "tests", "gnu_tools.txt")
+if os.path.exists(_GNU_TOOLS_FILE):
+    with open(_GNU_TOOLS_FILE) as _f:
+        ALL_TOOLS = [line.strip() for line in _f if line.strip() and not line.startswith('#')]
+else:
+    # Fallback: hardcoded sorted list
+    ALL_TOOLS = sorted([
+        "arch", "b2sum", "base32", "base64", "basename", "basenc", "cat", "chcon",
+        "chgrp", "chmod", "chown", "chroot", "cksum", "comm", "cp", "csplit", "cut",
+        "date", "dd", "df", "dir", "dircolors", "dirname", "du", "echo", "env",
+        "expand", "expr", "factor", "false", "fmt", "fold", "groups", "head",
+        "hostid", "id", "install", "join", "kill", "link", "ln", "logname", "ls",
+        "md5sum", "mkdir", "mkfifo", "mknod", "mktemp", "mv", "nice", "nl",
+        "nohup", "nproc", "numfmt", "od", "paste", "pathchk", "pinky", "pr",
+        "printenv", "printf", "ptx", "pwd", "readlink", "realpath", "rev", "rm",
+        "rmdir", "runcon", "seq", "sha1sum", "sha224sum", "sha256sum", "sha384sum",
+        "sha512sum", "shred", "shuf", "sleep", "sort", "split", "stat", "stdbuf",
+        "stty", "sum", "sync", "tac", "tail", "tee", "test", "timeout", "touch",
+        "tr", "true", "truncate", "tsort", "tty", "uname", "unexpand", "uniq",
+        "unlink", "uptime", "users", "vdir", "wc", "who", "whoami", "yes",
+    ], key=str.lower)
 
 
 def parse_version(tag):
@@ -263,6 +260,17 @@ def get_size_ratio(tool, sizes, key_a, key_b):
     return None
 
 
+def format_size(bytes_val):
+    """Format bytes as human-readable size string."""
+    if bytes_val is None:
+        return "-"
+    if bytes_val >= 1_048_576:
+        return f"{bytes_val / 1_048_576:.1f} MB"
+    elif bytes_val >= 1024:
+        return f"{bytes_val / 1024:.1f} KB"
+    return f"{bytes_val} B"
+
+
 def generate_version_report(version, bench_platforms, compat_platforms, tool_results):
     """Generate a detailed per-version report at results/benchmarks/VERSION/report.md."""
     lines = []
@@ -389,17 +397,24 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
     # Build the full tools table
     table_lines = []
-    table_lines.append("| Tool | Size f\\* vs GNU | Size f\\* vs uutils | Compat f\\* vs GNU | Speedup f\\* vs GNU | Speedup f\\* vs uutils |")
-    table_lines.append("|------|----------------:|-------------------:|------------------:|-------------------:|----------------------:|")
+    table_lines.append("| Tool | fcoreutils size | GNU size | uutils size | Compat f\\* vs GNU | Speedup f\\* vs GNU | Speedup f\\* vs uutils |")
+    table_lines.append("|------|----------------:|----------:|----------:|------------------:|-------------------:|----------------------:|")
 
     for tool in ALL_TOOLS:
-        size_gnu_ratio = get_size_ratio(tool, sizes, "f_bytes", "gnu_bytes")
-        size_uutils_ratio = get_size_ratio(tool, sizes, "f_bytes", "uutils_bytes")
         compat_gnu = compute_compat_rate(tool, tool_results)
 
-        size_gnu_str = f"{size_gnu_ratio:.2f}x" if size_gnu_ratio is not None else "-"
-        size_uutils_str = f"{size_uutils_ratio:.2f}x" if size_uutils_ratio is not None else "-"
-        compat_gnu_str = f"{compat_gnu:.0f}%" if compat_gnu is not None else "-"
+        f_size   = format_size(sizes.get(tool, {}).get("f_bytes"))
+        gnu_size = format_size(sizes.get(tool, {}).get("gnu_bytes"))
+        uu_size  = format_size(sizes.get(tool, {}).get("uutils_bytes"))
+
+        if compat_gnu is None:
+            compat_gnu_str = "-"
+        elif compat_gnu >= 100.0:
+            compat_gnu_str = "\u2705 100%"
+        elif compat_gnu > 0:
+            compat_gnu_str = f"\u26a0\ufe0f {compat_gnu:.0f}%"
+        else:
+            compat_gnu_str = "\u274c 0%"
 
         sg = tool_speedups.get(tool)
         su = tool_f_vs_uutils.get(tool)
@@ -407,7 +422,7 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
         speedup_uutils_str = f"**{su:.1f}x**" if su is not None else "-"
 
         table_lines.append(
-            f"| {tool} | {size_gnu_str} | {size_uutils_str} | {compat_gnu_str} | {speedup_gnu_str} | {speedup_uutils_str} |"
+            f"| {tool} | {f_size} | {gnu_size} | {uu_size} | {compat_gnu_str} | {speedup_gnu_str} | {speedup_uutils_str} |"
         )
 
     full_table = "\n".join(table_lines)
@@ -434,8 +449,7 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
 ### Full Tools Comparison
 
-> Sizes are relative (f\\* size ÷ reference size — lower is smaller).
-> Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
+> Sizes are raw binary sizes. Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
 > `-` = no data collected yet for this tool/metric.
 
 {full_table}

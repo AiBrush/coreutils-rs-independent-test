@@ -174,6 +174,25 @@ run_date_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    echo ""
+    echo "=== Format Specifiers ==="
+
+    run_stdout_test "year format %Y" \
+        "$GNU_TOOL -u +%Y 2>/dev/null | grep -E '^[0-9]{4}$'" \
+        "$F_TOOL -u +%Y 2>/dev/null | grep -E '^[0-9]{4}$'"
+
+    run_stdout_test "ISO 8601 format" \
+        "$GNU_TOOL -u +%Y-%m-%d 2>/dev/null | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'" \
+        "$F_TOOL -u +%Y-%m-%d 2>/dev/null | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'"
+
+    run_stdout_test "time format %H:%M:%S" \
+        "$GNU_TOOL -u +%H:%M:%S 2>/dev/null | grep -E '^[0-9]{2}:[0-9]{2}:[0-9]{2}$'" \
+        "$F_TOOL -u +%H:%M:%S 2>/dev/null | grep -E '^[0-9]{2}:[0-9]{2}:[0-9]{2}$'"
+
+    run_stdout_test "Unix timestamp" \
+        "$GNU_TOOL -u +%s 2>/dev/null | grep -E '^[0-9]+$'" \
+        "$F_TOOL -u +%s 2>/dev/null | grep -E '^[0-9]+$'"
+
     finish_test_suite
 }
 

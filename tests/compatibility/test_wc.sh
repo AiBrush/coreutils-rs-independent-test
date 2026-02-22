@@ -378,6 +378,17 @@ run_wc_tests() {
         "$GNU_TOOL -lwcmL '$TEST_DATA_DIR/text_10m.txt'" \
         "$F_TOOL -lwcmL '$TEST_DATA_DIR/text_10m.txt'"
 
+    echo ""
+    echo "=== Exit Code Tests ==="
+
+    run_exit_code_test "--help exits 0" \
+        "$GNU_TOOL --help > /dev/null 2>&1; echo \$?" \
+        "$F_TOOL --help > /dev/null 2>&1; echo \$?"
+
+    run_exit_code_test "--version exits 0" \
+        "$GNU_TOOL --version > /dev/null 2>&1; echo \$?" \
+        "$F_TOOL --version > /dev/null 2>&1; echo \$?"
+
     finish_test_suite
 }
 
