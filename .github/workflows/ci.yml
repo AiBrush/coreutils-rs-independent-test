@@ -162,24 +162,31 @@ jobs:
             runner: ubuntu-24.04-arm
             triple: aarch64-unknown-linux-gnu
             result_name: linux_aarch64
+            run_full_tests: "true"
             shell: bash
 
           - name: macos-arm64
             runner: macos-latest
             triple: aarch64-apple-darwin
             result_name: darwin_arm64
+            run_full_tests: "true"
             shell: bash
 
           - name: windows-x86_64
             runner: windows-latest
             triple: x86_64-pc-windows-msvc
             result_name: windows_x86_64
+            run_full_tests: "true"
             shell: bash
 
           - name: windows-arm64
             runner: windows-11-arm
             triple: aarch64-pc-windows-msvc
             result_name: windows_arm64
+            # ARM64 Windows: Git Bash reports x86_64, installs x86_64 binary under emulation.
+            # Many tools crash with SIGILL due to SIMD instructions not supported in emulation.
+            # Skip the full suite; just do a quick smoke test instead.
+            run_full_tests: "false"
             shell: bash
 
     defaults:
@@ -225,22 +232,72 @@ jobs:
           EOF
 
       - name: Generate test data
-        if: steps.install.outputs.installed == 'true'
+        if: steps.install.outputs.installed == 'true' && matrix.run_full_tests == 'true'
         run: bash tests/helpers/generate_test_data.sh
 
       - name: Run compatibility tests
-        if: steps.install.outputs.installed == 'true'
+        if: steps.install.outputs.installed == 'true' && matrix.run_full_tests == 'true'
         run: bash tests/compatibility/run_all.sh
         continue-on-error: true
         env:
           RESULTS_DIR: ${{ github.workspace }}/results
 
       - name: Copy results to versioned path
-        if: steps.install.outputs.installed == 'true'
+        if: steps.install.outputs.installed == 'true' && matrix.run_full_tests == 'true'
         run: |
           mkdir -p results/compatibility/${{ github.event.inputs.version }}
           cp results/compatibility_results.json \
              results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
+
+      - name: Smoke test (quick sanity check, full tests skipped)
+        if: steps.install.outputs.installed == 'true' && matrix.run_full_tests == 'false'
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: |
+          echo "Running smoke test for ${{ matrix.name }} (x86_64 binary under ARM64 emulation)"
+          INSTALL_DIR="$HOME/.local/bin"
+          pass=0; fail=0; crash=0
+          for tool in fwc fsort fcut ftr funiq ftac fbase64 fsha256sum fhead ftail fcat; do
+            bin="$INSTALL_DIR/$tool"
+            if [[ ! -x "$bin" ]]; then
+              bin="$INSTALL_DIR/${tool}.exe"
+            fi
+            if [[ ! -x "$bin" ]]; then
+              echo "  MISSING: $tool"
+              fail=$((fail+1))
+              continue
+            fi
+            if "$bin" --version >/dev/null 2>&1 || "$bin" --help >/dev/null 2>&1; then
+              echo "  OK: $tool"
+              pass=$((pass+1))
+            else
+              echo "  CRASH: $tool (exit $?)"
+              crash=$((crash+1))
+            fi
+          done
+          echo "Smoke test: $pass OK, $fail missing, $crash crashed"
+
+          mkdir -p "results/compatibility/${{ github.event.inputs.version }}"
+          python3 - <<'PYEOF'
+          import json, os
+          result = {
+              "skipped": False,
+              "smoke_only": True,
+              "reason": "x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes",
+              "platform": "${{ matrix.triple }}",
+              "type": "compatibility",
+              "summary": {
+                  "total_tests": 0, "passed": 0, "failed": 0, "skipped": 0,
+                  "tools_tested": 0, "tools_skipped": 0
+              },
+              "tools": {}
+          }
+          path = "results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json"
+          with open(path, "w") as f:
+              json.dump(result, f, indent=2)
+          print(f"Wrote smoke-only result to {path}")
+          PYEOF
 
       - name: Print summary table
         env:
@@ -389,6 +446,10 @@ jobs:
               if data.get("skipped"):
                   reason = data.get("reason", "no binary available")
                   rows.append(f"| {label} | — | — | — | ⏭️ {reason} |")
+                  continue
+              if data.get("smoke_only"):
+                  reason = data.get("reason", "smoke test only")
+                  rows.append(f"| {label} | — | — | — | 🔍 {reason} |")
                   continue
               s       = data.get("summary", {})
               passed  = s.get("passed", 0)
