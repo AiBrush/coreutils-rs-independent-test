@@ -1,11 +1,11 @@
 {
   "type": "compatibility",
-  "platform": "Linux_x86_64",
-  "timestamp": "2026-02-22T16:05:41Z",
+  "platform": "Darwin_arm64",
+  "timestamp": "2026-02-22T16:05:38Z",
   "summary": {
-    "total_tests": 436,
-    "passed": 417,
-    "failed": 19,
+    "total_tests": 325,
+    "passed": 220,
+    "failed": 105,
     "skipped": 0,
     "tools_tested": 100,
     "tools_skipped": 89
@@ -19,26 +19,10 @@
       "skipped": 0,
       "failed_tests": []
     },
-    "b2sum": {
-      "status": "tested",
-      "total": 25,
-      "passed": 25,
-      "failed": 0,
-      "skipped": 0,
-      "failed_tests": []
-    },
     "base32": {
       "status": "NOT_IMPLEMENTED",
       "total": 0,
       "passed": 0,
-      "failed": 0,
-      "skipped": 0,
-      "failed_tests": []
-    },
-    "base64": {
-      "status": "tested",
-      "total": 33,
-      "passed": 33,
       "failed": 0,
       "skipped": 0,
       "failed_tests": []
@@ -126,10 +110,19 @@
     "cut": {
       "status": "tested",
       "total": 49,
-      "passed": 49,
-      "failed": 0,
+      "passed": 41,
+      "failed": 8,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "-c on CJK text",
+        "--complement -f1 CSV",
+        "--complement -f2 CSV",
+        "--complement -b1-3",
+        "--output-delimiter with comma fields",
+        "--output-delimiter with bytes",
+        "-z with null-terminated input",
+        "tab delimiter explicit"
+      ]
     },
     "date": {
       "status": "NOT_IMPLEMENTED",
@@ -326,10 +319,14 @@
     "md5sum": {
       "status": "tested",
       "total": 30,
-      "passed": 30,
-      "failed": 0,
+      "passed": 27,
+      "failed": 3,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "-c --ignore-missing",
+        "-c with malformed",
+        "-c -w with malformed"
+      ]
     },
     "mkdir": {
       "status": "NOT_IMPLEMENTED",
@@ -542,10 +539,14 @@
     "sha256sum": {
       "status": "tested",
       "total": 34,
-      "passed": 34,
-      "failed": 0,
+      "passed": 31,
+      "failed": 3,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "-c --ignore-missing",
+        "-c with malformed checksum",
+        "-c -w (warn) with malformed"
+      ]
     },
     "sha384sum": {
       "status": "NOT_IMPLEMENTED",
@@ -590,10 +591,14 @@
     "sort": {
       "status": "tested",
       "total": 49,
-      "passed": 49,
-      "failed": 0,
+      "passed": 46,
+      "failed": 3,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "already sorted",
+        "-d dictionary order",
+        "-k3 (sort by field 3)"
+      ]
     },
     "split": {
       "status": "NOT_IMPLEMENTED",
@@ -643,14 +648,6 @@
       "skipped": 0,
       "failed_tests": []
     },
-    "tac": {
-      "status": "tested",
-      "total": 30,
-      "passed": 30,
-      "failed": 0,
-      "skipped": 0,
-      "failed_tests": []
-    },
     "tail": {
       "status": "NOT_IMPLEMENTED",
       "total": 0,
@@ -694,10 +691,13 @@
     "tr": {
       "status": "tested",
       "total": 46,
-      "passed": 46,
-      "failed": 0,
+      "passed": 44,
+      "failed": 2,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "-t truncate SET1 to SET2 length",
+        "translate binary data"
+      ]
     },
     "true": {
       "status": "NOT_IMPLEMENTED",
@@ -750,10 +750,28 @@
     "uniq": {
       "status": "tested",
       "total": 46,
-      "passed": 46,
-      "failed": 0,
+      "passed": 29,
+      "failed": 17,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "no trailing newline",
+        "-c count",
+        "-c all unique",
+        "-c all same",
+        "--all-repeated=separate",
+        "-i -c case insensitive count",
+        "-w3 compare first 3 chars",
+        "-w1 compare first char only",
+        "-z null-terminated",
+        "-z -c count null-terminated",
+        "--group=prepend",
+        "--group=append",
+        "--group=separate",
+        "--group=both",
+        "-f1 -s2 -w5",
+        "-c -i combined",
+        "10MB many duplicates -c"
+      ]
     },
     "unlink": {
       "status": "NOT_IMPLEMENTED",
@@ -782,10 +800,80 @@
     "wc": {
       "status": "tested",
       "total": 71,
-      "passed": 71,
-      "failed": 0,
+      "passed": 2,
+      "failed": 69,
       "skipped": 0,
-      "failed_tests": []
+      "failed_tests": [
+        "empty file",
+        "single byte file",
+        "no trailing newline",
+        "with trailing newline",
+        "single newline",
+        "only newlines",
+        "empty stdin",
+        "whitespace only file",
+        "spaces no newline",
+        "tabs no newline",
+        "-c empty",
+        "-c text file",
+        "-c binary file",
+        "-c stdin",
+        "-l empty",
+        "-l no trailing newline",
+        "-l text file",
+        "-l only newlines",
+        "-l stdin",
+        "-l stdin no final newline",
+        "-w empty",
+        "-w whitespace only",
+        "-w text file",
+        "-w single word",
+        "-w multiple spaces between words",
+        "-m ASCII file",
+        "-m UTF-8 CJK",
+        "-m emoji",
+        "-m combining umlaut",
+        "-m vs -c on UTF-8",
+        "-m empty",
+        "-L empty",
+        "-L simple text",
+        "-L with tabs (tab stop at 8)",
+        "-L only tabs",
+        "-L tab at position 8",
+        "-L long line 10k",
+        "-L CJK",
+        "-lw (lines and words)",
+        "-lc (lines and bytes)",
+        "-lwc (all three)",
+        "-cm (chars and bytes mismatch on UTF-8)",
+        "-Lw (max line and words)",
+        "two files",
+        "three files with flags",
+        "multiple files total line",
+        "unix line endings",
+        "dos line endings",
+        "CR-only endings",
+        "mixed line endings",
+        "binary file with null bytes",
+        "text with embedded nulls",
+        "random binary 1k",
+        "stdin vs file (same content)",
+        "stdin -l",
+        "symlink file",
+        "LC_ALL=C default count",
+        "LC_ALL=C -m char count",
+        "LC_ALL=en_US.UTF-8 -m char count",
+        "10KB line",
+        "1MB line",
+        "1MB line -L",
+        "--files0-from",
+        "--files0-from empty list",
+        "1MB file default",
+        "10MB file -l",
+        "10MB file -w",
+        "10MB file -c",
+        "10MB file all flags"
+      ]
     },
     "who": {
       "status": "NOT_IMPLEMENTED",
@@ -802,34 +890,6 @@
       "failed": 0,
       "skipped": 0,
       "failed_tests": []
-    },
-    "yes": {
-      "status": "tested",
-      "total": 23,
-      "passed": 4,
-      "failed": 19,
-      "skipped": 0,
-      "failed_tests": [
-        "default output (y)",
-        "single arg",
-        "multiple args (space-joined)",
-        "empty string arg",
-        "numeric arg",
-        "three args",
-        "arg with spaces (quoted)",
-        "special characters",
-        "-- then arg",
-        "-- alone (falls to default y)",
-        "-- then --help (literal string)",
-        "-- then --version (literal string)",
-        "pipe closes cleanly (head -n 5)",
-        "pipe to wc -l (1000 lines)",
-        "pipe arg to wc -l (500 lines)",
-        "large output 10KB default",
-        "large output 10KB with arg",
-        "10000 lines",
-        "10000 lines with arg"
-      ]
     }
   }
 }

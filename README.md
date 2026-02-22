@@ -10,8 +10,8 @@
 
 ### Summary
 - **Tools tracked:** 84 total
-- **Compatibility:** 826/826 tests passed (100.0%)
-- **Fastest speedup:** wc at 34.6x faster than GNU
+- **Compatibility:** 1054/1197 tests passed (88.1%)
+- **Fastest speedup:** wc at 31.1x faster than GNU
 
 ### Full Tools Comparison
 
@@ -21,93 +21,93 @@
 
 | Tool | Size f\* vs GNU | Size f\* vs uutils | Compat f\* vs GNU | Compat f\* vs uutils | Speedup f\* vs GNU | Speedup f\* vs uutils |
 |------|----------------:|-------------------:|------------------:|---------------------:|-------------------:|----------------------:|
-| wc | 16.35x | - | 100% | - | **34.6x** | **22.8x** |
-| cut | 16.60x | - | 100% | - | **5.8x** | **1.9x** |
-| sha256sum | 131.37x | - | 100% | - | **1.0x** | **3.8x** |
-| md5sum | 131.53x | - | 100% | - | **1.4x** | **1.3x** |
-| b2sum | 11.60x | - | 100% | - | **1.3x** | **1.3x** |
-| base64 | 14.58x | - | 100% | - | **6.7x** | **7.0x** |
-| sort | 9.44x | - | 100% | - | **17.6x** | **18.0x** |
-| tr | 14.60x | - | 100% | - | **7.4x** | **7.2x** |
-| uniq | 23.46x | - | 100% | - | **13.5x** | **6.6x** |
+| wc | 16.35x | - | 68% | - | **31.1x** | **16.9x** |
+| cut | 16.60x | - | 95% | - | **5.4x** | **1.9x** |
+| sha256sum | 131.37x | - | 97% | - | **1.0x** | **3.8x** |
+| md5sum | 131.53x | - | 97% | - | **1.4x** | **1.3x** |
+| b2sum | 11.60x | - | 100% | - | **1.3x** | **1.1x** |
+| base64 | 14.58x | - | 100% | - | **6.5x** | **5.6x** |
+| sort | 9.44x | - | 98% | - | **17.6x** | **18.0x** |
+| tr | 14.60x | - | 99% | - | **6.3x** | **6.7x** |
+| uniq | 23.46x | - | 88% | - | **13.5x** | **6.3x** |
 | tac | 50.81x | - | 100% | - | **3.9x** | **2.1x** |
-| head | 10.78x | - | 100% | - | - | - |
-| tail | 7.77x | - | 100% | - | - | - |
-| cat | 11.94x | - | 100% | - | - | - |
-| rev | 30.81x | - | 100% | - | - | - |
-| expand | 13.06x | - | 100% | - | - | - |
-| unexpand | 11.56x | - | 100% | - | - | - |
-| fold | 12.98x | - | 100% | - | - | - |
-| paste | 11.82x | - | 100% | - | - | - |
-| nl | 47.97x | - | 100% | - | - | - |
-| comm | 11.86x | - | 100% | - | - | - |
-| join | 9.43x | - | 100% | - | - | - |
-| basenc | 9.80x | - | 100% | - | - | - |
-| base32 | 11.56x | - | 100% | - | - | - |
-| ln | 8.30x | - | 100% | - | - | - |
-| touch | 4.84x | - | 95% | - | - | - |
-| truncate | 11.48x | - | 100% | - | - | - |
-| mkdir | 5.95x | - | 100% | - | - | - |
-| rmdir | 9.31x | - | 83% | - | - | - |
-| mknod | 10.24x | - | 100% | - | - | - |
-| mkfifo | 10.19x | - | 100% | - | - | - |
-| mktemp | 12.89x | - | 100% | - | - | - |
-| seq | 9.72x | - | 100% | - | - | - |
-| shuf | 10.10x | - | 100% | - | - | - |
-| tsort | 10.04x | - | 100% | - | - | - |
-| tee | 11.54x | - | 100% | - | - | - |
-| sum | 12.81x | - | 100% | - | - | - |
-| cksum | 4.32x | - | 100% | - | - | - |
-| sha1sum | 131.37x | - | 100% | - | - | - |
-| sha224sum | 131.37x | - | 100% | - | - | - |
-| sha384sum | 131.37x | - | 100% | - | - | - |
-| sha512sum | 131.37x | - | 100% | - | - | - |
-| id | 11.27x | - | 100% | - | - | - |
-| groups | 12.44x | - | 100% | - | - | - |
-| whoami | 12.34x | - | 100% | - | - | - |
-| logname | 12.34x | - | 100% | - | - | - |
-| uname | 12.45x | - | 100% | - | - | - |
-| uptime | 36.09x | - | 80% | - | - | - |
-| arch | 12.34x | - | 100% | - | - | - |
-| hostid | 12.34x | - | 100% | - | - | - |
-| tty | 12.37x | - | 100% | - | - | - |
-| nproc | 12.90x | - | 100% | - | - | - |
-| pwd | 12.47x | - | 100% | - | - | - |
-| env | 9.98x | - | 100% | - | - | - |
-| timeout | 12.49x | - | 90% | - | - | - |
-| nice | 13.29x | - | 100% | - | - | - |
-| nohup | 13.27x | - | 100% | - | - | - |
-| sleep | 12.90x | - | 100% | - | - | - |
-| sync | 12.53x | - | 83% | - | - | - |
-| true | 11.25x | - | 100% | - | - | - |
-| false | 11.27x | - | 100% | - | - | - |
-| link | 12.51x | - | 100% | - | - | - |
-| unlink | 12.47x | - | 100% | - | - | - |
-| basename | 12.48x | - | 100% | - | - | - |
-| dirname | 12.43x | - | 100% | - | - | - |
-| pathchk | 12.68x | - | 100% | - | - | - |
-| realpath | 10.48x | - | 100% | - | - | - |
-| readlink | 10.37x | - | 100% | - | - | - |
-| dircolors | 9.70x | - | 86% | - | - | - |
-| echo | 12.43x | - | 100% | - | - | - |
-| factor | 7.25x | - | 100% | - | - | - |
-| expr | 43.49x | - | 100% | - | - | - |
-| test | 9.51x | - | 100% | - | - | - |
-| cp | 3.57x | - | 100% | - | - | - |
+| head | 10.78x | - | - | - | - | - |
+| tail | 7.77x | - | - | - | - | - |
+| cat | 11.94x | - | - | - | - | - |
+| rev | 30.81x | - | - | - | - | - |
+| expand | 13.06x | - | - | - | - | - |
+| unexpand | 11.56x | - | - | - | - | - |
+| fold | 12.98x | - | - | - | - | - |
+| paste | 11.82x | - | - | - | - | - |
+| nl | 47.97x | - | - | - | - | - |
+| comm | 11.86x | - | - | - | - | - |
+| join | 9.43x | - | - | - | - | - |
+| basenc | 9.80x | - | - | - | - | - |
+| base32 | 11.56x | - | - | - | - | - |
+| ln | 8.30x | - | - | - | - | - |
+| touch | 4.84x | - | - | - | - | - |
+| truncate | 11.48x | - | - | - | - | - |
+| mkdir | 5.95x | - | - | - | - | - |
+| rmdir | 9.31x | - | - | - | - | - |
+| mknod | 10.24x | - | - | - | - | - |
+| mkfifo | 10.19x | - | - | - | - | - |
+| mktemp | 12.89x | - | - | - | - | - |
+| seq | 9.72x | - | - | - | - | - |
+| shuf | 10.10x | - | - | - | - | - |
+| tsort | 10.04x | - | - | - | - | - |
+| tee | 11.54x | - | - | - | - | - |
+| sum | 12.81x | - | - | - | - | - |
+| cksum | 4.32x | - | - | - | - | - |
+| sha1sum | 131.37x | - | - | - | - | - |
+| sha224sum | 131.37x | - | - | - | - | - |
+| sha384sum | 131.37x | - | - | - | - | - |
+| sha512sum | 131.37x | - | - | - | - | - |
+| id | 11.27x | - | - | - | - | - |
+| groups | 12.44x | - | - | - | - | - |
+| whoami | 12.34x | - | - | - | - | - |
+| logname | 12.34x | - | - | - | - | - |
+| uname | 12.45x | - | - | - | - | - |
+| uptime | 36.09x | - | - | - | - | - |
+| arch | 12.34x | - | - | - | - | - |
+| hostid | 12.34x | - | - | - | - | - |
+| tty | 12.37x | - | - | - | - | - |
+| nproc | 12.90x | - | - | - | - | - |
+| pwd | 12.47x | - | - | - | - | - |
+| env | 9.98x | - | - | - | - | - |
+| timeout | 12.49x | - | - | - | - | - |
+| nice | 13.29x | - | - | - | - | - |
+| nohup | 13.27x | - | - | - | - | - |
+| sleep | 12.90x | - | - | - | - | - |
+| sync | 12.53x | - | - | - | - | - |
+| true | 11.25x | - | - | - | - | - |
+| false | 11.27x | - | - | - | - | - |
+| link | 12.51x | - | - | - | - | - |
+| unlink | 12.47x | - | - | - | - | - |
+| basename | 12.48x | - | - | - | - | - |
+| dirname | 12.43x | - | - | - | - | - |
+| pathchk | 12.68x | - | - | - | - | - |
+| realpath | 10.48x | - | - | - | - | - |
+| readlink | 10.37x | - | - | - | - | - |
+| dircolors | 9.70x | - | - | - | - | - |
+| echo | 12.43x | - | - | - | - | - |
+| factor | 7.25x | - | - | - | - | - |
+| expr | 43.49x | - | - | - | - | - |
+| test | 9.51x | - | - | - | - | - |
+| cp | 3.57x | - | - | - | - | - |
 | mv | 3.53x | - | - | - | - | - |
-| rm | 8.94x | - | 100% | - | - | - |
-| dd | 7.04x | - | 100% | - | - | - |
-| split | 9.58x | - | 100% | - | - | - |
+| rm | 8.94x | - | - | - | - | - |
+| dd | 7.04x | - | - | - | - | - |
+| split | 9.58x | - | - | - | - | - |
 | csplit | 36.69x | - | - | - | - | - |
-| install | 3.60x | - | 100% | - | - | - |
-| shred | 8.37x | - | 100% | - | - | - |
-| chmod | 9.65x | - | 100% | - | - | - |
-| chown | 9.03x | - | 100% | - | - | - |
-| chgrp | 8.96x | - | 100% | - | - | - |
-| yes | 12.37x | - | 9% | - | - | - |
+| install | 3.60x | - | - | - | - | - |
+| shred | 8.37x | - | - | - | - | - |
+| chmod | 9.65x | - | - | - | - | - |
+| chown | 9.03x | - | - | - | - | - |
+| chgrp | 8.96x | - | - | - | - | - |
+| yes | 12.37x | - | 17% | - | **4.0x** | - |
 
 ### Known Issues
-- No known issues
+- 143 compatibility test failures across 5 platforms
 
 ## Per-Version Details
 
@@ -121,7 +121,7 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
 - Builds uutils/coreutils from source for comparison
-- Runs 826+ compatibility tests comparing output byte-for-byte against GNU coreutils
+- Runs 1197+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Measures binary sizes of f\*, GNU, and uutils for each tool
 - Tests run across multiple platforms via GitHub Actions
@@ -139,3 +139,13 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 pip install matplotlib
 python3 scripts/plot_speedup.py
 ```
+
+## Platform Functional Tests (v0.8.8)
+
+| Platform | Passed | Failed | Skipped | Status |
+|----------|--------|--------|---------|--------|
+| Linux x86_64 | 417 | 19 | 0 | ⚠️ |
+| Linux ARM64 | 417 | 19 | 0 | ⚠️ |
+| macOS ARM64 | 220 | 105 | 0 | ⚠️ |
+| Windows x86_64 | 0 | 0 | 0 | ✅ |
+| Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |
