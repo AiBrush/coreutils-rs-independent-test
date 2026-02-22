@@ -545,7 +545,9 @@ def main():
         if tool not in tool_results:
             tool_results[tool] = {}
         for platform_key, data in platform_data.items():
-            if platform_key not in tool_results[tool]:
+            existing = tool_results[tool].get(platform_key)
+            # Override NOT_IMPLEMENTED entries with actual source-built test data
+            if existing is None or existing.get("status") == "NOT_IMPLEMENTED":
                 tool_results[tool][platform_key] = data
 
     # Generate chart
