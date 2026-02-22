@@ -209,21 +209,37 @@ def compute_speedups(bench_platforms):
 
 
 def compute_compat_rate(tool, tool_results):
-    """Compute compatibility pass rate (0-100) for a tool across all platforms."""
+    """Compute compatibility pass rate (0-100) for a tool.
+
+    Uses Linux x86_64 as the canonical GNU compatibility platform, since
+    macOS and Windows use BSD tools with different output formats.
+    Falls back to any Linux platform, then any platform.
+    """
     if tool not in tool_results:
         return None
-    total = 0
-    passed = 0
-    for platform, data in tool_results[tool].items():
-        if data.get("status") == "NOT_IMPLEMENTED":
-            continue
-        t = data.get("total", 0)
-        p = data.get("passed", 0)
-        if t > 0:
-            total += t
-            passed += p
-    if total > 0:
-        return passed / total * 100
+
+    platforms = tool_results[tool]
+
+    # Preferred: Linux x86_64 (actual GNU tools)
+    for platform, data in platforms.items():
+        if "Linux_x86_64" in platform:
+            if data.get("status") == "NOT_IMPLEMENTED":
+                return None
+            t = data.get("total", 0)
+            p = data.get("passed", 0)
+            if t > 0:
+                return p / t * 100
+
+    # Fallback: any Linux platform
+    for platform, data in platforms.items():
+        if platform.startswith("Linux_"):
+            if data.get("status") == "NOT_IMPLEMENTED":
+                continue
+            t = data.get("total", 0)
+            p = data.get("passed", 0)
+            if t > 0:
+                return p / t * 100
+
     return None
 
 
