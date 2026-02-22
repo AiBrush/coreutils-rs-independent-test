@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate simplified README.md and per-version detail reports from results/."""
+"""Generate README.md and per-version detail reports from results/."""
 
 import json
 import glob
@@ -8,7 +8,32 @@ import subprocess
 import sys
 from datetime import datetime
 
-TOOLS = ["wc", "cut", "sha256sum", "md5sum", "b2sum", "base64", "sort", "tr", "uniq", "tac"]
+# All fcoreutils tools in canonical order
+ALL_TOOLS = [
+    # Original core tools
+    "wc", "cut", "sha256sum", "md5sum", "b2sum", "base64", "sort", "tr", "uniq", "tac",
+    # Text processing
+    "head", "tail", "cat", "rev", "expand", "unexpand", "fold", "paste", "nl", "comm", "join",
+    # Encoding/Decoding
+    "basenc", "base32",
+    # File operations
+    "ln", "touch", "truncate", "mkdir", "rmdir", "mknod", "mkfifo", "mktemp",
+    # Text/Data processing
+    "seq", "shuf", "tsort", "tee", "sum", "cksum", "sha1sum", "sha224sum", "sha384sum", "sha512sum",
+    # System information
+    "id", "groups", "whoami", "logname", "uname", "uptime", "arch", "hostid", "tty", "nproc", "pwd",
+    # Process/Environment
+    "env", "timeout", "nice", "nohup", "sleep", "sync",
+    # Utility commands
+    "true", "false", "link", "unlink", "basename", "dirname", "pathchk", "realpath", "readlink", "dircolors",
+    # I/O & Text
+    "echo", "factor", "expr", "test",
+    # File ops
+    "cp", "mv", "rm", "dd", "split", "csplit", "install", "shred", "chmod", "chown", "chgrp",
+    # Assembly-optimized
+    "yes",
+]
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(SCRIPT_DIR, "..")
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
@@ -42,6 +67,9 @@ def load_benchmark_data(version):
         return platforms
 
     for jf in glob.glob(os.path.join(bench_dir, "linux_*.json")):
+        # Skip sizes files
+        if "_sizes.json" in jf:
+            continue
         try:
             with open(jf) as f:
                 data = json.load(f)
@@ -53,7 +81,12 @@ def load_benchmark_data(version):
 
 
 def load_compatibility_data(version):
-    """Load all compatibility JSON files for a version."""
+    """Load all compatibility JSON files for a version.
+
+    Returns (platforms, tool_results) where:
+      platforms: dict of platform -> summary dict
+      tool_results: dict of tool_name -> dict of platform -> per-tool data
+    """
     compat_dir = os.path.join(RESULTS_DIR, "compatibility", version)
     platforms = {}
     tool_results = {}
@@ -69,10 +102,16 @@ def load_compatibility_data(version):
 
         platform = data.get("platform", os.path.basename(jf).replace(".json", ""))
 
-        # Check if this is a per-tool file or an aggregate
         if "summary" in data and "total_tests" in data.get("summary", {}):
             platforms[platform] = data.get("summary", {})
+            # New format: extract per-tool data from "tools" field
+            if "tools" in data and isinstance(data["tools"], dict):
+                for tool, tool_data in data["tools"].items():
+                    if tool not in tool_results:
+                        tool_results[tool] = {}
+                    tool_results[tool][platform] = tool_data
         elif "tool" in data:
+            # Legacy per-tool file format
             tool = data["tool"]
             if tool not in tool_results:
                 tool_results[tool] = {}
@@ -81,10 +120,62 @@ def load_compatibility_data(version):
     return platforms, tool_results
 
 
+def load_size_data(version):
+    """Load binary size data for a version from linux_*_sizes.json files."""
+    bench_dir = os.path.join(RESULTS_DIR, "benchmarks", version)
+    sizes = {}
+    if not os.path.isdir(bench_dir):
+        return sizes
+
+    for jf in glob.glob(os.path.join(bench_dir, "linux_*_sizes.json")):
+        try:
+            with open(jf) as f:
+                data = json.load(f)
+            for tool, sz in data.get("sizes", {}).items():
+                if tool not in sizes:
+                    sizes[tool] = sz
+        except (json.JSONDecodeError, IOError):
+            pass
+    return sizes
+
+
+def load_new_tools_data():
+    """Load new-tools benchmark and compatibility data from results/.
+
+    These are written by the report job when test-new-tools/bench-new-tools
+    artifacts are downloaded (workflow_dispatch runs only).
+    """
+    bench_data = {}
+    compat_data = {}
+
+    bench_file = os.path.join(RESULTS_DIR, "new_tools_benchmark_results.json")
+    if os.path.exists(bench_file):
+        try:
+            with open(bench_file) as f:
+                d = json.load(f)
+            for tool, data in d.get("tools", {}).items():
+                if isinstance(data, dict) and data.get("status") != "NOT_IMPLEMENTED":
+                    bench_data[tool] = data
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    compat_file = os.path.join(RESULTS_DIR, "new_tools_compatibility_results.json")
+    if os.path.exists(compat_file):
+        try:
+            with open(compat_file) as f:
+                d = json.load(f)
+            for tool, data in d.get("tools", {}).items():
+                compat_data[tool] = data
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    return bench_data, compat_data
+
+
 def compute_speedups(bench_platforms):
     """Compute best speedup per tool across all platforms.
 
-    Returns (tool_speedups, tool_f_vs_uutils) dicts.
+    Returns (tool_speedups, tool_f_vs_uutils) dicts mapping tool -> best speedup value.
     """
     tool_speedups = {}
     tool_f_vs_uutils = {}
@@ -102,6 +193,37 @@ def compute_speedups(bench_platforms):
                     if tool not in tool_f_vs_uutils or fvu > tool_f_vs_uutils[tool]:
                         tool_f_vs_uutils[tool] = fvu
     return tool_speedups, tool_f_vs_uutils
+
+
+def compute_compat_rate(tool, tool_results):
+    """Compute compatibility pass rate (0-100) for a tool across all platforms."""
+    if tool not in tool_results:
+        return None
+    total = 0
+    passed = 0
+    for platform, data in tool_results[tool].items():
+        if data.get("status") == "NOT_IMPLEMENTED":
+            continue
+        t = data.get("total", 0)
+        p = data.get("passed", 0)
+        if t > 0:
+            total += t
+            passed += p
+    if total > 0:
+        return passed / total * 100
+    return None
+
+
+def get_size_ratio(tool, sizes, key_a, key_b):
+    """Compute ratio key_a/key_b for a tool's binary sizes. Returns float or None."""
+    if tool not in sizes:
+        return None
+    s = sizes[tool]
+    a = s.get(key_a)
+    b = s.get(key_b)
+    if a and b and b > 0:
+        return a / b
+    return None
 
 
 def generate_version_report(version, bench_platforms, compat_platforms, tool_results):
@@ -132,7 +254,6 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
     if bench_platforms:
         lines.append("## Performance\n")
 
-        # Check if any benchmark in this version has uutils data
         has_uutils = False
         for platform, tools in bench_platforms.items():
             for tool, data in tools.items():
@@ -151,7 +272,7 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
                 lines.append("| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |")
                 lines.append("|------|------|-----------|-------------------|---------|")
 
-            for tool in TOOLS:
+            for tool in ALL_TOOLS:
                 data = bench_platforms[platform].get(tool, {})
                 if not isinstance(data, dict):
                     continue
@@ -161,7 +282,10 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
                     else:
                         lines.append(f"| {tool} | - | - | - | N/A |")
                     continue
-                for b in data.get("benchmarks", []):
+                benchmarks = data.get("benchmarks", [])
+                if not benchmarks:
+                    continue
+                for b in benchmarks:
                     name = b.get("name", "")
                     gnu_t = b.get("gnu_mean")
                     f_t = b.get("f_mean")
@@ -180,7 +304,6 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
                         lines.append(f"| {tool} | {name} | {gnu_str} | {f_str} | {sp_str} |")
             lines.append("")
 
-    # Write to the benchmarks version dir (or compatibility dir as fallback)
     report_dir = os.path.join(RESULTS_DIR, "benchmarks", version)
     if not os.path.isdir(report_dir):
         report_dir = os.path.join(RESULTS_DIR, "compatibility", version)
@@ -194,11 +317,17 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
 
 
 def generate_readme(latest_version, bench_platforms, compat_platforms,
-                    tool_speedups, tool_f_vs_uutils):
-    """Generate the simplified README.md."""
+                    tool_speedups, tool_f_vs_uutils, tool_results, sizes):
+    """Generate the README.md with a full tools comparison table."""
     total_tests = sum(p.get("total_tests", 0) for p in compat_platforms.values())
     total_passed = sum(p.get("passed", 0) for p in compat_platforms.values())
     pass_pct = f"{total_passed / total_tests * 100:.1f}" if total_tests > 0 else "0"
+
+    # Count tools with any data
+    tools_with_data = sum(
+        1 for t in ALL_TOOLS
+        if t in tool_speedups or t in tool_results
+    )
 
     # Find fastest tool
     fastest_tool = ""
@@ -207,26 +336,6 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
         if s > fastest_speedup:
             fastest_speedup = s
             fastest_tool = tool
-
-    # Check if we have any uutils data
-    has_uutils = bool(tool_f_vs_uutils)
-
-    # Build speedup table (sorted highest to lowest by f* vs GNU)
-    speedup_rows = []
-    sorted_tools = sorted(TOOLS, key=lambda t: tool_speedups.get(t, 0), reverse=True)
-    for tool in sorted_tools:
-        fvg = f"**{tool_speedups[tool]:.1f}x**" if tool in tool_speedups else "-"
-        if has_uutils:
-            fvu = f"**{tool_f_vs_uutils[tool]:.1f}x**" if tool in tool_f_vs_uutils else "N/A"
-            speedup_rows.append(f"| {tool} | {fvg} | {fvu} |")
-        else:
-            speedup_rows.append(f"| {tool} | {fvg} |")
-    speedup_table = "\n".join(speedup_rows)
-
-    if has_uutils:
-        speedup_header = "| Tool | f* vs GNU | f* vs uutils |\n|------|----------:|-------------:|"
-    else:
-        speedup_header = "| Tool | Speedup (vs GNU) |\n|------|----------------:|"
 
     # Known issues
     total_failed = sum(p.get("failed", 0) for p in compat_platforms.values())
@@ -239,9 +348,34 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
     chart_path = os.path.join(RESULTS_DIR, "speedup-history.png")
     chart_section = "![Speedup History](results/speedup-history.png)"
     if not os.path.exists(chart_path):
-        chart_section = "_No chart available yet. Run `python3 scripts/plot_speedup.py` after benchmarking multiple versions._"
+        chart_section = "_No chart available yet._"
 
-    # Sources section
+    # Build the full tools table
+    table_lines = []
+    table_lines.append("| Tool | Size f\\* vs GNU | Size f\\* vs uutils | Compat f\\* vs GNU | Compat f\\* vs uutils | Speedup f\\* vs GNU | Speedup f\\* vs uutils |")
+    table_lines.append("|------|----------------:|-------------------:|------------------:|---------------------:|-------------------:|----------------------:|")
+
+    for tool in ALL_TOOLS:
+        size_gnu_ratio = get_size_ratio(tool, sizes, "f_bytes", "gnu_bytes")
+        size_uutils_ratio = get_size_ratio(tool, sizes, "f_bytes", "uutils_bytes")
+        compat_gnu = compute_compat_rate(tool, tool_results)
+
+        size_gnu_str = f"{size_gnu_ratio:.2f}x" if size_gnu_ratio is not None else "-"
+        size_uutils_str = f"{size_uutils_ratio:.2f}x" if size_uutils_ratio is not None else "-"
+        compat_gnu_str = f"{compat_gnu:.0f}%" if compat_gnu is not None else "-"
+        compat_uutils_str = "-"  # not yet collected
+
+        sg = tool_speedups.get(tool)
+        su = tool_f_vs_uutils.get(tool)
+        speedup_gnu_str = f"**{sg:.1f}x**" if sg is not None else "-"
+        speedup_uutils_str = f"**{su:.1f}x**" if su is not None else "-"
+
+        table_lines.append(
+            f"| {tool} | {size_gnu_str} | {size_uutils_str} | {compat_gnu_str} | {compat_uutils_str} | {speedup_gnu_str} | {speedup_uutils_str} |"
+        )
+
+    full_table = "\n".join(table_lines)
+
     sources = """## Sources
 - [fcoreutils](https://github.com/AiBrush/coreutils-rs) — installed from GitHub Releases
 - [uutils/coreutils](https://github.com/uutils/coreutils) — built from source (latest main)
@@ -258,14 +392,17 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 ## Latest Results ({latest_version})
 
 ### Summary
-- **Tools tested:** {len(TOOLS)} ({', '.join(TOOLS)})
+- **Tools tracked:** {len(ALL_TOOLS)} total ({tools_with_data} with data)
 - **Compatibility:** {total_passed}/{total_tests} tests passed ({pass_pct}%)
 - **Fastest speedup:** {fastest_tool} at {fastest_speedup:.1f}x faster than GNU
 
-### Performance Highlights
+### Full Tools Comparison
 
-{speedup_header}
-{speedup_table}
+> Sizes are relative (f\\* size ÷ reference size — lower is smaller).
+> Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
+> `-` = no data collected yet for this tool/metric.
+
+{full_table}
 
 ### Known Issues
 {issues}
@@ -281,6 +418,7 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 - Builds uutils/coreutils from source for comparison
 - Runs {total_tests}+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
+- Measures binary sizes of f\\*, GNU, and uutils for each tool
 - Tests run across multiple platforms via GitHub Actions
 
 ## Running Locally
@@ -319,7 +457,6 @@ def main():
     versions = get_all_versions()
     if not versions:
         print("No versioned results found in results/. Generating minimal README.")
-        # Write a placeholder README
         readme_path = os.path.join(PROJECT_ROOT, "README.md")
         with open(readme_path, "w") as f:
             f.write("# fcoreutils vs GNU coreutils — Independent Benchmark\n\n"
@@ -338,15 +475,35 @@ def main():
     # Use latest version for README
     latest = versions[-1]
     bench_platforms = load_benchmark_data(latest)
-    compat_platforms, _ = load_compatibility_data(latest)
+    compat_platforms, tool_results = load_compatibility_data(latest)
     tool_speedups, tool_f_vs_uutils = compute_speedups(bench_platforms)
+    sizes = load_size_data(latest)
+
+    # Supplement with new-tools data for tools not in versioned results
+    new_tools_bench, new_tools_compat = load_new_tools_data()
+
+    for tool, data in new_tools_bench.items():
+        if tool not in tool_speedups:
+            for b in data.get("benchmarks", []):
+                s = b.get("speedup")
+                if isinstance(s, (int, float)) and s > 0:
+                    if tool not in tool_speedups or s > tool_speedups[tool]:
+                        tool_speedups[tool] = s
+                fvu = b.get("f_vs_uutils")
+                if isinstance(fvu, (int, float)) and fvu > 0:
+                    if tool not in tool_f_vs_uutils or fvu > tool_f_vs_uutils[tool]:
+                        tool_f_vs_uutils[tool] = fvu
+
+    for tool, data in new_tools_compat.items():
+        if tool not in tool_results:
+            tool_results[tool] = {"__new_tools__": data}
 
     # Generate chart
     run_plot_script()
 
     # Generate README
     generate_readme(latest, bench_platforms, compat_platforms,
-                    tool_speedups, tool_f_vs_uutils)
+                    tool_speedups, tool_f_vs_uutils, tool_results, sizes)
 
 
 if __name__ == "__main__":

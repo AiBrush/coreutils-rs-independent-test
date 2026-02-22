@@ -58,7 +58,39 @@
 - [x] `scripts/generate_report.py` — 3-column Performance Highlights table (f* vs GNU, f* vs uutils, uutils vs GNU), uutils columns in per-version reports, Sources section
 - [x] `.github/workflows/ci.yml` — Build uutils once before benchmark version loop, cargo cache for uutils
 
+## New Tools (80+ tools — v0.5.9+)
+- [x] PR #1 merged — 406 compat tests + 75 benchmarks for: head, tail, cat, rev, expand, unexpand, fold, paste, nl, comm, join
+- [x] Additional tools: basenc, base32, ln, touch, truncate, mkdir, rmdir, mknod, mkfifo, mktemp, seq, shuf, tsort, tee, sum, cksum, sha1sum, sha224sum, sha384sum, sha512sum, id, groups, whoami, logname, uname, uptime, arch, hostid, tty, nproc, pwd, env, timeout, nice, nohup, sleep, sync, true, false, link, unlink, basename, dirname, pathchk, realpath, readlink, dircolors, echo, factor, expr, test, cp, mv, rm, dd, split, csplit, install, shred, chmod, chown, chgrp, yes, and more
+
+## Consolidation (Feb 2026)
+- [x] `tests/compatibility/run_all.sh` — Merged: now runs ALL tools (absorbed run_all_new.sh)
+- [x] `tests/benchmarks/run_all.sh` — Merged: now runs ALL tools (absorbed run_all_new.sh)
+- [x] `run_all_new.sh` files removed (both benchmarks and compatibility)
+- [x] `.github/workflows/new-tools.yml` — Merged into `ci.yml`, file removed
+- [x] `.github/workflows/ci.yml` — Unified workflow with all jobs:
+  - `test-new-tools`: builds from source, runs full compat suite (workflow_dispatch only)
+  - `bench-new-tools`: builds from source + uutils, runs full bench suite (workflow_dispatch only)
+  - `benchmarks` job: uses `run_all.sh` (all tools), includes binary size measurement
+  - `report` job: downloads new-tools artifacts when available, merges into results/
+
+## Full Table in README
+- [x] `scripts/generate_report.py` — Generates 6-column table for all ~80 tools:
+  - Size f* vs GNU (binary size ratio)
+  - Size f* vs uutils (binary size ratio)
+  - Compat f* vs GNU (test pass rate %)
+  - Compat f* vs uutils (not yet collected, shows "-")
+  - Speedup f* vs GNU (peak speedup)
+  - Speedup f* vs uutils (peak speedup)
+- [x] Binary size collection added to `benchmarks` CI job (saved in `{platform}_sizes.json`)
+- [x] `generate_report.py` reads per-tool compat data from new `compatibility_results.json` format
+- [x] `generate_report.py` supplements versioned data with new-tools artifacts for unreleased tools
+
+## Speedup Chart
+- [x] `scripts/plot_speedup.py` — Already aggregates all tools from benchmark JSONs (no change needed)
+- [x] `benchmarks` CI job now uses `run_all.sh` (all tools) so future versioned results include all tools
+
 ## Status: COMPLETE
-All 10 tools have compatibility tests, benchmark scripts, and stress tests.
+All tools have compatibility tests, benchmark scripts, and stress tests.
 CI workflow discovers un-benchmarked versions, runs benchmarks, persists results, generates chart + README.
 uutils/coreutils added as third competitor for 3-way performance comparison.
+All tools tested via unified run_all.sh scripts; new-tools workflow merged into main CI.
