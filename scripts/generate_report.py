@@ -169,12 +169,20 @@ def load_new_tools_data():
         except (json.JSONDecodeError, IOError):
             pass
 
-    # Compat data: all platforms (source_compat_{platform}.json)
-    for jf in glob.glob(os.path.join(RESULTS_DIR, "source_compat_*.json")):
-        platform_key = "source_" + os.path.basename(jf).replace("source_compat_", "").replace(".json", "")
+    # Compat data: source_compat_*.json (platform-specific) and source_compat.json (single file)
+    source_compat_files = glob.glob(os.path.join(RESULTS_DIR, "source_compat_*.json"))
+    # Also handle the single source_compat.json file (no platform suffix)
+    single_compat = os.path.join(RESULTS_DIR, "source_compat.json")
+    if os.path.exists(single_compat):
+        source_compat_files.append(single_compat)
+
+    for jf in source_compat_files:
         try:
             with open(jf) as f:
                 d = json.load(f)
+            # Use the platform field from the JSON, falling back to Linux_x86_64
+            # (source builds run on Linux x86_64 with real GNU tools)
+            platform_key = d.get("platform", "Linux_x86_64")
             for tool, data in d.get("tools", {}).items():
                 if tool not in compat_data:
                     compat_data[tool] = {}
