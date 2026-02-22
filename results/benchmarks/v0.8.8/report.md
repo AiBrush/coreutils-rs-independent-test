@@ -1,18 +1,14 @@
 # fcoreutils v0.8.8 — Detailed Results
 
-Generated: 2026-02-22 17:08:09 UTC
+Generated: 2026-02-22 17:11:21 UTC
 
 ## Compatibility
 
 | Platform | Tests | Passed | Failed | Pass Rate |
 |----------|-------|--------|--------|-----------|
-| Darwin_arm64 | 325 | 220 | 105 | 67.7% |
-| Linux_aarch64 | 436 | 417 | 19 | 95.6% |
 | Linux_x86_64 | 436 | 417 | 19 | 95.6% |
-| MINGW64_NT-10.0-26100_x86_64 | 0 | 0 | 0 | N/A |
-| aarch64-pc-windows-msvc | 0 | 0 | 0 | N/A |
 
-**Overall: 1054/1197 (88.1%)**
+**Overall: 417/436 (95.6%)**
 
 ## Performance
 

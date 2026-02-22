@@ -1,6 +1,6 @@
 # fcoreutils vs GNU coreutils — Independent Benchmark
 
-> Independent quality assurance for [fcoreutils](https://github.com/AiBrush/coreutils-rs), a Rust rewrite of GNU coreutils.
+> Independent quality assurance for [fcoreutils](https://github.com/AiBrush/fcoreutils), a Rust rewrite of GNU coreutils.
 
 ## Performance Over Versions
 
@@ -10,7 +10,7 @@
 
 ### Summary
 - **Tools tracked:** 84 total
-- **Compatibility:** 1054/1197 tests passed (88.1%)
+- **Compatibility:** 417/436 tests passed (95.6%)
 - **Fastest speedup:** wc at 31.0x faster than GNU
 
 ### Full Tools Comparison
@@ -107,21 +107,21 @@
 | yes | 12.37x | - | 17% | - | **4.2x** | - |
 
 ### Known Issues
-- 143 compatibility test failures across 5 platforms
+- 19 compatibility test failures across 1 platforms
 
 ## Per-Version Details
 
 Detailed results for each version (benchmarks, compatibility, failures) are in the [`results/`](results/) directory.
 
 ## Sources
-- [fcoreutils](https://github.com/AiBrush/coreutils-rs) — installed from GitHub Releases
+- [fcoreutils](https://github.com/AiBrush/fcoreutils) — installed from GitHub Releases
 - [uutils/coreutils](https://github.com/uutils/coreutils) — built from source (latest main)
 - GNU coreutils — system-installed baseline
 
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
 - Builds uutils/coreutils from source for comparison
-- Runs 1197+ compatibility tests comparing output byte-for-byte against GNU coreutils
+- Runs 436+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Measures binary sizes of f\*, GNU, and uutils for each tool
 - Tests run across multiple platforms via GitHub Actions
@@ -145,7 +145,7 @@ python3 scripts/plot_speedup.py
 | Platform | Passed | Failed | Skipped | Status |
 |----------|--------|--------|---------|--------|
 | Linux x86_64 | 417 | 19 | 0 | ⚠️ |
-| Linux ARM64 | 417 | 19 | 0 | ⚠️ |
-| macOS ARM64 | 220 | 105 | 0 | ⚠️ |
-| Windows x86_64 | 0 | 0 | 0 | ✅ |
-| Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |
+| Linux ARM64 | — | — | — | ⏭️ no binary available for aarch64-unknown-linux-gnu |
+| macOS ARM64 | — | — | — | ⏭️ no binary available for aarch64-apple-darwin |
+| Windows x86_64 | — | — | — | ⏭️ no binary available for x86_64-pc-windows-msvc |
+| Windows ARM64 | — | — | — | ⏭️ no binary available for aarch64-pc-windows-msvc |
