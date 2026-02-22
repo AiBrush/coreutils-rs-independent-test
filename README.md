@@ -9,102 +9,124 @@
 ## Latest Results (v0.9.0)
 
 ### Summary
-- **Tools tracked:** 84 total
-- **Compatibility:** 1054/1197 tests passed (88.1%)
-- **Fastest speedup:** wc at 32.9x faster than GNU
+- **Tools tracked:** 107 total
+- **Compatibility:** 1066/1209 tests passed (88.2%)
+- **Fastest speedup:** wc at 32.4x faster than GNU
 
 ### Full Tools Comparison
 
-> Sizes are relative (f\* size ÷ reference size — lower is smaller).
-> Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
+> Sizes are raw binary sizes. Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
 > `-` = no data collected yet for this tool/metric.
 
-| Tool | Size f\* vs GNU | Size f\* vs uutils | Compat f\* vs GNU | Speedup f\* vs GNU | Speedup f\* vs uutils |
-|------|----------------:|-------------------:|------------------:|-------------------:|----------------------:|
-| wc | 16.62x | 0.63x | 100% | **32.9x** | **17.8x** |
-| cut | 16.50x | 0.48x | 100% | **5.5x** | **1.7x** |
-| sha256sum | 131.36x | 2.17x | 100% | **1.0x** | **1.0x** |
-| md5sum | 131.35x | 2.17x | 100% | **1.0x** | **1.3x** |
-| b2sum | 11.63x | 0.27x | 100% | **1.3x** | **1.1x** |
-| base64 | 14.48x | 0.43x | 100% | **5.8x** | **5.9x** |
-| sort | 9.53x | 0.29x | 100% | **12.4x** | **12.7x** |
-| tr | 14.97x | 0.52x | 100% | **6.1x** | **6.6x** |
-| uniq | 23.57x | 0.68x | 100% | **10.5x** | **6.7x** |
-| tac | 50.81x | 0.70x | 100% | **3.1x** | **1.7x** |
-| head | 10.78x | 0.34x | 100% | **1.4x** | **1.0x** |
-| tail | 7.77x | 0.27x | 100% | **1.4x** | **2.1x** |
-| cat | 11.94x | 0.35x | 100% | **2.8x** | **1.4x** |
-| rev | 30.81x | - | 100% | **21.2x** | - |
-| expand | 13.06x | 0.35x | 100% | **10.1x** | **2.5x** |
-| unexpand | 11.56x | 0.35x | 100% | **1.9x** | **2.4x** |
-| fold | 12.98x | 0.35x | 100% | **4.4x** | **1.3x** |
-| paste | 11.82x | 0.36x | 100% | **1.5x** | **12.1x** |
-| nl | 47.97x | 0.67x | 100% | **4.7x** | **1.6x** |
-| comm | 11.86x | 0.36x | 100% | **3.3x** | **3.1x** |
-| join | 9.43x | 0.18x | 100% | **0.7x** | **0.8x** |
-| basenc | 9.80x | - | 100% | **0.7x** | - |
-| base32 | 11.56x | - | 100% | **0.8x** | - |
-| ln | 8.30x | - | 100% | **0.9x** | - |
-| touch | 4.84x | - | 95% | **0.9x** | - |
-| truncate | 11.48x | - | 100% | **0.9x** | - |
-| mkdir | 5.95x | - | 100% | **1.0x** | - |
-| rmdir | 9.31x | - | 83% | **0.9x** | - |
-| mknod | 10.24x | - | 100% | **1.0x** | - |
-| mkfifo | 10.19x | - | 100% | **1.0x** | - |
-| mktemp | 12.89x | - | 100% | - | - |
-| seq | 9.72x | - | 100% | **14.7x** | - |
-| shuf | 10.10x | - | 100% | - | - |
-| tsort | 10.04x | - | 100% | - | - |
-| tee | 11.54x | - | 100% | - | - |
-| sum | 12.81x | - | 100% | **1.4x** | - |
-| cksum | 4.32x | - | 100% | **0.7x** | - |
-| sha1sum | 131.37x | - | 100% | **0.8x** | - |
-| sha224sum | 131.37x | - | 100% | **0.8x** | - |
-| sha384sum | 131.37x | - | 100% | **0.9x** | - |
-| sha512sum | 131.37x | - | 100% | **0.9x** | - |
-| id | 11.27x | - | 100% | **1.0x** | - |
-| groups | 12.44x | - | 100% | **0.9x** | - |
-| whoami | 12.34x | - | 100% | **0.9x** | - |
-| logname | 12.34x | - | 100% | **0.8x** | - |
-| uname | 12.45x | - | 100% | **0.9x** | - |
-| uptime | 36.09x | - | 80% | - | - |
-| arch | 12.34x | - | 100% | **0.8x** | - |
-| hostid | 12.34x | - | 100% | **0.8x** | - |
-| tty | 12.37x | - | 100% | **0.8x** | - |
-| nproc | 12.90x | - | 100% | **0.8x** | - |
-| pwd | 12.47x | - | 100% | - | - |
-| env | 9.98x | - | 100% | **0.9x** | - |
-| timeout | 12.49x | - | 90% | - | - |
-| nice | 13.29x | - | 100% | **0.9x** | - |
-| nohup | 13.27x | - | 100% | **0.9x** | - |
-| sleep | 12.90x | - | 100% | **0.9x** | - |
-| sync | 12.53x | - | 83% | **0.8x** | - |
-| true | 11.25x | - | 100% | - | - |
-| false | 11.27x | - | 100% | - | - |
-| link | 12.51x | - | 100% | **0.9x** | - |
-| unlink | 12.47x | - | 100% | **0.9x** | - |
-| basename | 12.48x | - | 100% | **0.8x** | - |
-| dirname | 12.43x | - | 100% | **0.8x** | - |
-| pathchk | 12.68x | - | 100% | **0.8x** | - |
-| realpath | 10.48x | - | 100% | **0.8x** | - |
-| readlink | 10.37x | - | 100% | **0.8x** | - |
-| dircolors | 9.70x | - | 86% | - | - |
-| echo | 12.43x | - | 100% | **0.8x** | - |
-| factor | 7.25x | - | 100% | **0.9x** | - |
-| expr | 43.49x | - | 100% | **0.8x** | - |
-| test | 9.51x | - | 100% | - | - |
-| cp | 3.57x | - | 100% | **1.0x** | - |
-| mv | 3.53x | - | - | **1.0x** | - |
-| rm | 8.94x | - | 100% | **0.9x** | - |
-| dd | 7.04x | - | 100% | **0.8x** | - |
-| split | 9.58x | - | 100% | **0.8x** | - |
-| csplit | 36.69x | - | - | **16.5x** | - |
-| install | 3.60x | - | 100% | **1.0x** | - |
-| shred | 8.37x | - | 100% | **1.1x** | - |
-| chmod | 9.65x | - | 100% | **0.9x** | - |
-| chown | 9.03x | - | 100% | **0.9x** | - |
-| chgrp | 8.96x | - | 100% | **0.9x** | - |
-| yes | 12.37x | - | 17% | **4.2x** | - |
+| Tool | fcoreutils size | GNU size | uutils size | Compat f\* vs GNU | Speedup f\* vs GNU | Speedup f\* vs uutils |
+|------|----------------:|----------:|----------:|------------------:|-------------------:|----------------------:|
+| arch | 425.8 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| b2sum | 634.0 KB | 54.5 KB | 2.3 MB | ✅ 100% | **1.3x** | **1.2x** |
+| base32 | 445.0 KB | 38.5 KB | - | ✅ 100% | **0.8x** | - |
+| base64 | 557.4 KB | 38.5 KB | 1.3 MB | ✅ 100% | **5.6x** | **5.6x** |
+| basename | 430.6 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| basenc | 455.7 KB | 46.5 KB | - | ✅ 100% | **0.7x** | - |
+| cat | 459.0 KB | 38.5 KB | 1.3 MB | ✅ 100% | **2.5x** | **1.4x** |
+| chcon | - | - | - | - | - | - |
+| chgrp | 524.0 KB | 58.5 KB | - | ✅ 100% | **0.9x** | - |
+| chmod | 525.9 KB | 54.5 KB | - | ✅ 100% | **1.0x** | - |
+| chown | 528.5 KB | 58.5 KB | - | ✅ 100% | **1.0x** | - |
+| chroot | - | - | - | - | - | - |
+| cksum | 443.2 KB | 102.5 KB | - | ✅ 100% | **0.7x** | - |
+| comm | 456.7 KB | 38.5 KB | 1.3 MB | ✅ 100% | **3.3x** | **3.2x** |
+| cp | 494.7 KB | 138.5 KB | - | ✅ 100% | **1.0x** | - |
+| csplit | 1.8 MB | 50.5 KB | - | - | **17.0x** | - |
+| cut | 635.2 KB | 38.5 KB | 1.3 MB | ✅ 100% | **5.4x** | **1.6x** |
+| date | - | - | - | ✅ 100% | - | - |
+| dd | 496.3 KB | 70.5 KB | - | ✅ 100% | **0.9x** | - |
+| df | - | - | - | ⚠️ 24% | - | - |
+| dir | - | - | - | - | - | - |
+| dircolors | 451.2 KB | 46.5 KB | - | ⚠️ 86% | - | - |
+| dirname | 427.5 KB | 34.4 KB | - | ✅ 100% | **0.8x** | - |
+| du | - | - | - | ⚠️ 76% | - | - |
+| echo | 427.2 KB | 34.4 KB | - | ✅ 100% | **0.8x** | - |
+| env | 468.4 KB | 46.9 KB | - | ✅ 100% | **0.9x** | - |
+| expand | 451.0 KB | 34.5 KB | 1.3 MB | ✅ 100% | **9.9x** | **2.5x** |
+| expr | 1.8 MB | 42.4 KB | - | ✅ 100% | **0.9x** | - |
+| factor | 453.0 KB | 62.5 KB | - | ✅ 100% | **0.9x** | - |
+| false | 296.5 KB | 26.3 KB | - | ✅ 100% | - | - |
+| fmt | - | - | - | ⚠️ 94% | - | - |
+| fold | 447.9 KB | 34.5 KB | 1.3 MB | ✅ 100% | **4.8x** | **1.4x** |
+| groups | 429.4 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| head | 458.4 KB | 42.5 KB | 1.3 MB | ✅ 100% | **1.6x** | **1.0x** |
+| hostid | 425.7 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| id | 433.9 KB | 38.5 KB | - | ✅ 100% | **1.0x** | - |
+| install | 513.5 KB | 142.5 KB | - | ✅ 100% | **1.1x** | - |
+| join | 476.5 KB | 50.5 KB | 2.6 MB | ✅ 100% | **0.7x** | **0.8x** |
+| kill | - | - | - | - | - | - |
+| link | 431.5 KB | 34.5 KB | - | ✅ 100% | **0.9x** | - |
+| ln | 452.5 KB | 54.5 KB | - | ✅ 100% | **0.9x** | - |
+| logname | 425.7 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| ls | - | - | - | ✅ 100% | - | - |
+| md5sum | 4.9 MB | 38.4 KB | 2.3 MB | ✅ 100% | **1.0x** | **1.3x** |
+| mkdir | 443.0 KB | 74.5 KB | - | ✅ 100% | **1.0x** | - |
+| mkfifo | 433.1 KB | 42.5 KB | - | ✅ 100% | **1.0x** | - |
+| mknod | 435.3 KB | 42.5 KB | - | ✅ 100% | **1.0x** | - |
+| mktemp | 444.8 KB | 34.5 KB | - | ✅ 100% | - | - |
+| mv | 475.5 KB | 134.5 KB | - | - | **1.0x** | - |
+| nice | 458.7 KB | 34.5 KB | - | ✅ 100% | **0.9x** | - |
+| nl | 1.8 MB | 38.6 KB | 2.7 MB | ✅ 100% | **4.6x** | **1.6x** |
+| nohup | 456.6 KB | 34.4 KB | - | ✅ 100% | **0.9x** | - |
+| nproc | 445.0 KB | 34.5 KB | - | ✅ 100% | **0.9x** | - |
+| numfmt | - | - | - | ✅ 100% | - | - |
+| od | - | - | - | ⚠️ 97% | - | - |
+| paste | 454.2 KB | 38.4 KB | 1.2 MB | ✅ 100% | **1.5x** | **12.2x** |
+| pathchk | 437.7 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| pinky | - | - | - | ⚠️ 33% | - | - |
+| pr | - | - | - | ⚠️ 63% | - | - |
+| printenv | - | - | - | - | - | - |
+| printf | - | - | - | ⚠️ 92% | - | - |
+| ptx | - | - | - | ⚠️ 20% | - | - |
+| pwd | 430.2 KB | 34.5 KB | - | ✅ 100% | - | - |
+| readlink | 440.0 KB | 42.4 KB | - | ✅ 100% | **0.8x** | - |
+| realpath | 444.4 KB | 42.4 KB | - | ✅ 100% | **0.8x** | - |
+| rev | 442.9 KB | 14.4 KB | - | ✅ 100% | **21.9x** | - |
+| rm | 523.2 KB | 58.5 KB | - | ✅ 100% | **0.9x** | - |
+| rmdir | 432.0 KB | 46.4 KB | - | ⚠️ 83% | **0.9x** | - |
+| runcon | - | - | - | - | - | - |
+| seq | 491.0 KB | 50.5 KB | - | ✅ 100% | **14.7x** | - |
+| sha1sum | 4.9 MB | 38.4 KB | - | ✅ 100% | **0.8x** | - |
+| sha224sum | 4.9 MB | 38.4 KB | - | ✅ 100% | **0.8x** | - |
+| sha256sum | 4.9 MB | 38.4 KB | 2.3 MB | ✅ 100% | **1.0x** | **1.0x** |
+| sha384sum | 4.9 MB | 38.4 KB | - | ✅ 100% | **0.9x** | - |
+| sha512sum | 4.9 MB | 38.4 KB | - | ✅ 100% | **0.9x** | - |
+| shred | 456.0 KB | 54.5 KB | - | ✅ 100% | **1.4x** | - |
+| shuf | 469.7 KB | 46.5 KB | - | ✅ 100% | - | - |
+| sleep | 445.3 KB | 34.5 KB | - | ✅ 100% | **0.9x** | - |
+| sort | 979.4 KB | 102.8 KB | 3.2 MB | ✅ 100% | **13.1x** | **13.0x** |
+| split | 526.3 KB | 54.9 KB | - | ✅ 100% | **0.8x** | - |
+| stat | - | - | - | ⚠️ 79% | - | - |
+| stdbuf | - | - | - | ✅ 100% | - | - |
+| stty | - | - | - | ⚠️ 57% | - | - |
+| sum | 440.7 KB | 34.4 KB | - | ✅ 100% | **1.4x** | - |
+| sync | 431.4 KB | 34.4 KB | - | ⚠️ 83% | **0.8x** | - |
+| tac | 1.9 MB | 38.4 KB | 2.7 MB | ✅ 100% | **3.2x** | **1.7x** |
+| tail | 485.9 KB | 62.5 KB | 1.7 MB | ✅ 100% | **1.4x** | **2.0x** |
+| tee | 444.4 KB | 38.5 KB | - | ✅ 100% | - | - |
+| test | 441.6 KB | 46.4 KB | - | ✅ 100% | - | - |
+| timeout | 486.5 KB | 38.9 KB | - | ⚠️ 90% | - | - |
+| touch | 457.4 KB | 94.5 KB | - | ⚠️ 95% | **0.9x** | - |
+| tr | 696.2 KB | 46.5 KB | 1.3 MB | ✅ 100% | **6.5x** | **6.9x** |
+| true | 296.1 KB | 26.3 KB | - | ✅ 100% | - | - |
+| truncate | 442.1 KB | 38.5 KB | - | ✅ 100% | **0.9x** | - |
+| tsort | 466.9 KB | 46.5 KB | - | ✅ 100% | - | - |
+| tty | 426.7 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| uname | 429.6 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| unexpand | 445.3 KB | 38.5 KB | 1.3 MB | ✅ 100% | **1.9x** | **2.4x** |
+| uniq | 907.7 KB | 38.5 KB | 1.3 MB | ✅ 100% | **10.3x** | **6.5x** |
+| unlink | 430.4 KB | 34.5 KB | - | ✅ 100% | **0.9x** | - |
+| uptime | 518.7 KB | 14.4 KB | - | ⚠️ 80% | - | - |
+| users | - | - | - | ✅ 100% | - | - |
+| vdir | - | - | - | - | - | - |
+| wc | 905.9 KB | 54.5 KB | 1.4 MB | ✅ 100% | **32.4x** | **17.8x** |
+| who | - | - | - | ⚠️ 73% | - | - |
+| whoami | 425.9 KB | 34.5 KB | - | ✅ 100% | **0.8x** | - |
+| yes | 425.2 KB | 34.4 KB | - | ⚠️ 17% | **4.1x** | - |
 
 ### Known Issues
 - 143 compatibility test failures across 5 platforms
@@ -121,7 +143,7 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
 - Builds uutils/coreutils from source for comparison
-- Runs 1197+ compatibility tests comparing output byte-for-byte against GNU coreutils
+- Runs 1209+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Measures binary sizes of f\*, GNU, and uutils for each tool
 - Tests run across multiple platforms via GitHub Actions
@@ -144,8 +166,8 @@ python3 scripts/plot_speedup.py
 
 | Platform | Passed | Failed | Skipped | Status |
 |----------|--------|--------|---------|--------|
-| Linux x86_64 | 417 | 19 | 0 | ⚠️ |
-| Linux ARM64 | 417 | 19 | 0 | ⚠️ |
-| macOS ARM64 | 220 | 105 | 0 | ⚠️ |
+| Linux x86_64 | 421 | 19 | 0 | ⚠️ |
+| Linux ARM64 | 421 | 19 | 0 | ⚠️ |
+| macOS ARM64 | 224 | 105 | 0 | ⚠️ |
 | Windows x86_64 | 0 | 0 | 0 | ✅ |
 | Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |

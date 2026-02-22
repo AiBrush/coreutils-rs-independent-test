@@ -1,6 +1,6 @@
 # fcoreutils v0.0.9 — Detailed Results
 
-Generated: 2026-02-22 17:54:45 UTC
+Generated: 2026-02-22 18:47:57 UTC
 
 ## Compatibility
 
@@ -19,42 +19,6 @@ Generated: 2026-02-22 17:54:45 UTC
 
 | Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
 |------|------|-----------|-------------------|---------|
-| wc | default 100KB text | 0.0010s | 0.0008s | **1.2x** |
-| wc | default 1MB text | 0.0037s | 0.0012s | **3.1x** |
-| wc | default 10MB text | 0.0342s | 0.0028s | **12.2x** |
-| wc | default 100MB text | 0.2912s | 0.0139s | **20.9x** |
-| wc | -l 10MB text | 0.0038s | 0.0018s | **2.1x** |
-| wc | -w 10MB text | 0.0343s | 0.0025s | **13.6x** |
-| wc | -c 10MB text | 0.0007s | 0.0008s | **0.9x** |
-| wc | -m 10MB text | 0.0338s | 0.0030s | **11.2x** |
-| wc | -L 10MB text | 0.0341s | 0.0153s | **2.2x** |
-| wc | default 10MB binary | 0.2343s | 0.0029s | **81.1x** |
-| wc | default 10MB repetitive | 0.0499s | 0.0040s | **12.6x** |
-| wc | 10 files | 0.0007s | 0.0008s | **0.9x** |
-| wc | 100 files | 0.0012s | 0.0013s | **0.9x** |
-| cut | -b1-100 10MB CSV | 0.0183s | 0.0033s | **5.5x** |
-| cut | -c1-100 10MB CSV | 0.0181s | 0.0035s | **5.1x** |
-| cut | -d, -f1 10MB CSV | 0.0184s | 0.0026s | **7.0x** |
-| cut | -d, -f1,3,5 10MB CSV | 0.0208s | 0.0042s | **5.0x** |
-| cut | -d, -f2-4 10MB CSV | 0.0228s | 0.0043s | **5.4x** |
-| cut | --complement -d, -f1 10MB CSV | 0.0262s | 0.0055s | **4.7x** |
-| cut | -d, -f1 100KB text | 0.0007s | 0.0008s | **0.9x** |
-| cut | -d, -f1 1MB text | 0.0033s | 0.0012s | **2.8x** |
-| cut | -d: -f1 colon file | 0.0007s | 0.0008s | **0.9x** |
-| sha256sum | single 100KB text | 0.0011s | 0.0011s | **1.0x** |
-| sha256sum | single 1MB text | 0.0016s | 0.0038s | **0.4x** |
-| sha256sum | single 10MB text | 0.0070s | 0.0298s | **0.2x** |
-| sha256sum | single 10MB binary | 0.0071s | 0.0312s | **0.2x** |
-| sha256sum | single 100MB text | 0.0601s | 0.2891s | **0.2x** |
-| sha256sum | 10 files | 0.0011s | 0.0012s | **0.9x** |
-| sha256sum | 100 files | 0.0017s | 0.0017s | **1.0x** |
-| md5sum | single 100KB text | 0.0012s | 0.0009s | **1.3x** |
-| md5sum | single 1MB text | 0.0029s | 0.0023s | **1.2x** |
-| md5sum | single 10MB text | 0.0204s | 0.0160s | **1.3x** |
-| md5sum | single 10MB binary | 0.0211s | 0.0164s | **1.3x** |
-| md5sum | single 100MB text | 0.1925s | 0.1496s | **1.3x** |
-| md5sum | 10 files | 0.0011s | 0.0011s | **0.9x** |
-| md5sum | 100 files | 0.0016s | 0.0016s | **1.0x** |
 | b2sum | single 100KB text | 0.0008s | 0.0009s | **0.9x** |
 | b2sum | single 1MB text | 0.0020s | 0.0020s | **1.0x** |
 | b2sum | single 10MB text | 0.0139s | 0.0134s | **1.0x** |
@@ -71,6 +35,29 @@ Generated: 2026-02-22 17:54:45 UTC
 | base64 | decode 10MB | 0.0296s | 0.0173s | **1.7x** |
 | base64 | encode -w 76 10MB | 0.0094s | 0.0075s | **1.3x** |
 | base64 | encode -w 0 (no wrap) 10MB | 0.0072s | 0.0053s | **1.3x** |
+| cut | -b1-100 10MB CSV | 0.0183s | 0.0033s | **5.5x** |
+| cut | -c1-100 10MB CSV | 0.0181s | 0.0035s | **5.1x** |
+| cut | -d, -f1 10MB CSV | 0.0184s | 0.0026s | **7.0x** |
+| cut | -d, -f1,3,5 10MB CSV | 0.0208s | 0.0042s | **5.0x** |
+| cut | -d, -f2-4 10MB CSV | 0.0228s | 0.0043s | **5.4x** |
+| cut | --complement -d, -f1 10MB CSV | 0.0262s | 0.0055s | **4.7x** |
+| cut | -d, -f1 100KB text | 0.0007s | 0.0008s | **0.9x** |
+| cut | -d, -f1 1MB text | 0.0033s | 0.0012s | **2.8x** |
+| cut | -d: -f1 colon file | 0.0007s | 0.0008s | **0.9x** |
+| md5sum | single 100KB text | 0.0012s | 0.0009s | **1.3x** |
+| md5sum | single 1MB text | 0.0029s | 0.0023s | **1.2x** |
+| md5sum | single 10MB text | 0.0204s | 0.0160s | **1.3x** |
+| md5sum | single 10MB binary | 0.0211s | 0.0164s | **1.3x** |
+| md5sum | single 100MB text | 0.1925s | 0.1496s | **1.3x** |
+| md5sum | 10 files | 0.0011s | 0.0011s | **0.9x** |
+| md5sum | 100 files | 0.0016s | 0.0016s | **1.0x** |
+| sha256sum | single 100KB text | 0.0011s | 0.0011s | **1.0x** |
+| sha256sum | single 1MB text | 0.0016s | 0.0038s | **0.4x** |
+| sha256sum | single 10MB text | 0.0070s | 0.0298s | **0.2x** |
+| sha256sum | single 10MB binary | 0.0071s | 0.0312s | **0.2x** |
+| sha256sum | single 100MB text | 0.0601s | 0.2891s | **0.2x** |
+| sha256sum | 10 files | 0.0011s | 0.0012s | **0.9x** |
+| sha256sum | 100 files | 0.0017s | 0.0017s | **1.0x** |
 | sort | lexicographic 1MB | 0.0072s | 0.0039s | **1.8x** |
 | sort | lexicographic 10MB random | 0.0499s | 0.0168s | **3.0x** |
 | sort | already sorted 10MB | 0.0235s | 0.0081s | **2.9x** |
@@ -81,6 +68,13 @@ Generated: 2026-02-22 17:54:45 UTC
 | sort | -t, -k2 CSV 10MB | 0.0693s | 0.0300s | **2.3x** |
 | sort | repetitive 10MB | 0.0420s | 0.0208s | **2.0x** |
 | sort | --parallel=4 10MB | 0.0502s | 0.0166s | **3.0x** |
+| tac | reverse 100KB text | 0.0008s | 0.0009s | **0.9x** |
+| tac | reverse 1MB text | 0.0015s | 0.0016s | **1.0x** |
+| tac | reverse 10MB text | 0.0081s | 0.0051s | **1.6x** |
+| tac | reverse 100MB text | 0.0792s | 0.0430s | **1.8x** |
+| tac | reverse CSV 10MB | 0.0078s | 0.0047s | **1.7x** |
+| tac | reverse repetitive 10MB | 0.0162s | 0.0091s | **1.8x** |
+| tac | custom separator 1MB | 0.0041s | 0.0039s | **1.1x** |
 | tr | a-z to A-Z 1MB | 0.0017s | 0.0025s | **0.7x** |
 | tr | a-z to A-Z 10MB | 0.0089s | 0.0114s | **0.8x** |
 | tr | -d digits 10MB | 0.0110s | 0.0148s | **0.7x** |
@@ -97,54 +91,24 @@ Generated: 2026-02-22 17:54:45 UTC
 | uniq | -u unique only 10MB | 0.0089s | 0.0046s | **2.0x** |
 | uniq | -i case insensitive 10MB | 0.0160s | 0.0045s | **3.6x** |
 | uniq | repetitive 10MB | 0.0458s | 0.0068s | **6.7x** |
-| tac | reverse 100KB text | 0.0008s | 0.0009s | **0.9x** |
-| tac | reverse 1MB text | 0.0015s | 0.0016s | **1.0x** |
-| tac | reverse 10MB text | 0.0081s | 0.0051s | **1.6x** |
-| tac | reverse 100MB text | 0.0792s | 0.0430s | **1.8x** |
-| tac | reverse CSV 10MB | 0.0078s | 0.0047s | **1.7x** |
-| tac | reverse repetitive 10MB | 0.0162s | 0.0091s | **1.8x** |
-| tac | custom separator 1MB | 0.0041s | 0.0039s | **1.1x** |
+| wc | default 100KB text | 0.0010s | 0.0008s | **1.2x** |
+| wc | default 1MB text | 0.0037s | 0.0012s | **3.1x** |
+| wc | default 10MB text | 0.0342s | 0.0028s | **12.2x** |
+| wc | default 100MB text | 0.2912s | 0.0139s | **20.9x** |
+| wc | -l 10MB text | 0.0038s | 0.0018s | **2.1x** |
+| wc | -w 10MB text | 0.0343s | 0.0025s | **13.6x** |
+| wc | -c 10MB text | 0.0007s | 0.0008s | **0.9x** |
+| wc | -m 10MB text | 0.0338s | 0.0030s | **11.2x** |
+| wc | -L 10MB text | 0.0341s | 0.0153s | **2.2x** |
+| wc | default 10MB binary | 0.2343s | 0.0029s | **81.1x** |
+| wc | default 10MB repetitive | 0.0499s | 0.0040s | **12.6x** |
+| wc | 10 files | 0.0007s | 0.0008s | **0.9x** |
+| wc | 100 files | 0.0012s | 0.0013s | **0.9x** |
 
 ### Linux_x86_64
 
 | Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |
 |------|------|-----------|-------------------|---------|
-| wc | default 100KB text | N/A | - | - |
-| wc | default 1MB text | N/A | - | - |
-| wc | default 10MB text | N/A | - | - |
-| wc | default 100MB text | N/A | - | - |
-| wc | -l 10MB text | N/A | - | - |
-| wc | -w 10MB text | N/A | - | - |
-| wc | -c 10MB text | N/A | - | - |
-| wc | -m 10MB text | N/A | - | - |
-| wc | -L 10MB text | N/A | - | - |
-| wc | default 10MB binary | N/A | - | - |
-| wc | default 10MB repetitive | N/A | - | - |
-| wc | 10 files | N/A | - | - |
-| wc | 100 files | N/A | - | - |
-| cut | -b1-100 10MB CSV | N/A | - | - |
-| cut | -c1-100 10MB CSV | N/A | - | - |
-| cut | -d, -f1 10MB CSV | N/A | - | - |
-| cut | -d, -f1,3,5 10MB CSV | N/A | - | - |
-| cut | -d, -f2-4 10MB CSV | N/A | - | - |
-| cut | --complement -d, -f1 10MB CSV | N/A | - | - |
-| cut | -d, -f1 100KB text | N/A | - | - |
-| cut | -d, -f1 1MB text | N/A | - | - |
-| cut | -d: -f1 colon file | N/A | - | - |
-| sha256sum | single 100KB text | N/A | - | - |
-| sha256sum | single 1MB text | N/A | - | - |
-| sha256sum | single 10MB text | N/A | - | - |
-| sha256sum | single 10MB binary | N/A | - | - |
-| sha256sum | single 100MB text | N/A | - | - |
-| sha256sum | 10 files | N/A | - | - |
-| sha256sum | 100 files | N/A | - | - |
-| md5sum | single 100KB text | N/A | - | - |
-| md5sum | single 1MB text | N/A | - | - |
-| md5sum | single 10MB text | N/A | - | - |
-| md5sum | single 10MB binary | N/A | - | - |
-| md5sum | single 100MB text | N/A | - | - |
-| md5sum | 10 files | N/A | - | - |
-| md5sum | 100 files | N/A | - | - |
 | b2sum | single 100KB text | N/A | - | - |
 | b2sum | single 1MB text | N/A | - | - |
 | b2sum | single 10MB text | N/A | - | - |
@@ -161,6 +125,29 @@ Generated: 2026-02-22 17:54:45 UTC
 | base64 | decode 10MB | N/A | - | - |
 | base64 | encode -w 76 10MB | N/A | - | - |
 | base64 | encode -w 0 (no wrap) 10MB | N/A | - | - |
+| cut | -b1-100 10MB CSV | N/A | - | - |
+| cut | -c1-100 10MB CSV | N/A | - | - |
+| cut | -d, -f1 10MB CSV | N/A | - | - |
+| cut | -d, -f1,3,5 10MB CSV | N/A | - | - |
+| cut | -d, -f2-4 10MB CSV | N/A | - | - |
+| cut | --complement -d, -f1 10MB CSV | N/A | - | - |
+| cut | -d, -f1 100KB text | N/A | - | - |
+| cut | -d, -f1 1MB text | N/A | - | - |
+| cut | -d: -f1 colon file | N/A | - | - |
+| md5sum | single 100KB text | N/A | - | - |
+| md5sum | single 1MB text | N/A | - | - |
+| md5sum | single 10MB text | N/A | - | - |
+| md5sum | single 10MB binary | N/A | - | - |
+| md5sum | single 100MB text | N/A | - | - |
+| md5sum | 10 files | N/A | - | - |
+| md5sum | 100 files | N/A | - | - |
+| sha256sum | single 100KB text | N/A | - | - |
+| sha256sum | single 1MB text | N/A | - | - |
+| sha256sum | single 10MB text | N/A | - | - |
+| sha256sum | single 10MB binary | N/A | - | - |
+| sha256sum | single 100MB text | N/A | - | - |
+| sha256sum | 10 files | N/A | - | - |
+| sha256sum | 100 files | N/A | - | - |
 | sort | lexicographic 1MB | N/A | - | - |
 | sort | lexicographic 10MB random | N/A | - | - |
 | sort | already sorted 10MB | N/A | - | - |
@@ -171,6 +158,13 @@ Generated: 2026-02-22 17:54:45 UTC
 | sort | -t, -k2 CSV 10MB | N/A | - | - |
 | sort | repetitive 10MB | N/A | - | - |
 | sort | --parallel=4 10MB | N/A | - | - |
+| tac | reverse 100KB text | N/A | - | - |
+| tac | reverse 1MB text | N/A | - | - |
+| tac | reverse 10MB text | N/A | - | - |
+| tac | reverse 100MB text | N/A | - | - |
+| tac | reverse CSV 10MB | N/A | - | - |
+| tac | reverse repetitive 10MB | N/A | - | - |
+| tac | custom separator 1MB | N/A | - | - |
 | tr | a-z to A-Z 1MB | N/A | - | - |
 | tr | a-z to A-Z 10MB | N/A | - | - |
 | tr | -d digits 10MB | N/A | - | - |
@@ -187,10 +181,16 @@ Generated: 2026-02-22 17:54:45 UTC
 | uniq | -u unique only 10MB | N/A | - | - |
 | uniq | -i case insensitive 10MB | N/A | - | - |
 | uniq | repetitive 10MB | N/A | - | - |
-| tac | reverse 100KB text | N/A | - | - |
-| tac | reverse 1MB text | N/A | - | - |
-| tac | reverse 10MB text | N/A | - | - |
-| tac | reverse 100MB text | N/A | - | - |
-| tac | reverse CSV 10MB | N/A | - | - |
-| tac | reverse repetitive 10MB | N/A | - | - |
-| tac | custom separator 1MB | N/A | - | - |
+| wc | default 100KB text | N/A | - | - |
+| wc | default 1MB text | N/A | - | - |
+| wc | default 10MB text | N/A | - | - |
+| wc | default 100MB text | N/A | - | - |
+| wc | -l 10MB text | N/A | - | - |
+| wc | -w 10MB text | N/A | - | - |
+| wc | -c 10MB text | N/A | - | - |
+| wc | -m 10MB text | N/A | - | - |
+| wc | -L 10MB text | N/A | - | - |
+| wc | default 10MB binary | N/A | - | - |
+| wc | default 10MB repetitive | N/A | - | - |
+| wc | 10 files | N/A | - | - |
+| wc | 100 files | N/A | - | - |
