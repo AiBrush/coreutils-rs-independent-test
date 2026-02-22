@@ -243,6 +243,9 @@ jobs:
              results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
 
       - name: Print summary table
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
         run: |
           python3 - <<'EOF'
           import json, os, sys

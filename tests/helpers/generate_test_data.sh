@@ -798,6 +798,6 @@ ln -sf "relative_target.txt" "$TEST_DATA_DIR/symlink_tests/relative_link" 2>/dev
 echo "relative target" > "$TEST_DATA_DIR/symlink_tests/relative_target.txt"
 
 echo "Test data generation complete: $TEST_DATA_DIR"
-ls -la "$TEST_DATA_DIR/" | head -30
+{ ls -la "$TEST_DATA_DIR/" 2>/dev/null | head -30; } || true
 echo "..."
-du -sh "$TEST_DATA_DIR"
+du -sh "$TEST_DATA_DIR" || true
