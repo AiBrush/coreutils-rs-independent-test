@@ -389,8 +389,8 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
     # Build the full tools table
     table_lines = []
-    table_lines.append("| Tool | Size f\\* vs GNU | Size f\\* vs uutils | Compat f\\* vs GNU | Compat f\\* vs uutils | Speedup f\\* vs GNU | Speedup f\\* vs uutils |")
-    table_lines.append("|------|----------------:|-------------------:|------------------:|---------------------:|-------------------:|----------------------:|")
+    table_lines.append("| Tool | Size f\\* vs GNU | Size f\\* vs uutils | Compat f\\* vs GNU | Speedup f\\* vs GNU | Speedup f\\* vs uutils |")
+    table_lines.append("|------|----------------:|-------------------:|------------------:|-------------------:|----------------------:|")
 
     for tool in ALL_TOOLS:
         size_gnu_ratio = get_size_ratio(tool, sizes, "f_bytes", "gnu_bytes")
@@ -400,7 +400,6 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
         size_gnu_str = f"{size_gnu_ratio:.2f}x" if size_gnu_ratio is not None else "-"
         size_uutils_str = f"{size_uutils_ratio:.2f}x" if size_uutils_ratio is not None else "-"
         compat_gnu_str = f"{compat_gnu:.0f}%" if compat_gnu is not None else "-"
-        compat_uutils_str = "-"  # not yet collected
 
         sg = tool_speedups.get(tool)
         su = tool_f_vs_uutils.get(tool)
@@ -408,7 +407,7 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
         speedup_uutils_str = f"**{su:.1f}x**" if su is not None else "-"
 
         table_lines.append(
-            f"| {tool} | {size_gnu_str} | {size_uutils_str} | {compat_gnu_str} | {compat_uutils_str} | {speedup_gnu_str} | {speedup_uutils_str} |"
+            f"| {tool} | {size_gnu_str} | {size_uutils_str} | {compat_gnu_str} | {speedup_gnu_str} | {speedup_uutils_str} |"
         )
 
     full_table = "\n".join(table_lines)
