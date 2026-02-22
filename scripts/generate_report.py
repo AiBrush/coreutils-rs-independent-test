@@ -139,16 +139,25 @@ def load_size_data(version):
     return sizes
 
 
-def load_new_tools_data():
-    """Load new-tools benchmark and compatibility data from results/.
+def load_source_sizes():
+    """Load binary sizes from results/source_sizes.json (collected during source build)."""
+    sizes_file = os.path.join(RESULTS_DIR, "source_sizes.json")
+    if not os.path.exists(sizes_file):
+        return {}
+    try:
+        with open(sizes_file) as f:
+            data = json.load(f)
+        return data.get("sizes", {})
+    except (json.JSONDecodeError, IOError):
+        return {}
 
-    These are written by the report job when test-new-tools/bench-new-tools
-    artifacts are downloaded (workflow_dispatch runs only).
-    """
+
+def load_new_tools_data():
+    """Load new-tools benchmark and compatibility data from results/."""
     bench_data = {}
     compat_data = {}
 
-    bench_file = os.path.join(RESULTS_DIR, "new_tools_benchmark_results.json")
+    bench_file = os.path.join(RESULTS_DIR, "source_bench.json")
     if os.path.exists(bench_file):
         try:
             with open(bench_file) as f:
@@ -159,7 +168,7 @@ def load_new_tools_data():
         except (json.JSONDecodeError, IOError):
             pass
 
-    compat_file = os.path.join(RESULTS_DIR, "new_tools_compatibility_results.json")
+    compat_file = os.path.join(RESULTS_DIR, "source_compat.json")
     if os.path.exists(compat_file):
         try:
             with open(compat_file) as f:
@@ -392,7 +401,7 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 ## Latest Results ({latest_version})
 
 ### Summary
-- **Tools tracked:** {len(ALL_TOOLS)} total ({tools_with_data} with data)
+- **Tools tracked:** {len(ALL_TOOLS)} total
 - **Compatibility:** {total_passed}/{total_tests} tests passed ({pass_pct}%)
 - **Fastest speedup:** {fastest_tool} at {fastest_speedup:.1f}x faster than GNU
 
@@ -478,6 +487,16 @@ def main():
     compat_platforms, tool_results = load_compatibility_data(latest)
     tool_speedups, tool_f_vs_uutils = compute_speedups(bench_platforms)
     sizes = load_size_data(latest)
+
+    # Supplement versioned sizes with source-built sizes for all 84 tools
+    source_sizes = load_source_sizes()
+    for tool, sz in source_sizes.items():
+        if tool not in sizes:
+            sizes[tool] = sz
+        else:
+            for k, v in sz.items():
+                if k not in sizes[tool]:
+                    sizes[tool][k] = v
 
     # Supplement with new-tools data for tools not in versioned results
     new_tools_bench, new_tools_compat = load_new_tools_data()

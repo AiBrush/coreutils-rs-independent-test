@@ -436,7 +436,6 @@ jobs:
           echo "Benchmarked versions: ${{ needs.discover-versions.outputs.versions }}" >> $GITHUB_STEP_SUMMARY
 
   test-new-tools:
-    if: github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
@@ -444,15 +443,6 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
             name: Linux x86_64
-          - os: ubuntu-24.04-arm
-            arch: arm64
-            name: Linux ARM64
-          - os: macos-latest
-            arch: arm64
-            name: macOS ARM64
-          - os: windows-latest
-            arch: x86_64
-            name: Windows x86_64
 
     runs-on: ${{ matrix.os }}
     name: New Tools - ${{ matrix.name }}
@@ -591,11 +581,50 @@ jobs:
           mkdir -p "$RESULTS_DIR"
           bash tests/compatibility/run_all.sh || true
 
+      - name: Measure binary sizes
+        shell: bash
+        run: |
+          python3 << 'PYEOF'
+          import json, os, shutil
+          install_dir = os.path.expanduser("~/.local/bin")
+          tools = [
+              "wc","cut","sha256sum","md5sum","b2sum","base64","sort","tr","uniq","tac",
+              "head","tail","cat","rev","expand","unexpand","fold","paste","nl","comm","join",
+              "basenc","base32","ln","touch","truncate","mkdir","rmdir","mknod","mkfifo","mktemp",
+              "seq","shuf","tsort","tee","sum","cksum","sha1sum","sha224sum","sha384sum","sha512sum",
+              "id","groups","whoami","logname","uname","uptime","arch","hostid","tty","nproc","pwd",
+              "env","timeout","nice","nohup","sleep","sync",
+              "true","false","link","unlink","basename","dirname","pathchk","realpath","readlink","dircolors",
+              "echo","factor","expr","test",
+              "cp","mv","rm","dd","split","csplit","install","shred","chmod","chown","chgrp","yes",
+          ]
+          sizes = {}
+          for tool in tools:
+              entry = {}
+              fp = os.path.join(install_dir, "f" + tool)
+              if os.path.exists(fp):
+                  entry["f_bytes"] = os.path.getsize(fp)
+              gp = shutil.which(tool)
+              if gp:
+                  try:
+                      entry["gnu_bytes"] = os.path.getsize(gp)
+                  except OSError:
+                      pass
+              if entry:
+                  sizes[tool] = entry
+          out = {"type": "source_sizes", "sizes": sizes}
+          results_dir = os.environ.get("GITHUB_WORKSPACE", ".") + "/results"
+          os.makedirs(results_dir, exist_ok=True)
+          with open(results_dir + "/source_sizes.json", "w") as f:
+              json.dump(out, f, indent=2)
+          print(f"Saved sizes for {len(sizes)} tools")
+          PYEOF
+
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: new-tools-results-${{ matrix.os }}-${{ matrix.arch }}
+          name: source-compat-${{ matrix.os }}-${{ matrix.arch }}
           path: results/
           retention-days: 30
 
@@ -844,7 +873,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: new-tools-bench-${{ matrix.os }}-${{ matrix.arch }}
+          name: source-bench-${{ matrix.os }}-${{ matrix.arch }}
           path: results/
           retention-days: 30
 
@@ -903,7 +932,7 @@ jobs:
           fi
 
   report:
-    needs: [discover-versions, compatibility, benchmarks]
+    needs: [discover-versions, compatibility, benchmarks, test-new-tools]
     if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     name: Publish Report
@@ -930,17 +959,17 @@ jobs:
           merge-multiple: true
         continue-on-error: true
 
-      - name: Download new-tools compatibility results (Linux x86_64)
+      - name: Download source-compat results (Linux x86_64)
         uses: actions/download-artifact@v4
         with:
-          name: new-tools-results-ubuntu-latest-x86_64
+          name: source-compat-ubuntu-latest-x86_64
           path: new_tools_compat/
         continue-on-error: true
 
-      - name: Download new-tools benchmark results (Linux x86_64)
+      - name: Download source-bench results (Linux x86_64)
         uses: actions/download-artifact@v4
         with:
-          name: new-tools-bench-ubuntu-latest-x86_64
+          name: source-bench-ubuntu-latest-x86_64
           path: new_tools_bench/
         continue-on-error: true
 
@@ -969,14 +998,18 @@ jobs:
               done
           fi
 
-          # Merge new-tools results into results/ (for use by generate_report.py)
+          # Merge source-built results into results/ (for use by generate_report.py)
           if [[ -f "new_tools_compat/compatibility_results.json" ]]; then
-              cp -v "new_tools_compat/compatibility_results.json" "results/new_tools_compatibility_results.json"
-              echo "Merged new-tools compatibility results"
+              cp -v "new_tools_compat/compatibility_results.json" "results/source_compat.json"
+              echo "Merged source compat results"
+          fi
+          if [[ -f "new_tools_compat/source_sizes.json" ]]; then
+              cp -v "new_tools_compat/source_sizes.json" "results/source_sizes.json"
+              echo "Merged source sizes results"
           fi
           if [[ -f "new_tools_bench/benchmark_results.json" ]]; then
-              cp -v "new_tools_bench/benchmark_results.json" "results/new_tools_benchmark_results.json"
-              echo "Merged new-tools benchmark results"
+              cp -v "new_tools_bench/benchmark_results.json" "results/source_bench.json"
+              echo "Merged source bench results"
           fi
 
           echo ""
