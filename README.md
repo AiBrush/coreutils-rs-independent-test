@@ -6,12 +6,12 @@
 
 ![Speedup History](results/speedup-history.png)
 
-## Latest Results (v0.8.8)
+## Latest Results (v0.9.0)
 
 ### Summary
 - **Tools tracked:** 84 total
-- **Compatibility:** 417/436 tests passed (95.6%)
-- **Fastest speedup:** wc at 31.0x faster than GNU
+- **Compatibility:** 1054/1197 tests passed (88.1%)
+- **Fastest speedup:** wc at 31.2x faster than GNU
 
 ### Full Tools Comparison
 
@@ -21,16 +21,16 @@
 
 | Tool | Size f\* vs GNU | Size f\* vs uutils | Compat f\* vs GNU | Compat f\* vs uutils | Speedup f\* vs GNU | Speedup f\* vs uutils |
 |------|----------------:|-------------------:|------------------:|---------------------:|-------------------:|----------------------:|
-| wc | 16.62x | 0.63x | 100% | - | **31.0x** | **17.2x** |
-| cut | 16.50x | 0.48x | 100% | - | **5.5x** | **1.9x** |
-| sha256sum | 131.36x | 2.17x | 100% | - | **1.0x** | **3.8x** |
-| md5sum | 131.35x | 2.17x | 100% | - | **1.4x** | **1.3x** |
+| wc | 16.62x | 0.63x | 100% | - | **31.2x** | **16.9x** |
+| cut | 16.50x | 0.48x | 100% | - | **5.4x** | **1.7x** |
+| sha256sum | 131.36x | 2.17x | 100% | - | **1.0x** | **1.0x** |
+| md5sum | 131.35x | 2.17x | 100% | - | **1.0x** | **1.3x** |
 | b2sum | 11.63x | 0.27x | 100% | - | **1.3x** | **1.2x** |
-| base64 | 14.48x | 0.43x | 100% | - | **6.5x** | **5.7x** |
-| sort | 9.53x | 0.29x | 100% | - | **17.6x** | **18.0x** |
-| tr | 14.97x | 0.52x | 100% | - | **6.5x** | **6.9x** |
-| uniq | 23.57x | 0.68x | 100% | - | **13.5x** | **6.5x** |
-| tac | 50.81x | 0.70x | 100% | - | **3.9x** | **2.1x** |
+| base64 | 14.48x | 0.43x | 100% | - | **5.7x** | **5.6x** |
+| sort | 9.53x | 0.29x | 100% | - | **12.6x** | **12.5x** |
+| tr | 14.97x | 0.52x | 100% | - | **6.5x** | **6.5x** |
+| uniq | 23.57x | 0.68x | 100% | - | **10.4x** | **6.6x** |
+| tac | 50.81x | 0.70x | 100% | - | **3.2x** | **1.7x** |
 | head | 10.78x | - | 100% | - | - | - |
 | tail | 7.77x | - | 100% | - | - | - |
 | cat | 11.94x | - | 100% | - | - | - |
@@ -104,10 +104,10 @@
 | chmod | 9.65x | - | 100% | - | - | - |
 | chown | 9.03x | - | 100% | - | - | - |
 | chgrp | 8.96x | - | 100% | - | - | - |
-| yes | 12.37x | - | 17% | - | **4.2x** | - |
+| yes | 12.37x | - | 17% | - | **3.9x** | - |
 
 ### Known Issues
-- 19 compatibility test failures across 1 platforms
+- 143 compatibility test failures across 5 platforms
 
 ## Per-Version Details
 
@@ -121,7 +121,7 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
 - Builds uutils/coreutils from source for comparison
-- Runs 436+ compatibility tests comparing output byte-for-byte against GNU coreutils
+- Runs 1197+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Measures binary sizes of f\*, GNU, and uutils for each tool
 - Tests run across multiple platforms via GitHub Actions
@@ -140,12 +140,12 @@ pip install matplotlib
 python3 scripts/plot_speedup.py
 ```
 
-## Platform Functional Tests (v0.8.8)
+## Platform Functional Tests (v0.9.0)
 
 | Platform | Passed | Failed | Skipped | Status |
 |----------|--------|--------|---------|--------|
 | Linux x86_64 | 417 | 19 | 0 | ⚠️ |
-| Linux ARM64 | — | — | — | ⏭️ no binary available for aarch64-unknown-linux-gnu |
-| macOS ARM64 | — | — | — | ⏭️ no binary available for aarch64-apple-darwin |
-| Windows x86_64 | — | — | — | ⏭️ no binary available for x86_64-pc-windows-msvc |
-| Windows ARM64 | — | — | — | ⏭️ no binary available for aarch64-pc-windows-msvc |
+| Linux ARM64 | 417 | 19 | 0 | ⚠️ |
+| macOS ARM64 | 220 | 105 | 0 | ⚠️ |
+| Windows x86_64 | 0 | 0 | 0 | ✅ |
+| Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |
