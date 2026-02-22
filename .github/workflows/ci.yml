@@ -1,0 +1,439 @@
+name: CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag to test (e.g. v0.8.8)"
+        required: true
+        type: string
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 1: Compatibility tests — Linux x86_64
+  # ─────────────────────────────────────────────────────────────────────────────
+  compatibility:
+    name: Compatibility (Linux x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fcoreutils ${{ github.event.inputs.version }}
+        run: |
+          bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate test data
+        run: bash tests/helpers/generate_test_data.sh
+
+      - name: Run compatibility tests
+        run: bash tests/compatibility/run_all.sh
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Copy results to versioned path
+        run: |
+          mkdir -p results/compatibility/${{ github.event.inputs.version }}
+          cp results/compatibility_results.json \
+             results/compatibility/${{ github.event.inputs.version }}/linux_x86_64.json
+        env: {}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: compat-linux-x86_64
+          path: results/compatibility/${{ github.event.inputs.version }}/linux_x86_64.json
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 2: Benchmarks — Linux x86_64
+  # ─────────────────────────────────────────────────────────────────────────────
+  benchmarks:
+    name: Benchmarks (Linux x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fcoreutils ${{ github.event.inputs.version }}
+        run: |
+          bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uutils (for 3-way comparison)
+        run: |
+          bash scripts/install_uutils.sh --tools all
+        continue-on-error: true
+
+      - name: Install hyperfine
+        run: sudo apt-get install -y hyperfine
+
+      - name: Generate test data
+        run: bash tests/helpers/generate_test_data.sh
+
+      - name: Run benchmarks
+        run: bash tests/benchmarks/run_all.sh
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Measure binary sizes
+        run: |
+          python3 - <<'EOF'
+          import json, os, shutil, subprocess
+
+          INSTALL_DIR = os.path.expanduser("~/.local/bin")
+          UUTILS_DIR  = os.environ.get("UUTILS_DIR", "/tmp/uutils-build/target/release")
+
+          tools = [
+              "wc", "sort", "cut", "tr", "uniq", "tac", "base64",
+              "sha256sum", "md5sum", "b2sum",
+              "head", "tail", "cat", "rev", "expand", "unexpand",
+              "fold", "paste", "nl", "comm", "join",
+          ]
+
+          def get_size(path):
+              try:
+                  return os.path.getsize(path)
+              except FileNotFoundError:
+                  return None
+
+          def which(cmd):
+              return shutil.which(cmd)
+
+          rows = {}
+          for tool in tools:
+              f_path  = os.path.join(INSTALL_DIR, "f" + tool)
+              gnu_path = which(tool)
+              uu_path  = os.path.join(UUTILS_DIR, tool)
+
+              rows[tool] = {
+                  "fcoreutils": get_size(f_path),
+                  "gnu":        get_size(gnu_path) if gnu_path else None,
+                  "uutils":     get_size(uu_path),
+              }
+
+          out = {
+              "type": "sizes",
+              "platform": subprocess.check_output(["uname", "-sm"]).decode().strip(),
+              "sizes": rows,
+          }
+
+          os.makedirs("results", exist_ok=True)
+          with open("results/sizes.json", "w") as f:
+              json.dump(out, f, indent=2)
+          print("Binary sizes written to results/sizes.json")
+          EOF
+        env:
+          UUTILS_DIR: /tmp/uutils-build/target/release
+
+      - name: Copy results to versioned path
+        run: |
+          VERSION=${{ github.event.inputs.version }}
+          mkdir -p results/benchmarks/$VERSION
+          cp results/benchmark_results.json \
+             results/benchmarks/$VERSION/linux_x86_64.json
+          cp results/sizes.json \
+             results/benchmarks/$VERSION/linux_x86_64_sizes.json
+        env: {}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-linux-x86_64
+          path: |
+            results/benchmarks/${{ github.event.inputs.version }}/linux_x86_64.json
+            results/benchmarks/${{ github.event.inputs.version }}/linux_x86_64_sizes.json
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 3: Functional tests — 4-platform matrix
+  # ─────────────────────────────────────────────────────────────────────────────
+  functional:
+    name: Functional (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-arm64
+            runner: ubuntu-24.04-arm
+            triple: aarch64-unknown-linux-gnu
+            result_name: linux_aarch64
+            shell: bash
+
+          - name: macos-arm64
+            runner: macos-latest
+            triple: aarch64-apple-darwin
+            result_name: darwin_arm64
+            shell: bash
+
+          - name: windows-x86_64
+            runner: windows-latest
+            triple: x86_64-pc-windows-msvc
+            result_name: windows_x86_64
+            shell: bash
+
+          - name: windows-arm64
+            runner: windows-11-arm
+            triple: aarch64-pc-windows-msvc
+            result_name: windows_arm64
+            shell: bash
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fcoreutils ${{ github.event.inputs.version }}
+        id: install
+        run: |
+          if bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}; then
+            echo "installed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "installed=false" >> "$GITHUB_OUTPUT"
+            echo "WARNING: Binary not available for ${{ matrix.triple }}, will mark as skipped"
+          fi
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add install dir to PATH
+        if: steps.install.outputs.installed == 'true'
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Write skipped result (no binary available)
+        if: steps.install.outputs.installed != 'true'
+        run: |
+          mkdir -p results/compatibility/${{ github.event.inputs.version }}
+          python3 - <<'EOF'
+          import json, os
+          result = {
+              "skipped": True,
+              "reason": "no binary available for ${{ matrix.triple }}",
+              "platform": "${{ matrix.triple }}",
+              "type": "compatibility",
+          }
+          os.makedirs("results/compatibility/${{ github.event.inputs.version }}", exist_ok=True)
+          with open("results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json", "w") as f:
+              json.dump(result, f, indent=2)
+          print("Wrote skipped result.")
+          EOF
+
+      - name: Generate test data
+        if: steps.install.outputs.installed == 'true'
+        run: bash tests/helpers/generate_test_data.sh
+
+      - name: Run compatibility tests
+        if: steps.install.outputs.installed == 'true'
+        run: bash tests/compatibility/run_all.sh
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Copy results to versioned path
+        if: steps.install.outputs.installed == 'true'
+        run: |
+          mkdir -p results/compatibility/${{ github.event.inputs.version }}
+          cp results/compatibility_results.json \
+             results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
+
+      - name: Print summary table
+        run: |
+          python3 - <<'EOF'
+          import json, os, sys
+
+          result_file = "results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json"
+          if not os.path.exists(result_file):
+              print("No results file found.")
+              sys.exit(0)
+
+          data = json.load(open(result_file))
+          if data.get("skipped"):
+              print(f"Platform: ${{ matrix.name }} — SKIPPED ({data.get('reason', 'unknown')})")
+              sys.exit(0)
+
+          summary = data.get("summary", {})
+          passed  = summary.get("passed", 0)
+          failed  = summary.get("failed", 0)
+          skipped = summary.get("skipped", 0)
+          total   = summary.get("total_tests", passed + failed + skipped)
+
+          status = "✅" if failed == 0 else "⚠️"
+          print(f"Platform: ${{ matrix.name }}")
+          print(f"  Passed:  {passed}")
+          print(f"  Failed:  {failed}")
+          print(f"  Skipped: {skipped}")
+          print(f"  Total:   {total}")
+          print(f"  Status:  {status}")
+
+          tools = data.get("tools", {})
+          if tools:
+              print("\nPer-tool breakdown:")
+              print(f"  {'Tool':<20} {'Pass':>6} {'Fail':>6} {'Skip':>6}")
+              print(f"  {'-'*20} {'-'*6} {'-'*6} {'-'*6}")
+              for tool_name, td in sorted(tools.items()):
+                  if td.get("status") == "NOT_IMPLEMENTED":
+                      print(f"  {tool_name:<20} {'—':>6} {'—':>6} {'N/A':>6}")
+                  else:
+                      p = td.get("passed", 0)
+                      f = td.get("failed", 0)
+                      s = td.get("skipped", 0)
+                      marker = " ❌" if f > 0 else ""
+                      print(f"  {tool_name:<20} {p:>6} {f:>6} {s:>6}{marker}")
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: functional-${{ matrix.name }}
+          path: results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 4: Report — publish results to repo
+  # ─────────────────────────────────────────────────────────────────────────────
+  report:
+    name: Publish Report
+    runs-on: ubuntu-latest
+    needs: [compatibility, benchmarks, functional]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download compat-linux-x86_64
+        uses: actions/download-artifact@v4
+        with:
+          name: compat-linux-x86_64
+          path: results/compatibility/${{ github.event.inputs.version }}/
+        continue-on-error: true
+
+      - name: Download bench-linux-x86_64
+        uses: actions/download-artifact@v4
+        with:
+          name: bench-linux-x86_64
+          path: results/benchmarks/${{ github.event.inputs.version }}/
+        continue-on-error: true
+
+      - name: Download functional-linux-arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: functional-linux-arm64
+          path: results/compatibility/${{ github.event.inputs.version }}/
+        continue-on-error: true
+
+      - name: Download functional-macos-arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: functional-macos-arm64
+          path: results/compatibility/${{ github.event.inputs.version }}/
+        continue-on-error: true
+
+      - name: Download functional-windows-x86_64
+        uses: actions/download-artifact@v4
+        with:
+          name: functional-windows-x86_64
+          path: results/compatibility/${{ github.event.inputs.version }}/
+        continue-on-error: true
+
+      - name: Download functional-windows-arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: functional-windows-arm64
+          path: results/compatibility/${{ github.event.inputs.version }}/
+        continue-on-error: true
+
+      - name: Install Python dependencies
+        run: pip install matplotlib
+
+      - name: Generate README (main compatibility table)
+        run: python scripts/generate_report.py
+        continue-on-error: true
+
+      - name: Generate speedup chart
+        run: python scripts/plot_speedup.py
+        continue-on-error: true
+
+      - name: Append multi-platform section to README
+        run: |
+          VERSION=${{ github.event.inputs.version }}
+          python3 - <<'PYEOF'
+          import json, os, re
+
+          version = os.environ["VERSION"]
+          base    = f"results/compatibility/{version}"
+
+          platforms = [
+              ("Linux x86_64",  "linux_x86_64.json"),
+              ("Linux ARM64",   "linux_aarch64.json"),
+              ("macOS ARM64",   "darwin_arm64.json"),
+              ("Windows x86_64","windows_x86_64.json"),
+              ("Windows ARM64", "windows_arm64.json"),
+          ]
+
+          rows = []
+          for label, fname in platforms:
+              path = os.path.join(base, fname)
+              if not os.path.exists(path):
+                  rows.append(f"| {label} | — | — | — | ⏭️ missing |")
+                  continue
+              data = json.load(open(path))
+              if data.get("skipped"):
+                  reason = data.get("reason", "no binary available")
+                  rows.append(f"| {label} | — | — | — | ⏭️ {reason} |")
+                  continue
+              s       = data.get("summary", {})
+              passed  = s.get("passed", 0)
+              failed  = s.get("failed", 0)
+              skipped = s.get("skipped", 0)
+              if failed == 0:
+                  status = "✅"
+              else:
+                  status = "⚠️"
+              rows.append(f"| {label} | {passed} | {failed} | {skipped} | {status} |")
+
+          section = f"""## Platform Functional Tests ({version})
+
+          | Platform | Passed | Failed | Skipped | Status |
+          |----------|--------|--------|---------|--------|
+          """ + "\n".join(rows) + "\n"
+
+          # Dedent the section (strip leading spaces from each line)
+          section = "\n".join(line.strip() for line in section.splitlines()) + "\n"
+
+          readme = "README.md"
+          if not os.path.exists(readme):
+              with open(readme, "w") as f:
+                  f.write(section)
+              print("README.md created with platform section.")
+          else:
+              content = open(readme).read()
+              # Replace existing section if present, otherwise append
+              pattern = r"## Platform Functional Tests \(.*?\)\n[\s\S]*?(?=\n##|\Z)"
+              if re.search(pattern, content):
+                  content = re.sub(pattern, section.rstrip(), content)
+              else:
+                  content = content.rstrip() + "\n\n" + section
+              with open(readme, "w") as f:
+                  f.write(content)
+              print(f"README.md updated with platform section for {version}.")
+          PYEOF
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+
+      - name: Commit and push results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/ README.md
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m "Update test report ${{ github.event.inputs.version }}"
+            git push
+          fi
