@@ -2,7 +2,7 @@
 # Install fcoreutils binaries from GitHub releases
 set -euo pipefail
 
-REPO="AiBrush/coreutils-rs"
+REPO="AiBrush/fcoreutils"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 VERSION=""
 API_URL="https://api.github.com/repos/${REPO}/releases"

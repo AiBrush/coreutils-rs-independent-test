@@ -414,13 +414,13 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
     full_table = "\n".join(table_lines)
 
     sources = """## Sources
-- [fcoreutils](https://github.com/AiBrush/coreutils-rs) — installed from GitHub Releases
+- [fcoreutils](https://github.com/AiBrush/fcoreutils) — installed from GitHub Releases
 - [uutils/coreutils](https://github.com/uutils/coreutils) — built from source (latest main)
 - GNU coreutils — system-installed baseline"""
 
     readme = f"""# fcoreutils vs GNU coreutils — Independent Benchmark
 
-> Independent quality assurance for [fcoreutils](https://github.com/AiBrush/coreutils-rs), a Rust rewrite of GNU coreutils.
+> Independent quality assurance for [fcoreutils](https://github.com/AiBrush/fcoreutils), a Rust rewrite of GNU coreutils.
 
 ## Performance Over Versions
 
