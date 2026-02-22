@@ -1,6 +1,6 @@
 # fcoreutils v0.8.8 — Detailed Results
 
-Generated: 2026-02-22 16:39:24 UTC
+Generated: 2026-02-22 16:49:52 UTC
 
 ## Compatibility
 
@@ -111,90 +111,90 @@ Generated: 2026-02-22 16:39:24 UTC
 | Tool | Test | GNU (mean) | fcoreutils (mean) | uutils (mean) | f* vs GNU | f* vs uutils |
 |------|------|-----------|-------------------|---------------|----------:|-------------:|
 | wc | default 100KB text | 0.0013s | 0.0012s | 0.0014s | **1.1x** | **1.2x** |
-| wc | default 1MB text | 0.0057s | 0.0029s | 0.0037s | **2.0x** | **1.3x** |
-| wc | default 10MB text | 0.0542s | 0.0033s | 0.0313s | **16.5x** | **9.6x** |
-| wc | default 100MB text | 0.4860s | 0.0151s | 0.2642s | **32.2x** | **17.5x** |
-| wc | -l 10MB text | 0.0019s | 0.0026s | 0.0020s | **0.7x** | **0.8x** |
-| wc | -w 10MB text | 0.0543s | 0.0093s | 0.0251s | **5.9x** | **2.7x** |
-| wc | -c 10MB text | 0.0008s | 0.0010s | 0.0012s | **0.8x** | **1.1x** |
-| wc | -m 10MB text | 0.0543s | 0.0033s | 0.0020s | **16.7x** | **0.6x** |
-| wc | -L 10MB text | 0.0544s | 0.0103s | 0.0161s | **5.3x** | **1.6x** |
-| wc | default 10MB binary | 0.3173s | 0.0274s | 0.1595s | **11.6x** | **5.8x** |
-| wc | default 10MB repetitive | 0.0733s | 0.0048s | 0.0434s | **15.2x** | **9.0x** |
+| wc | default 1MB text | 0.0056s | 0.0029s | 0.0038s | **1.9x** | **1.3x** |
+| wc | default 10MB text | 0.0542s | 0.0032s | 0.0312s | **16.8x** | **9.7x** |
+| wc | default 100MB text | 0.4809s | 0.0152s | 0.2597s | **31.6x** | **17.1x** |
+| wc | -l 10MB text | 0.0018s | 0.0029s | 0.0020s | **0.6x** | **0.7x** |
+| wc | -w 10MB text | 0.0543s | 0.0088s | 0.0247s | **6.1x** | **2.8x** |
+| wc | -c 10MB text | 0.0008s | 0.0010s | 0.0011s | **0.8x** | **1.1x** |
+| wc | -m 10MB text | 0.0547s | 0.0031s | 0.0019s | **17.7x** | **0.6x** |
+| wc | -L 10MB text | 0.0536s | 0.0103s | 0.0160s | **5.2x** | **1.6x** |
+| wc | default 10MB binary | 0.3174s | 0.0272s | 0.1584s | **11.7x** | **5.8x** |
+| wc | default 10MB repetitive | 0.0730s | 0.0047s | 0.0438s | **15.5x** | **9.3x** |
 | wc | 10 files | 0.0009s | 0.0012s | 0.0013s | **0.7x** | **1.0x** |
-| wc | 100 files | 0.0016s | 0.0017s | 0.0021s | **0.9x** | **1.2x** |
-| cut | -b1-100 10MB CSV | 0.0216s | 0.0040s | 0.0065s | **5.4x** | **1.6x** |
-| cut | -c1-100 10MB CSV | 0.0214s | 0.0040s | 0.0065s | **5.4x** | **1.6x** |
-| cut | -d, -f1 10MB CSV | 0.0158s | 0.0094s | 0.0078s | **1.7x** | **0.8x** |
-| cut | -d, -f1,3,5 10MB CSV | 0.0210s | 0.0120s | 0.0173s | **1.8x** | **1.4x** |
-| cut | -d, -f2-4 10MB CSV | 0.0235s | 0.0105s | 0.0130s | **2.2x** | **1.2x** |
-| cut | --complement -d, -f1 10MB CSV | 0.0295s | 0.0110s | 0.0160s | **2.7x** | **1.5x** |
-| cut | -d, -f1 100KB text | 0.0008s | 0.0012s | 0.0011s | **0.6x** | **0.9x** |
-| cut | -d, -f1 1MB text | 0.0032s | 0.0029s | 0.0019s | **1.1x** | **0.7x** |
-| cut | -d: -f1 colon file | 0.0008s | 0.0013s | 0.0011s | **0.6x** | **0.8x** |
-| sha256sum | single 100KB text | 0.0012s | 0.0029s | 0.0013s | **0.4x** | **0.4x** |
-| sha256sum | single 1MB text | 0.0019s | 0.0035s | 0.0019s | **0.5x** | **0.5x** |
-| sha256sum | single 10MB text | 0.0084s | 0.0101s | 0.0084s | **0.8x** | **0.8x** |
-| sha256sum | single 10MB binary | 0.0087s | 0.0104s | 0.0087s | **0.8x** | **0.8x** |
-| sha256sum | single 100MB text | 0.0746s | 0.0749s | 0.0744s | **1.0x** | **1.0x** |
-| sha256sum | 10 files | 0.0013s | 0.0023s | 0.0013s | **0.6x** | **0.6x** |
-| sha256sum | 100 files | 0.0021s | 0.0028s | 0.0021s | **0.8x** | **0.7x** |
+| wc | 100 files | 0.0016s | 0.0018s | 0.0021s | **0.9x** | **1.2x** |
+| cut | -b1-100 10MB CSV | 0.0214s | 0.0040s | 0.0065s | **5.4x** | **1.7x** |
+| cut | -c1-100 10MB CSV | 0.0212s | 0.0040s | 0.0067s | **5.3x** | **1.7x** |
+| cut | -d, -f1 10MB CSV | 0.0157s | 0.0094s | 0.0079s | **1.7x** | **0.8x** |
+| cut | -d, -f1,3,5 10MB CSV | 0.0210s | 0.0117s | 0.0174s | **1.8x** | **1.5x** |
+| cut | -d, -f2-4 10MB CSV | 0.0233s | 0.0105s | 0.0131s | **2.2x** | **1.2x** |
+| cut | --complement -d, -f1 10MB CSV | 0.0299s | 0.0109s | 0.0163s | **2.8x** | **1.5x** |
+| cut | -d, -f1 100KB text | 0.0008s | 0.0013s | 0.0010s | **0.6x** | **0.8x** |
+| cut | -d, -f1 1MB text | 0.0032s | 0.0029s | 0.0019s | **1.1x** | **0.6x** |
+| cut | -d: -f1 colon file | 0.0008s | 0.0012s | 0.0010s | **0.6x** | **0.8x** |
+| sha256sum | single 100KB text | 0.0012s | 0.0031s | 0.0013s | **0.4x** | **0.4x** |
+| sha256sum | single 1MB text | 0.0019s | 0.0038s | 0.0019s | **0.5x** | **0.5x** |
+| sha256sum | single 10MB text | 0.0084s | 0.0102s | 0.0083s | **0.8x** | **0.8x** |
+| sha256sum | single 10MB binary | 0.0086s | 0.0104s | 0.0087s | **0.8x** | **0.8x** |
+| sha256sum | single 100MB text | 0.0742s | 0.0747s | 0.0741s | **1.0x** | **1.0x** |
+| sha256sum | 10 files | 0.0012s | 0.0023s | 0.0013s | **0.5x** | **0.6x** |
+| sha256sum | 100 files | 0.0021s | 0.0027s | 0.0020s | **0.8x** | **0.8x** |
 | md5sum | single 100KB text | 0.0013s | 0.0022s | 0.0014s | **0.6x** | **0.6x** |
-| md5sum | single 1MB text | 0.0028s | 0.0035s | 0.0032s | **0.8x** | **0.9x** |
-| md5sum | single 10MB text | 0.0174s | 0.0181s | 0.0215s | **1.0x** | **1.2x** |
-| md5sum | single 10MB binary | 0.0179s | 0.0193s | 0.0224s | **0.9x** | **1.2x** |
-| md5sum | single 100MB text | 0.1604s | 0.1533s | 0.2022s | **1.0x** | **1.3x** |
-| md5sum | 10 files | 0.0012s | 0.0023s | 0.0013s | **0.5x** | **0.5x** |
-| md5sum | 100 files | 0.0021s | 0.0032s | 0.0021s | **0.6x** | **0.6x** |
+| md5sum | single 1MB text | 0.0027s | 0.0036s | 0.0031s | **0.8x** | **0.9x** |
+| md5sum | single 10MB text | 0.0171s | 0.0180s | 0.0214s | **0.9x** | **1.2x** |
+| md5sum | single 10MB binary | 0.0182s | 0.0194s | 0.0222s | **0.9x** | **1.1x** |
+| md5sum | single 100MB text | 0.1601s | 0.1533s | 0.2020s | **1.0x** | **1.3x** |
+| md5sum | 10 files | 0.0012s | 0.0024s | 0.0013s | **0.5x** | **0.5x** |
+| md5sum | 100 files | 0.0020s | 0.0032s | 0.0021s | **0.6x** | **0.7x** |
 | b2sum | single 100KB text | 0.0009s | 0.0011s | 0.0013s | **0.9x** | **1.2x** |
-| b2sum | single 1MB text | 0.0022s | 0.0020s | 0.0022s | **1.1x** | **1.1x** |
-| b2sum | single 10MB text | 0.0151s | 0.0130s | 0.0121s | **1.2x** | **0.9x** |
-| b2sum | single 10MB binary | 0.0157s | 0.0134s | 0.0126s | **1.2x** | **0.9x** |
-| b2sum | single 100MB text | 0.1416s | 0.1125s | 0.1130s | **1.3x** | **1.0x** |
-| b2sum | -l 256 10MB | 0.0150s | 0.0134s | 0.0124s | **1.1x** | **0.9x** |
-| b2sum | -l 128 10MB | 0.0151s | 0.0130s | 0.0124s | **1.2x** | **1.0x** |
+| b2sum | single 1MB text | 0.0022s | 0.0021s | 0.0023s | **1.1x** | **1.1x** |
+| b2sum | single 10MB text | 0.0148s | 0.0134s | 0.0122s | **1.1x** | **0.9x** |
+| b2sum | single 10MB binary | 0.0156s | 0.0138s | 0.0125s | **1.1x** | **0.9x** |
+| b2sum | single 100MB text | 0.1418s | 0.1121s | 0.1120s | **1.3x** | **1.0x** |
+| b2sum | -l 256 10MB | 0.0148s | 0.0131s | 0.0120s | **1.1x** | **0.9x** |
+| b2sum | -l 128 10MB | 0.0152s | 0.0127s | 0.0122s | **1.2x** | **1.0x** |
 | b2sum | 100 files | 0.0019s | 0.0022s | 0.0021s | **0.9x** | **1.0x** |
-| base64 | encode 100KB text | 0.0009s | 0.0013s | 0.0011s | **0.7x** | **0.9x** |
-| base64 | encode 1MB text | 0.0019s | 0.0015s | 0.0016s | **1.2x** | **1.0x** |
-| base64 | encode 10MB text | 0.0112s | 0.0060s | 0.0066s | **1.9x** | **1.1x** |
-| base64 | encode 10MB binary | 0.0116s | 0.0064s | 0.0071s | **1.8x** | **1.1x** |
-| base64 | decode 1MB | 0.0038s | 0.0025s | 0.0040s | **1.5x** | **1.6x** |
-| base64 | decode 10MB | 0.0312s | 0.0054s | 0.0312s | **5.8x** | **5.8x** |
-| base64 | encode -w 76 10MB | 0.0112s | 0.0060s | 0.0066s | **1.9x** | **1.1x** |
-| base64 | encode -w 0 (no wrap) 10MB | 0.0083s | 0.0049s | 0.0058s | **1.7x** | **1.2x** |
-| sort | lexicographic 1MB | 0.0084s | 0.0036s | 0.0052s | **2.3x** | **1.4x** |
-| sort | lexicographic 10MB random | 0.0546s | 0.0097s | 0.0339s | **5.6x** | **3.5x** |
-| sort | already sorted 10MB | 0.0266s | 0.0056s | 0.0159s | **4.7x** | **2.8x** |
-| sort | reverse sorted 10MB | 0.0285s | 0.0068s | 0.0158s | **4.2x** | **2.3x** |
-| sort | -n numeric 10MB | 0.0744s | 0.0062s | 0.0740s | **12.0x** | **11.9x** |
-| sort | -r reverse 10MB | 0.0553s | 0.0097s | 0.0341s | **5.7x** | **3.5x** |
-| sort | -u unique 10MB | 0.0582s | 0.0099s | 0.0375s | **5.9x** | **3.8x** |
-| sort | -t, -k2 CSV 10MB | 0.0671s | 0.0208s | 0.0820s | **3.2x** | **3.9x** |
-| sort | repetitive 10MB | 0.0558s | 0.0138s | 0.0354s | **4.1x** | **2.6x** |
-| sort | --parallel=4 10MB | 0.0549s | 0.0111s | 0.0342s | **4.9x** | **3.1x** |
-| tr | a-z to A-Z 1MB | 0.0021s | 0.0016s | 0.0018s | **1.3x** | **1.2x** |
-| tr | a-z to A-Z 10MB | 0.0112s | 0.0040s | 0.0072s | **2.8x** | **1.8x** |
-| tr | -d digits 10MB | 0.0179s | 0.0043s | 0.0132s | **4.1x** | **3.0x** |
-| tr | -d lowercase 10MB | 0.0318s | 0.0051s | 0.0208s | **6.2x** | **4.1x** |
-| tr | -s spaces 10MB | 0.0257s | 0.0040s | 0.0271s | **6.4x** | **6.7x** |
-| tr | [:lower:] to [:upper:] 10MB | 0.0112s | 0.0039s | 0.0071s | **2.9x** | **1.8x** |
-| tr | -d [:digit:] 10MB CSV | 0.0156s | 0.0044s | 0.0135s | **3.6x** | **3.1x** |
-| tr | translate binary 10MB | 0.0099s | 0.0043s | 0.0083s | **2.3x** | **1.9x** |
-| uniq | default 10MB many duplicates | 0.0114s | 0.0020s | 0.0120s | **5.8x** | **6.1x** |
-| uniq | default 10MB sorted (low dup) | 0.0132s | 0.0032s | 0.0133s | **4.1x** | **4.2x** |
-| uniq | -c count 10MB many dups | 0.0119s | 0.0019s | 0.0118s | **6.2x** | **6.2x** |
-| uniq | -c count 10MB sorted | 0.0281s | 0.0070s | 0.0162s | **4.0x** | **2.3x** |
-| uniq | -d duplicates only 10MB | 0.0117s | 0.0019s | 0.0121s | **6.0x** | **6.2x** |
-| uniq | -u unique only 10MB | 0.0119s | 0.0020s | 0.0122s | **5.9x** | **6.0x** |
-| uniq | -i case insensitive 10MB | 0.0131s | 0.0049s | 0.0130s | **2.7x** | **2.7x** |
-| uniq | repetitive 10MB | 0.0411s | 0.0039s | 0.0177s | **10.6x** | **4.6x** |
-| tac | reverse 100KB text | 0.0009s | 0.0015s | 0.0012s | **0.6x** | **0.8x** |
-| tac | reverse 1MB text | 0.0018s | 0.0021s | 0.0017s | **0.8x** | **0.8x** |
-| tac | reverse 10MB text | 0.0095s | 0.0066s | 0.0055s | **1.4x** | **0.8x** |
-| tac | reverse 100MB text | 0.0924s | 0.0289s | 0.0490s | **3.2x** | **1.7x** |
-| tac | reverse CSV 10MB | 0.0082s | 0.0061s | 0.0053s | **1.3x** | **0.9x** |
-| tac | reverse repetitive 10MB | 0.0206s | 0.0120s | 0.0103s | **1.7x** | **0.9x** |
-| tac | custom separator 1MB | 0.0056s | 0.0053s | 0.0050s | **1.1x** | **0.9x** |
+| base64 | encode 100KB text | 0.0009s | 0.0012s | 0.0011s | **0.7x** | **0.9x** |
+| base64 | encode 1MB text | 0.0018s | 0.0015s | 0.0016s | **1.2x** | **1.1x** |
+| base64 | encode 10MB text | 0.0111s | 0.0061s | 0.0068s | **1.8x** | **1.1x** |
+| base64 | encode 10MB binary | 0.0120s | 0.0061s | 0.0069s | **2.0x** | **1.1x** |
+| base64 | decode 1MB | 0.0037s | 0.0024s | 0.0040s | **1.6x** | **1.7x** |
+| base64 | decode 10MB | 0.0306s | 0.0054s | 0.0311s | **5.6x** | **5.7x** |
+| base64 | encode -w 76 10MB | 0.0115s | 0.0061s | 0.0067s | **1.9x** | **1.1x** |
+| base64 | encode -w 0 (no wrap) 10MB | 0.0086s | 0.0049s | 0.0058s | **1.8x** | **1.2x** |
+| sort | lexicographic 1MB | 0.0087s | 0.0038s | 0.0053s | **2.3x** | **1.4x** |
+| sort | lexicographic 10MB random | 0.0546s | 0.0099s | 0.0334s | **5.5x** | **3.4x** |
+| sort | already sorted 10MB | 0.0265s | 0.0055s | 0.0157s | **4.8x** | **2.9x** |
+| sort | reverse sorted 10MB | 0.0276s | 0.0066s | 0.0161s | **4.2x** | **2.4x** |
+| sort | -n numeric 10MB | 0.0745s | 0.0061s | 0.0734s | **12.2x** | **12.0x** |
+| sort | -r reverse 10MB | 0.0552s | 0.0094s | 0.0337s | **5.9x** | **3.6x** |
+| sort | -u unique 10MB | 0.0583s | 0.0103s | 0.0367s | **5.6x** | **3.5x** |
+| sort | -t, -k2 CSV 10MB | 0.0671s | 0.0210s | 0.0815s | **3.2x** | **3.9x** |
+| sort | repetitive 10MB | 0.0554s | 0.0136s | 0.0350s | **4.1x** | **2.6x** |
+| sort | --parallel=4 10MB | 0.0542s | 0.0094s | 0.0334s | **5.7x** | **3.5x** |
+| tr | a-z to A-Z 1MB | 0.0021s | 0.0016s | 0.0019s | **1.3x** | **1.2x** |
+| tr | a-z to A-Z 10MB | 0.0119s | 0.0041s | 0.0074s | **2.9x** | **1.8x** |
+| tr | -d digits 10MB | 0.0161s | 0.0044s | 0.0138s | **3.6x** | **3.1x** |
+| tr | -d lowercase 10MB | 0.0288s | 0.0051s | 0.0208s | **5.7x** | **4.1x** |
+| tr | -s spaces 10MB | 0.0286s | 0.0045s | 0.0270s | **6.3x** | **6.0x** |
+| tr | [:lower:] to [:upper:] 10MB | 0.0116s | 0.0038s | 0.0071s | **3.1x** | **1.9x** |
+| tr | -d [:digit:] 10MB CSV | 0.0159s | 0.0044s | 0.0135s | **3.6x** | **3.1x** |
+| tr | translate binary 10MB | 0.0097s | 0.0041s | 0.0081s | **2.4x** | **2.0x** |
+| uniq | default 10MB many duplicates | 0.0115s | 0.0018s | 0.0122s | **6.2x** | **6.6x** |
+| uniq | default 10MB sorted (low dup) | 0.0132s | 0.0032s | 0.0129s | **4.2x** | **4.1x** |
+| uniq | -c count 10MB many dups | 0.0117s | 0.0019s | 0.0119s | **6.3x** | **6.4x** |
+| uniq | -c count 10MB sorted | 0.0277s | 0.0070s | 0.0159s | **4.0x** | **2.3x** |
+| uniq | -d duplicates only 10MB | 0.0117s | 0.0018s | 0.0119s | **6.4x** | **6.5x** |
+| uniq | -u unique only 10MB | 0.0117s | 0.0018s | 0.0118s | **6.4x** | **6.4x** |
+| uniq | -i case insensitive 10MB | 0.0129s | 0.0044s | 0.0129s | **2.9x** | **2.9x** |
+| uniq | repetitive 10MB | 0.0405s | 0.0039s | 0.0169s | **10.3x** | **4.3x** |
+| tac | reverse 100KB text | 0.0009s | 0.0014s | 0.0012s | **0.6x** | **0.9x** |
+| tac | reverse 1MB text | 0.0017s | 0.0019s | 0.0016s | **0.9x** | **0.8x** |
+| tac | reverse 10MB text | 0.0093s | 0.0066s | 0.0053s | **1.4x** | **0.8x** |
+| tac | reverse 100MB text | 0.0906s | 0.0282s | 0.0483s | **3.2x** | **1.7x** |
+| tac | reverse CSV 10MB | 0.0082s | 0.0064s | 0.0053s | **1.3x** | **0.8x** |
+| tac | reverse repetitive 10MB | 0.0200s | 0.0117s | 0.0103s | **1.7x** | **0.9x** |
+| tac | custom separator 1MB | 0.0056s | 0.0051s | 0.0050s | **1.1x** | **1.0x** |
 | head | - | - | - | - | N/A | N/A |
 | tail | - | - | - | - | N/A | N/A |
 | cat | - | - | - | - | N/A | N/A |
@@ -265,9 +265,9 @@ Generated: 2026-02-22 16:39:24 UTC
 | chown | - | - | - | - | N/A | N/A |
 | chgrp | - | - | - | - | N/A | N/A |
 | yes | startup --help | 0.0008s | 0.0002s | N/A | **3.9x** | N/A |
-| yes | startup --version | 0.0008s | 0.0002s | N/A | **4.5x** | N/A |
-| yes | throughput 1M lines | 0.0029s | 0.0033s | N/A | **0.9x** | N/A |
-| yes | throughput 10M lines | 0.0269s | 0.0244s | N/A | **1.1x** | N/A |
-| yes | throughput hello 1M lines | 0.0058s | 0.0070s | N/A | **0.8x** | N/A |
-| yes | throughput hello 10M lines | 0.0473s | 0.0460s | N/A | **1.0x** | N/A |
-| yes | throughput 100MB | 0.0246s | 0.0354s | N/A | **0.7x** | N/A |
+| yes | startup --version | 0.0008s | 0.0002s | N/A | **3.9x** | N/A |
+| yes | throughput 1M lines | 0.0029s | 0.0028s | N/A | **1.0x** | N/A |
+| yes | throughput 10M lines | 0.0187s | 0.0202s | N/A | **0.9x** | N/A |
+| yes | throughput hello 1M lines | 0.0059s | 0.0065s | N/A | **0.9x** | N/A |
+| yes | throughput hello 10M lines | 0.0462s | 0.0463s | N/A | **1.0x** | N/A |
+| yes | throughput 100MB | 0.0239s | 0.0339s | N/A | **0.7x** | N/A |
