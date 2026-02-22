@@ -443,9 +443,22 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
             name: Linux x86_64
+            run_bench: true
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            name: Linux ARM64
+            run_bench: true
+          - os: macos-latest
+            arch: arm64
+            name: macOS ARM64
+            run_bench: false
+          - os: windows-latest
+            arch: x86_64
+            name: Windows x86_64
+            run_bench: false
 
     runs-on: ${{ matrix.os }}
-    name: New Tools - ${{ matrix.name }}
+    name: Test - ${{ matrix.name }}
 
     steps:
       - name: Checkout test repo
@@ -471,6 +484,23 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
+
+      - name: Cache uutils build
+        if: matrix.run_bench == true
+        uses: actions/cache@v4
+        with:
+          path: /tmp/uutils-build/target
+          key: ${{ runner.os }}-${{ matrix.arch }}-uutils-new-tools-build
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-uutils-new-tools-build
+
+      - name: Install hyperfine (Linux only)
+        if: matrix.run_bench == true
+        shell: bash
+        run: |
+          if ! command -v hyperfine &>/dev/null; then
+            cargo install hyperfine
+          fi
 
       - name: Build fcoreutils from source
         shell: bash
@@ -573,6 +603,18 @@ jobs:
         shell: bash
         run: chmod +x tests/compatibility/*.sh tests/helpers/*.sh tests/stress/*.sh tests/benchmarks/*.sh 2>/dev/null || true
 
+      - name: Build uutils/coreutils (Linux only)
+        if: matrix.run_bench == true
+        shell: bash
+        run: |
+          if ./scripts/install_uutils.sh --tools all; then
+            export UUTILS_DIR="/tmp/uutils-build/target/release"
+            echo "UUTILS_DIR=$UUTILS_DIR" >> $GITHUB_ENV
+            echo "uutils built at $UUTILS_DIR"
+          else
+            echo "WARNING: uutils build failed, continuing without uutils comparison"
+          fi
+
       - name: Run new tools compatibility tests
         shell: bash
         run: |
@@ -581,12 +623,26 @@ jobs:
           mkdir -p "$RESULTS_DIR"
           bash tests/compatibility/run_all.sh || true
 
+      - name: Run benchmarks (Linux only)
+        if: matrix.run_bench == true
+        shell: bash
+        run: |
+          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
+          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
+          export GENERATE_LARGE=true
+          export BENCH_WARMUP=1
+          export BENCH_RUNS=5
+          mkdir -p "$RESULTS_DIR"
+          bash tests/benchmarks/run_all.sh || true
+
       - name: Measure binary sizes
+        if: always()
         shell: bash
         run: |
           python3 << 'PYEOF'
           import json, os, shutil
           install_dir = os.path.expanduser("~/.local/bin")
+          uutils_dir = os.environ.get("UUTILS_DIR", "")
           tools = [
               "wc","cut","sha256sum","md5sum","b2sum","base64","sort","tr","uniq","tac",
               "head","tail","cat","rev","expand","unexpand","fold","paste","nl","comm","join",
@@ -610,6 +666,12 @@ jobs:
                       entry["gnu_bytes"] = os.path.getsize(gp)
                   except OSError:
                       pass
+              if uutils_dir:
+                  for ext in ["", ".exe"]:
+                      up = os.path.join(uutils_dir, tool + ext)
+                      if os.path.exists(up):
+                          entry["uutils_bytes"] = os.path.getsize(up)
+                          break
               if entry:
                   sizes[tool] = entry
           out = {"type": "source_sizes", "sizes": sizes}
@@ -624,7 +686,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: source-compat-${{ matrix.os }}-${{ matrix.arch }}
+          name: test-results-${{ matrix.os }}-${{ matrix.arch }}
           path: results/
           retention-days: 30
 
@@ -733,204 +795,6 @@ jobs:
             echo "No results file found." >> $GITHUB_STEP_SUMMARY
           fi
 
-  bench-new-tools:
-    if: github.event_name == 'workflow_dispatch'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            arch: x86_64
-            name: Linux x86_64
-          - os: ubuntu-24.04-arm
-            arch: arm64
-            name: Linux ARM64
-
-    runs-on: ${{ matrix.os }}
-    name: Bench New Tools - ${{ matrix.name }}
-
-    steps:
-      - name: Checkout test repo
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-new-bench-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-cargo-new-bench-
-
-      - name: Cache coreutils-rs build
-        uses: actions/cache@v4
-        with:
-          path: /tmp/coreutils-rs-build/target
-          key: ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-coreutils-rs-build
-
-      - name: Cache uutils build
-        uses: actions/cache@v4
-        with:
-          path: /tmp/uutils-build/target
-          key: ${{ runner.os }}-${{ matrix.arch }}-uutils-new-tools-build
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-uutils-new-tools-build
-
-      - name: Install hyperfine
-        shell: bash
-        run: |
-          if ! command -v hyperfine &>/dev/null; then
-            cargo install hyperfine
-          fi
-
-      - name: Make scripts executable
-        shell: bash
-        run: chmod +x tests/benchmarks/*.sh tests/helpers/*.sh scripts/*.sh 2>/dev/null || true
-
-      - name: Build uutils/coreutils
-        shell: bash
-        run: |
-          echo "Building uutils/coreutils from source..."
-          if ./scripts/install_uutils.sh --tools all; then
-            export UUTILS_DIR="/tmp/uutils-build/target/release"
-            echo "UUTILS_DIR=$UUTILS_DIR" >> $GITHUB_ENV
-            echo "uutils built successfully at $UUTILS_DIR"
-            ls -la "$UUTILS_DIR"/{wc,sort,uniq,cut,tr,base64,tac,md5sum,b2sum,sha256sum,head,tail,cat,expand,unexpand,fold,paste,nl,comm,join} 2>/dev/null || true
-          else
-            echo "WARNING: uutils build failed. Benchmarks will run without uutils comparison."
-          fi
-
-      - name: Build fcoreutils from source
-        shell: bash
-        run: |
-          CLONE_DIR="/tmp/coreutils-rs-build"
-          INSTALL_DIR="$HOME/.local/bin"
-          mkdir -p "$INSTALL_DIR"
-
-          if [[ -d "$CLONE_DIR/.git" ]]; then
-              echo "Updating existing clone..."
-              cd "$CLONE_DIR"
-              git fetch origin
-              git reset --hard origin/main
-          else
-              echo "Cloning coreutils-rs..."
-              rm -rf "$CLONE_DIR"
-              git clone https://github.com/AiBrush/coreutils-rs.git "$CLONE_DIR"
-              cd "$CLONE_DIR"
-          fi
-
-          echo "Building all fcoreutils binaries..."
-          cargo build --release 2>&1
-
-          for bin in target/release/f*; do
-              [[ -x "$bin" && ! -d "$bin" && ! "$bin" == *.d ]] && cp "$bin" "$INSTALL_DIR/"
-          done
-
-          echo "$INSTALL_DIR" >> $GITHUB_PATH
-          export PATH="$INSTALL_DIR:$PATH"
-
-          echo ""
-          echo "=== Installed fcoreutils binaries ==="
-          for tool in fhead ftail fcat frev fexpand funexpand ffold fpaste fnl fcomm fjoin \
-              fbasenc fbase32 fln ftouch ftruncate fmkdir frmdir fmknod fmkfifo fmktemp \
-              fseq fshuf ftsort ftee fsum fcksum fsha1sum fsha224sum fsha384sum fsha512sum \
-              fid fgroups fwhoami flogname funame fuptime farch fhostid ftty fnproc fpwd \
-              fenv ftimeout fnice fnohup fsleep fsync ftrue ffalse flink funlink \
-              fbasename fdirname fpathchk frealpath freadlink fdircolors \
-              fecho fusers fprintf ftest fexpr ffactor fsplit fnumfmt ffmt fcsplit fod fptx \
-              fstat fwho fpinky fdate fdf fdu fstty fchmod fchown fchgrp fshred fdd \
-              frm fcp fmv finstall fpr fls fstdbuf; do
-              if command -v "$tool" &>/dev/null; then
-                  echo "  $tool: $(which $tool)"
-              else
-                  echo "  $tool: NOT FOUND"
-              fi
-          done
-
-      - name: Install Python 3
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Run new tools benchmarks
-        shell: bash
-        run: |
-          export RESULTS_DIR="${GITHUB_WORKSPACE}/results"
-          export TEST_DATA_DIR="/tmp/fcoreutils-test-data"
-          export GENERATE_LARGE=true
-          export BENCH_WARMUP=3
-          export BENCH_RUNS=10
-          mkdir -p "$RESULTS_DIR"
-          bash tests/benchmarks/run_all.sh || true
-
-      - name: Upload results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: source-bench-${{ matrix.os }}-${{ matrix.arch }}
-          path: results/
-          retention-days: 30
-
-      - name: Print summary
-        if: always()
-        shell: bash
-        run: |
-          echo "## New Tools Benchmarks - ${{ matrix.name }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ -f "results/benchmark_results.json" ]]; then
-            python3 << 'PYEOF' >> $GITHUB_STEP_SUMMARY
-          import json
-
-          d = json.load(open('results/benchmark_results.json'))
-          s = d.get('summary', {})
-          ts = s.get('tool_summaries', {})
-
-          categories = [
-              ('Text Processing (original)', ['head', 'tail', 'cat', 'rev', 'expand', 'unexpand', 'fold', 'paste', 'nl', 'comm', 'join']),
-              ('Encoding/Decoding', ['basenc', 'base32']),
-              ('File Operations', ['ln', 'touch', 'truncate', 'mkdir', 'rmdir', 'mknod', 'mkfifo', 'mktemp']),
-              ('Text/Data Processing', ['seq', 'tsort', 'tee', 'sum', 'cksum', 'sha1sum', 'sha224sum', 'sha384sum', 'sha512sum']),
-              ('System Information', ['id', 'groups', 'whoami', 'logname', 'uname', 'arch', 'hostid', 'tty', 'nproc', 'pwd']),
-              ('Process/Environment', ['env', 'nice', 'nohup', 'sleep', 'sync']),
-              ('Utility Commands', ['true', 'false', 'link', 'unlink', 'basename', 'dirname', 'pathchk', 'realpath', 'readlink']),
-              ('I/O & Text', ['echo', 'factor', 'expr', 'test']),
-              ('File Ops', ['cp', 'mv', 'rm', 'dd', 'split', 'csplit', 'install', 'shred', 'chmod', 'chown', 'chgrp']),
-          ]
-
-          for cat_name, cat_tools in categories:
-              print(f"#### {cat_name}")
-              print()
-              print("| Tool | Avg Speedup vs GNU | Avg Speedup vs uutils |")
-              print("|------|--------------------|-----------------------|")
-
-              for tool in cat_tools:
-                  info = ts.get(tool, {})
-                  if not isinstance(info, dict) or info.get('status') != 'benchmarked':
-                      gnu_str = ""
-                      u_str = ""
-                  else:
-                      gnu_sp = info.get('avg_speedup_vs_gnu')
-                      gnu_str = f"{gnu_sp}x" if gnu_sp is not None else ""
-                      u_sp = info.get('avg_speedup_vs_uutils')
-                      u_str = f"{u_sp}x" if u_sp is not None else ""
-
-                  if tool in ('mv', 'csplit'):
-                      print(f"| {tool} | | - | - | - | - |")
-                  else:
-                      print(f"| {tool} | {gnu_str} | {u_str} |")
-
-              print()
-          PYEOF
-          else
-            echo "No benchmark results file found." >> $GITHUB_STEP_SUMMARY
-          fi
-
   report:
     needs: [discover-versions, compatibility, benchmarks, test-new-tools]
     if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -959,18 +823,32 @@ jobs:
           merge-multiple: true
         continue-on-error: true
 
-      - name: Download source-compat results (Linux x86_64)
+      - name: Download test results (Linux x86_64)
         uses: actions/download-artifact@v4
         with:
-          name: source-compat-ubuntu-latest-x86_64
-          path: new_tools_compat/
+          name: test-results-ubuntu-latest-x86_64
+          path: test_results_linux_x86_64/
         continue-on-error: true
 
-      - name: Download source-bench results (Linux x86_64)
+      - name: Download test results (Linux ARM64)
         uses: actions/download-artifact@v4
         with:
-          name: source-bench-ubuntu-latest-x86_64
-          path: new_tools_bench/
+          name: test-results-ubuntu-24.04-arm-arm64
+          path: test_results_linux_arm64/
+        continue-on-error: true
+
+      - name: Download test results (macOS ARM64)
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-macos-latest-arm64
+          path: test_results_macos_arm64/
+        continue-on-error: true
+
+      - name: Download test results (Windows x86_64)
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-windows-latest-x86_64
+          path: test_results_windows_x86_64/
         continue-on-error: true
 
       - name: Merge new results into results/
@@ -998,18 +876,21 @@ jobs:
               done
           fi
 
-          # Merge source-built results into results/ (for use by generate_report.py)
-          if [[ -f "new_tools_compat/compatibility_results.json" ]]; then
-              cp -v "new_tools_compat/compatibility_results.json" "results/source_compat.json"
-              echo "Merged source compat results"
+          # Merge source-built compat results (per-platform)
+          for platform in linux_x86_64 linux_arm64 macos_arm64 windows_x86_64; do
+              dir="${GITHUB_WORKSPACE}/test_results_${platform}"
+              if [[ -f "${dir}/compatibility_results.json" ]]; then
+                  cp -v "${dir}/compatibility_results.json" "results/source_compat_${platform}.json"
+                  echo "Merged compat: ${platform}"
+              fi
+          done
+
+          # Linux x86_64: bench + sizes (uutils_bytes included)
+          if [[ -f "test_results_linux_x86_64/benchmark_results.json" ]]; then
+              cp -v "test_results_linux_x86_64/benchmark_results.json" "results/source_bench.json"
           fi
-          if [[ -f "new_tools_compat/source_sizes.json" ]]; then
-              cp -v "new_tools_compat/source_sizes.json" "results/source_sizes.json"
-              echo "Merged source sizes results"
-          fi
-          if [[ -f "new_tools_bench/benchmark_results.json" ]]; then
-              cp -v "new_tools_bench/benchmark_results.json" "results/source_bench.json"
-              echo "Merged source bench results"
+          if [[ -f "test_results_linux_x86_64/source_sizes.json" ]]; then
+              cp -v "test_results_linux_x86_64/source_sizes.json" "results/source_sizes.json"
           fi
 
           echo ""

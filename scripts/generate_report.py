@@ -153,10 +153,11 @@ def load_source_sizes():
 
 
 def load_new_tools_data():
-    """Load new-tools benchmark and compatibility data from results/."""
+    """Load source-built compat + bench data."""
     bench_data = {}
-    compat_data = {}
+    compat_data = {}   # tool -> {platform_key -> per_tool_data}
 
+    # Benchmark data: Linux x86_64 only (canonical benchmark platform)
     bench_file = os.path.join(RESULTS_DIR, "source_bench.json")
     if os.path.exists(bench_file):
         try:
@@ -168,13 +169,16 @@ def load_new_tools_data():
         except (json.JSONDecodeError, IOError):
             pass
 
-    compat_file = os.path.join(RESULTS_DIR, "source_compat.json")
-    if os.path.exists(compat_file):
+    # Compat data: all platforms (source_compat_{platform}.json)
+    for jf in glob.glob(os.path.join(RESULTS_DIR, "source_compat_*.json")):
+        platform_key = "source_" + os.path.basename(jf).replace("source_compat_", "").replace(".json", "")
         try:
-            with open(compat_file) as f:
+            with open(jf) as f:
                 d = json.load(f)
             for tool, data in d.get("tools", {}).items():
-                compat_data[tool] = data
+                if tool not in compat_data:
+                    compat_data[tool] = {}
+                compat_data[tool][platform_key] = data
         except (json.JSONDecodeError, IOError):
             pass
 
@@ -513,9 +517,12 @@ def main():
                     if tool not in tool_f_vs_uutils or fvu > tool_f_vs_uutils[tool]:
                         tool_f_vs_uutils[tool] = fvu
 
-    for tool, data in new_tools_compat.items():
+    for tool, platform_data in new_tools_compat.items():
         if tool not in tool_results:
-            tool_results[tool] = {"__new_tools__": data}
+            tool_results[tool] = {}
+        for platform_key, data in platform_data.items():
+            if platform_key not in tool_results[tool]:
+                tool_results[tool][platform_key] = data
 
     # Generate chart
     run_plot_script()
