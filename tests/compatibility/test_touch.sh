@@ -93,9 +93,10 @@ run_touch_tests() {
     echo ""
     echo "=== Access Time Only (-a) ==="
 
+    # Use a specific timestamp with -t to avoid timing differences between the two runs
     run_test "-a only access time" \
-        "echo 'x' > '$WORK_DIR/gnu_a.txt' && sleep 0.1 && $GNU_TOOL -a '$WORK_DIR/gnu_a.txt' && stat -c '%X' '$WORK_DIR/gnu_a.txt'" \
-        "echo 'x' > '$WORK_DIR/f_a.txt' && sleep 0.1 && $F_TOOL -a '$WORK_DIR/f_a.txt' && stat -c '%X' '$WORK_DIR/f_a.txt'"
+        "echo 'x' > '$WORK_DIR/gnu_a.txt' && $GNU_TOOL -a -t 202306150000.00 '$WORK_DIR/gnu_a.txt' && stat -c '%X' '$WORK_DIR/gnu_a.txt'" \
+        "echo 'x' > '$WORK_DIR/f_a.txt' && $F_TOOL -a -t 202306150000.00 '$WORK_DIR/f_a.txt' && stat -c '%X' '$WORK_DIR/f_a.txt'"
 
     echo ""
     echo "=== Modification Time Only (-m) ==="

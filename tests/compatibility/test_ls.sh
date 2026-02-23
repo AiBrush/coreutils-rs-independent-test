@@ -229,9 +229,10 @@ run_ls_tests() {
     echo ""
     echo "=== Combined Flags ==="
 
+    # Exclude the '..' entry since its parent dir (/tmp) size changes between runs
     run_stdout_test "-lahS combined" \
-        "$LS_ENV $GNU_TOOL -lahS --color=never '$test_dir'" \
-        "$LS_ENV $F_TOOL -lahS --color=never '$test_dir'"
+        "$LS_ENV $GNU_TOOL -lahS --color=never '$test_dir' | grep -v ' \.\.$'" \
+        "$LS_ENV $F_TOOL -lahS --color=never '$test_dir' | grep -v ' \.\.$'"
 
     run_stdout_test "-1aR recursive all" \
         "$LS_ENV $GNU_TOOL -1aR --color=never '$test_dir'" \
@@ -306,8 +307,8 @@ run_ls_tests() {
         "$LS_ENV $F_TOOL --color=never /tmp 2>/dev/null | head -5"
 
     run_stdout_test "numeric uid/gid -n" \
-        "$LS_ENV $GNU_TOOL -n /tmp 2>/dev/null | head -3" \
-        "$LS_ENV $F_TOOL -n /tmp 2>/dev/null | head -3"
+        "$LS_ENV $GNU_TOOL -n '$test_dir' 2>/dev/null" \
+        "$LS_ENV $F_TOOL -n '$test_dir' 2>/dev/null"
 
     # Cleanup
     rm -rf "$test_dir"

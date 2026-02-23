@@ -30,9 +30,9 @@ run_df_tests() {
         "$GNU_TOOL /" \
         "$F_TOOL /"
 
-    run_stdout_test "default df /tmp" \
-        "$GNU_TOOL /tmp" \
-        "$F_TOOL /tmp"
+    run_stdout_test "default df /proc" \
+        "$GNU_TOOL /proc" \
+        "$F_TOOL /proc"
 
     # === Section 2: Human Readable (-h) ===
     echo ""
@@ -70,9 +70,9 @@ run_df_tests() {
         "$GNU_TOOL -P /" \
         "$F_TOOL -P /"
 
-    run_stdout_test "-P /tmp" \
-        "$GNU_TOOL -P /tmp" \
-        "$F_TOOL -P /tmp"
+    run_stdout_test "-P /proc" \
+        "$GNU_TOOL -P /proc" \
+        "$F_TOOL -P /proc"
 
     # === Section 6: Custom Block Size ===
     echo ""
@@ -118,9 +118,9 @@ run_df_tests() {
     echo ""
     echo "=== Multiple Paths ==="
 
-    run_stdout_test "df / /tmp" \
-        "$GNU_TOOL / /tmp" \
-        "$F_TOOL / /tmp"
+    run_stdout_test "df / /proc" \
+        "$GNU_TOOL / /proc" \
+        "$F_TOOL / /proc"
 
     # === Section 10: Error Handling ===
     echo ""

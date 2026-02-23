@@ -187,10 +187,14 @@ run_base64_tests() {
         "printf '\n' | $GNU_TOOL" \
         "printf '\n' | $F_TOOL"
 
-    # All bytes 0-255
-    run_test "encode all byte values" \
-        "python3 -c 'import sys; sys.stdout.buffer.write(bytes(range(256)))' | $GNU_TOOL" \
-        "python3 -c 'import sys; sys.stdout.buffer.write(bytes(range(256)))' | $F_TOOL"
+    # All bytes 0-255 (requires python3; skip if not available)
+    if command -v python3 &>/dev/null; then
+        run_test "encode all byte values" \
+            "python3 -c 'import sys; sys.stdout.buffer.write(bytes(range(256)))' | $GNU_TOOL" \
+            "python3 -c 'import sys; sys.stdout.buffer.write(bytes(range(256)))' | $F_TOOL"
+    else
+        skip_test "encode all byte values" "python3 not available"
+    fi
 
     finish_test_suite
 }
