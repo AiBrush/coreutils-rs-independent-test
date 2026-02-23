@@ -516,7 +516,10 @@ jobs:
               passed  = s.get("passed", 0)
               failed  = s.get("failed", 0)
               skipped = s.get("skipped", 0)
-              if failed == 0:
+              total   = passed + failed + skipped
+              if total == 0:
+                  status = "⏭️ no tests ran"
+              elif failed == 0:
                   status = "✅"
               else:
                   status = "⚠️"

@@ -339,7 +339,7 @@ save_results_json() {
         "passed": $TESTS_PASSED,
         "failed": $TESTS_FAILED,
         "skipped": $TESTS_SKIPPED,
-        "pass_rate": $(echo "scale=1; $TESTS_PASSED * 100 / ($TESTS_RUN - $TESTS_SKIPPED + 1)" | bc 2>/dev/null || echo "0")
+        "pass_rate": $(if [[ $((TESTS_RUN - TESTS_SKIPPED)) -gt 0 ]]; then echo "scale=1; $TESTS_PASSED * 100 / ($TESTS_RUN - $TESTS_SKIPPED)" | bc 2>/dev/null || echo "0"; else echo "0"; fi)
     },
     "tests": $TOOL_RESULTS_JSON
 }
