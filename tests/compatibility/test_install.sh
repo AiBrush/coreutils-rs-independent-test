@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="install"
+GNU_TOOL=$(resolve_gnu_tool "install")
 F_TOOL="finstall"
 
 run_install_tests() {

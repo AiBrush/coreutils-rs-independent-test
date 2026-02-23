@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="arch"
+GNU_TOOL=$(resolve_gnu_tool "arch")
 F_TOOL="farch"
 
 run_arch_tests() {

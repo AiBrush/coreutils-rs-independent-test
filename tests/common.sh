@@ -42,6 +42,13 @@ check_tool_exists() {
         echo -e "${YELLOW}SKIP: $tool not found in PATH${NC}"
         return 1
     fi
+    # On macOS, verify non-fcoreutils tools are actually GNU (not BSD)
+    if is_macos && [[ "$tool" != f* ]]; then
+        if ! "$tool" --version 2>/dev/null | head -1 | grep -qi "GNU\|coreutils"; then
+            echo -e "${YELLOW}SKIP: $tool is BSD (not GNU). Install GNU coreutils: brew install coreutils${NC}"
+            return 1
+        fi
+    fi
     # Check if tool reports "not yet implemented"
     local test_output
     test_output=$(echo "test" | "$tool" 2>&1 || true)
@@ -403,4 +410,46 @@ get_platform_tag() {
     local arch
     arch=$(uname -m)
     echo "${os_name}_${arch}"
+}
+
+# ── GNU Tool Resolution ──────────────────────────────────────────────────────
+
+# Resolve the correct GNU tool binary name for this platform.
+# On macOS, BSD tools differ from GNU — prefer Homebrew GNU coreutils (g-prefixed).
+# Usage: GNU_TOOL=$(resolve_gnu_tool "base64")
+resolve_gnu_tool() {
+    local tool="$1"
+
+    # On Linux, the system tool IS GNU coreutils
+    if is_linux; then
+        echo "$tool"
+        return 0
+    fi
+
+    # On macOS, prefer Homebrew GNU coreutils (g-prefixed)
+    if is_macos; then
+        local gnu_name="g${tool}"
+        if command -v "$gnu_name" &>/dev/null; then
+            # Verify it's actually GNU
+            if "$gnu_name" --version 2>/dev/null | head -1 | grep -qi "GNU\|coreutils"; then
+                echo "$gnu_name"
+                return 0
+            fi
+        fi
+        # Fall back to bare name — check if it's GNU (e.g., Homebrew overriding PATH)
+        if command -v "$tool" &>/dev/null; then
+            if "$tool" --version 2>/dev/null | head -1 | grep -qi "GNU\|coreutils"; then
+                echo "$tool"
+                return 0
+            fi
+        fi
+        # Neither g-prefixed nor bare name is GNU — return bare name.
+        # check_tool_exists will detect it's not GNU and skip.
+        echo "$tool"
+        return 0
+    fi
+
+    # Windows / other: return as-is
+    echo "$tool"
+    return 0
 }

@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="pathchk"
+GNU_TOOL=$(resolve_gnu_tool "pathchk")
 F_TOOL="fpathchk"
 
 run_pathchk_tests() {

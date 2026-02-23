@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="ptx"
+GNU_TOOL=$(resolve_gnu_tool "ptx")
 F_TOOL="fptx"
 
 run_ptx_tests() {

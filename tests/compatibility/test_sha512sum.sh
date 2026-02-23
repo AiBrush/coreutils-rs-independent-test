@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="sha512sum"
+GNU_TOOL=$(resolve_gnu_tool "sha512sum")
 F_TOOL="fsha512sum"
 
 run_sha512sum_tests() {

@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="timeout"
+GNU_TOOL=$(resolve_gnu_tool "timeout")
 F_TOOL="ftimeout"
 
 run_timeout_tests() {

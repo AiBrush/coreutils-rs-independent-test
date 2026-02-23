@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="truncate"
+GNU_TOOL=$(resolve_gnu_tool "truncate")
 F_TOOL="ftruncate"
 
 run_truncate_tests() {

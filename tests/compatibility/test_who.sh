@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="who"
+GNU_TOOL=$(resolve_gnu_tool "who")
 F_TOOL="fwho"
 
 run_who_tests() {
