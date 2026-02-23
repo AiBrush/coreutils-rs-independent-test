@@ -113,12 +113,12 @@ jobs:
           INSTALL_DIR = os.path.expanduser("~/.local/bin")
           UUTILS_DIR  = os.environ.get("UUTILS_DIR", "/tmp/uutils-build/target/release")
 
-          tools = [
-              "wc", "sort", "cut", "tr", "uniq", "tac", "base64",
-              "sha256sum", "md5sum", "b2sum",
-              "head", "tail", "cat", "rev", "expand", "unexpand",
-              "fold", "paste", "nl", "comm", "join",
-          ]
+          # Auto-discover all f* binaries in the install directory
+          tools = []
+          if os.path.isdir(INSTALL_DIR):
+              for name in sorted(os.listdir(INSTALL_DIR)):
+                  if name.startswith("f") and os.path.isfile(os.path.join(INSTALL_DIR, name)):
+                      tools.append(name[1:])  # strip the "f" prefix
 
           def get_size(path):
               try:
@@ -136,8 +136,6 @@ jobs:
               uu_path  = os.path.join(UUTILS_DIR, tool)
 
               f_size = get_size(f_path)
-              # Only record this tool if the f* binary exists in the release;
-              # otherwise let source_sizes.json provide the fallback value.
               if f_size is None:
                   continue
 
