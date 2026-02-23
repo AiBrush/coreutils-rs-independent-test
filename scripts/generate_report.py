@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Generate README.md and per-version detail reports from results/."""
 
-import copy
 import json
 import glob
 import os
@@ -214,33 +213,15 @@ def compute_speedups(bench_platforms):
     return tool_speedups, tool_f_vs_uutils
 
 
-def compute_compat_rate(tool, tool_results, release_tool_results=None):
+def compute_compat_rate(tool, tool_results):
     """Compute compatibility pass rate (0-100) for a tool.
 
     Uses Linux x86_64 as the canonical GNU compatibility platform, since
     macOS and Windows use BSD tools with different output formats.
     Falls back to any Linux platform, then any platform.
-
-    Returns (rate, is_source_only) where is_source_only is True if the
-    data came from a source build rather than the versioned release.
-    If release_tool_results is provided, it is used to determine whether
-    the tool was tested against the release.
     """
     if tool not in tool_results:
-        return None, False
-
-    # Determine if this tool's data is source-only (not tested in release)
-    is_source_only = False
-    if release_tool_results is not None:
-        release_data = release_tool_results.get(tool, {})
-        # Check if the release had actual test data for this tool
-        has_release_data = False
-        for platform, data in release_data.items():
-            if data.get("status") != "NOT_IMPLEMENTED" and data.get("total", 0) > 0:
-                has_release_data = True
-                break
-        if not has_release_data:
-            is_source_only = True
+        return None
 
     platforms = tool_results[tool]
 
@@ -248,11 +229,11 @@ def compute_compat_rate(tool, tool_results, release_tool_results=None):
     for platform, data in platforms.items():
         if "Linux_x86_64" in platform:
             if data.get("status") == "NOT_IMPLEMENTED":
-                return None, False
+                return None
             t = data.get("total", 0)
             p = data.get("passed", 0)
             if t > 0:
-                return p / t * 100, is_source_only
+                return p / t * 100
 
     # Fallback: any Linux platform
     for platform, data in platforms.items():
@@ -262,9 +243,9 @@ def compute_compat_rate(tool, tool_results, release_tool_results=None):
             t = data.get("total", 0)
             p = data.get("passed", 0)
             if t > 0:
-                return p / t * 100, is_source_only
+                return p / t * 100
 
-    return None, False
+    return None
 
 
 def get_size_ratio(tool, sizes, key_a, key_b):
@@ -381,14 +362,8 @@ def generate_version_report(version, bench_platforms, compat_platforms, tool_res
 
 
 def generate_readme(latest_version, bench_platforms, compat_platforms,
-                    tool_speedups, tool_f_vs_uutils, tool_results, sizes,
-                    release_tool_results=None):
-    """Generate the README.md with a full tools comparison table.
-
-    release_tool_results: the original tool_results from the versioned release
-    (before source-built data was merged in). Used to distinguish release-tested
-    compat data from source-only compat data.
-    """
+                    tool_speedups, tool_f_vs_uutils, tool_results, sizes):
+    """Generate the README.md with a full tools comparison table."""
     total_tests = sum(p.get("total_tests", 0) for p in compat_platforms.values())
     total_passed = sum(p.get("passed", 0) for p in compat_platforms.values())
     pass_pct = f"{total_passed / total_tests * 100:.1f}" if total_tests > 0 else "0"
@@ -425,9 +400,8 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
     table_lines.append("| Tool | fcoreutils size | GNU size | uutils size | Compat f\\* vs GNU | Speedup f\\* vs GNU | Speedup f\\* vs uutils |")
     table_lines.append("|------|----------------:|----------:|----------:|------------------:|-------------------:|----------------------:|")
 
-    has_source_only = False
     for tool in ALL_TOOLS:
-        compat_gnu, is_source_only = compute_compat_rate(tool, tool_results, release_tool_results)
+        compat_gnu = compute_compat_rate(tool, tool_results)
 
         f_size   = format_size(sizes.get(tool, {}).get("f_bytes"))
         gnu_size = format_size(sizes.get(tool, {}).get("gnu_bytes"))
@@ -435,15 +409,6 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
         if compat_gnu is None:
             compat_gnu_str = "-"
-        elif is_source_only:
-            # Data came from source build, not the release — mark with †
-            has_source_only = True
-            if compat_gnu >= 100.0:
-                compat_gnu_str = f"\u2705 100% \u2020"
-            elif compat_gnu > 0:
-                compat_gnu_str = f"\u26a0\ufe0f {compat_gnu:.0f}% \u2020"
-            else:
-                compat_gnu_str = f"\u274c 0% \u2020"
         elif compat_gnu >= 100.0:
             compat_gnu_str = "\u2705 100%"
         elif compat_gnu > 0:
@@ -461,11 +426,6 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
         )
 
     full_table = "\n".join(table_lines)
-
-    # Build compat legend with optional source-only footnote
-    compat_legend = "> Sizes are raw binary sizes. Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.\n> `-` = no data collected yet for this tool/metric."
-    if has_source_only:
-        compat_legend += "\n> `\u2020` = tested against a source build (not the published release)."
 
     sources = """## Sources
 - [fcoreutils](https://github.com/AiBrush/fcoreutils) — installed from GitHub Releases
@@ -489,7 +449,8 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
 ### Full Tools Comparison
 
-{compat_legend}
+> Sizes are raw binary sizes. Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
+> `-` = no data collected yet for this tool/metric.
 
 {full_table}
 
@@ -568,51 +529,12 @@ def main():
     tool_speedups, tool_f_vs_uutils = compute_speedups(bench_platforms)
     sizes = load_size_data(latest)
 
-    # Supplement versioned sizes with source-built sizes for all 84 tools
-    source_sizes = load_source_sizes()
-    for tool, sz in source_sizes.items():
-        if tool not in sizes:
-            sizes[tool] = sz
-        else:
-            for k, v in sz.items():
-                if k not in sizes[tool]:
-                    sizes[tool][k] = v
-
-    # Save release-only tool_results before merging source data
-    # (used to distinguish release-tested vs source-only compat data)
-    release_tool_results = copy.deepcopy(tool_results)
-
-    # Supplement with new-tools data for tools not in versioned results
-    new_tools_bench, new_tools_compat = load_new_tools_data()
-
-    for tool, data in new_tools_bench.items():
-        if tool not in tool_speedups:
-            for b in data.get("benchmarks", []):
-                s = b.get("speedup")
-                if isinstance(s, (int, float)) and s > 0:
-                    if tool not in tool_speedups or s > tool_speedups[tool]:
-                        tool_speedups[tool] = s
-                fvu = b.get("f_vs_uutils")
-                if isinstance(fvu, (int, float)) and fvu > 0:
-                    if tool not in tool_f_vs_uutils or fvu > tool_f_vs_uutils[tool]:
-                        tool_f_vs_uutils[tool] = fvu
-
-    for tool, platform_data in new_tools_compat.items():
-        if tool not in tool_results:
-            tool_results[tool] = {}
-        for platform_key, data in platform_data.items():
-            existing = tool_results[tool].get(platform_key)
-            # Override NOT_IMPLEMENTED entries with actual source-built test data
-            if existing is None or existing.get("status") == "NOT_IMPLEMENTED":
-                tool_results[tool][platform_key] = data
-
     # Generate chart
     run_plot_script()
 
-    # Generate README
+    # Generate README — only release binary data, no source-built supplements
     generate_readme(latest, bench_platforms, compat_platforms,
-                    tool_speedups, tool_f_vs_uutils, tool_results, sizes,
-                    release_tool_results=release_tool_results)
+                    tool_speedups, tool_f_vs_uutils, tool_results, sizes)
 
 
 if __name__ == "__main__":
