@@ -80,31 +80,6 @@ jobs:
         env:
           RESULTS_DIR: ${{ github.workspace }}/results
 
-      - name: Build fcoreutils from source (for tools not in release)
-        run: |
-          git clone --depth 1 https://github.com/AiBrush/fcoreutils.git /tmp/fcoreutils-src
-          cd /tmp/fcoreutils-src
-          cargo build --release
-          # Install only binaries that don't already exist (preserve release binaries)
-          for bin in target/release/f*; do
-            name=$(basename "$bin")
-            # Skip non-executable files and build artifacts
-            [[ -x "$bin" ]] || continue
-            [[ "$name" == *.d ]] && continue
-            [[ "$name" == *.rlib ]] && continue
-            if [[ ! -f "$HOME/.local/bin/$name" ]]; then
-              cp "$bin" "$HOME/.local/bin/$name"
-              echo "Installed source-built: $name"
-            fi
-          done
-        continue-on-error: true
-
-      - name: Run benchmarks (source-built tools)
-        run: bash tests/benchmarks/run_all.sh
-        continue-on-error: true
-        env:
-          RESULTS_DIR: ${{ github.workspace }}/results
-
       - name: Measure binary sizes
         run: |
           python3 - <<'EOF'
