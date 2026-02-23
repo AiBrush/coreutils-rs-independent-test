@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="base64"
+GNU_TOOL=$(resolve_gnu_tool "base64")
 F_TOOL="fbase64"
 
 run_base64_tests() {

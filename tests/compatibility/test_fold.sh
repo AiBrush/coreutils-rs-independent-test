@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="fold"
+GNU_TOOL=$(resolve_gnu_tool "fold")
 F_TOOL="ffold"
 
 run_fold_tests() {

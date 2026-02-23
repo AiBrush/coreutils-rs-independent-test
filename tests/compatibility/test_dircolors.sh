@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="dircolors"
+GNU_TOOL=$(resolve_gnu_tool "dircolors")
 F_TOOL="fdircolors"
 
 run_dircolors_tests() {

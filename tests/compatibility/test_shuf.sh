@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="shuf"
+GNU_TOOL=$(resolve_gnu_tool "shuf")
 F_TOOL="fshuf"
 
 run_shuf_tests() {

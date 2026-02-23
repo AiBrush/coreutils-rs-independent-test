@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="md5sum"
+GNU_TOOL=$(resolve_gnu_tool "md5sum")
 F_TOOL="fmd5sum"
 
 run_md5sum_tests() {

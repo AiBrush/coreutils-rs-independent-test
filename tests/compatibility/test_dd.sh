@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="dd"
+GNU_TOOL=$(resolve_gnu_tool "dd")
 F_TOOL="fdd"
 
 run_dd_tests() {

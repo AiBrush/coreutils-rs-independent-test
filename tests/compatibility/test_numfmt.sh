@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="numfmt"
+GNU_TOOL=$(resolve_gnu_tool "numfmt")
 F_TOOL="fnumfmt"
 
 run_numfmt_tests() {

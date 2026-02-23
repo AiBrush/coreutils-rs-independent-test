@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-GNU_TOOL="sleep"
+GNU_TOOL=$(resolve_gnu_tool "sleep")
 F_TOOL="fsleep"
 
 run_sleep_tests() {
