@@ -1,6 +1,6 @@
 # fcoreutils v0.7.5 — Detailed Results
 
-Generated: 2026-02-24 10:10:29 UTC
+Generated: 2026-02-24 11:16:20 UTC
 
 ## Compatibility
 
