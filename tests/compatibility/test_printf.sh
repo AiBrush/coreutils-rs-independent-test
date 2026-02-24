@@ -130,7 +130,7 @@ run_printf_tests() {
 
     run_stdout_test "%+d negative" \
         "$GNU_TOOL '%+d\n' -42" \
-        "$F_TOOL '%+d\n' -- -42"
+        "$F_TOOL '%+d\n' -42"
 
     run_stdout_test "%10d padded int" \
         "$GNU_TOOL '%10d\n' 42" \
