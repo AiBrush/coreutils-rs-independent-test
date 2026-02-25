@@ -93,6 +93,8 @@ run_uname_tests() {
         "$GNU_TOOL -Z 2>&1" \
         "$F_TOOL -Z 2>&1"
 
+    run_gnu_upstream_tests "uname"
+
     finish_test_suite
 }
 

@@ -14,4 +14,6 @@ fi
 
 skip_test "runcon basic" "Not yet implemented / requires SELinux environment"
 
+run_gnu_upstream_tests "runcon"
+
 finish_test_suite

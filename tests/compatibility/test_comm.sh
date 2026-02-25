@@ -177,6 +177,8 @@ run_comm_tests() {
         "$GNU_TOOL <(printf 'apple\nbanana') <(printf 'banana\ncherry')" \
         "$F_TOOL <(printf 'apple\nbanana') <(printf 'banana\ncherry')"
 
+    run_gnu_upstream_tests "comm"
+
     finish_test_suite
 }
 

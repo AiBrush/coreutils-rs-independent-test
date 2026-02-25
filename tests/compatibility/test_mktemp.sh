@@ -114,6 +114,8 @@ run_mktemp_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "mktemp"
+
     finish_test_suite
 }
 

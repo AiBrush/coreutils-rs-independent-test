@@ -227,6 +227,8 @@ run_expr_tests() {
         "$GNU_TOOL -5 + 3 || true" \
         "$F_TOOL -5 + 3 || true"
 
+    run_gnu_upstream_tests "expr"
+
     finish_test_suite
 }
 

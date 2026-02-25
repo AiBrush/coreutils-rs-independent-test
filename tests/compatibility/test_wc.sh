@@ -389,6 +389,8 @@ run_wc_tests() {
         "$GNU_TOOL --version > /dev/null 2>&1; echo \$?" \
         "$F_TOOL --version > /dev/null 2>&1; echo \$?"
 
+    run_gnu_upstream_tests "wc"
+
     finish_test_suite
 }
 

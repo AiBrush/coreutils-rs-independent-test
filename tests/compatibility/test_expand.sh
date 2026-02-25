@@ -196,6 +196,8 @@ run_expand_tests() {
         skip_test "round trip" "unexpand or funexpand not available"
     fi
 
+    run_gnu_upstream_tests "expand"
+
     finish_test_suite
 }
 

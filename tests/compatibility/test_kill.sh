@@ -14,4 +14,6 @@ fi
 
 skip_test "kill basic" "Not yet implemented / tests pending"
 
+run_gnu_upstream_tests "kill"
+
 finish_test_suite

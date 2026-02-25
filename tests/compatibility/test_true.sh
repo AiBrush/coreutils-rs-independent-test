@@ -61,6 +61,8 @@ run_true_tests() {
         "$GNU_TOOL && echo 'CHAINED'" \
         "$F_TOOL && echo 'CHAINED'"
 
+    run_gnu_upstream_tests "true"
+
     finish_test_suite
 }
 

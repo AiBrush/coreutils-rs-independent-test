@@ -245,6 +245,8 @@ run_tr_tests() {
         "LC_ALL=C echo 'hello world' | $GNU_TOOL 'a-z' 'A-Z'" \
         "LC_ALL=C echo 'hello world' | $F_TOOL 'a-z' 'A-Z'"
 
+    run_gnu_upstream_tests "tr"
+
     finish_test_suite
 }
 

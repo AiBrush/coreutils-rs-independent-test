@@ -81,6 +81,8 @@ run_pinky_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    run_gnu_upstream_tests "pinky"
+
     finish_test_suite
 }
 

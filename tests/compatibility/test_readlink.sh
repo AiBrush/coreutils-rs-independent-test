@@ -143,6 +143,8 @@ run_readlink_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "readlink"
+
     finish_test_suite
 }
 

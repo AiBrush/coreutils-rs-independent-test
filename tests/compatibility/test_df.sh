@@ -138,6 +138,8 @@ run_df_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    run_gnu_upstream_tests "df"
+
     finish_test_suite
 }
 

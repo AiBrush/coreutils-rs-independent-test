@@ -212,6 +212,8 @@ run_echo_tests() {
         "$GNU_TOOL '  hello  '" \
         "$F_TOOL '  hello  '"
 
+    run_gnu_upstream_tests "echo"
+
     finish_test_suite
 }
 

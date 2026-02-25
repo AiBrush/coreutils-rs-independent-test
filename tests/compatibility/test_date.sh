@@ -193,6 +193,8 @@ run_date_tests() {
         "$GNU_TOOL -u +%s 2>/dev/null | grep -E '^[0-9]+$'" \
         "$F_TOOL -u +%s 2>/dev/null | grep -E '^[0-9]+$'"
 
+    run_gnu_upstream_tests "date"
+
     finish_test_suite
 }
 

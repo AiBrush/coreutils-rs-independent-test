@@ -14,4 +14,6 @@ fi
 
 skip_test "vdir basic" "Not yet implemented / tests pending"
 
+run_gnu_upstream_tests "vdir"
+
 finish_test_suite

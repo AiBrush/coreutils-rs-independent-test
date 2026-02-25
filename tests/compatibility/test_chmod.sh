@@ -221,6 +221,8 @@ run_chmod_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "chmod"
+
     finish_test_suite
 }
 

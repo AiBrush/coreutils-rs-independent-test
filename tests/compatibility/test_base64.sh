@@ -196,6 +196,8 @@ run_base64_tests() {
         skip_test "encode all byte values" "python3 not available"
     fi
 
+    run_gnu_upstream_tests "base64"
+
     finish_test_suite
 }
 

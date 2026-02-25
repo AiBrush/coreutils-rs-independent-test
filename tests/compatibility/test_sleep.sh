@@ -74,6 +74,8 @@ run_sleep_tests() {
         "$GNU_TOOL -- -1 2>&1" \
         "$F_TOOL -- -1 2>&1"
 
+    run_gnu_upstream_tests "sleep"
+
     finish_test_suite
 }
 

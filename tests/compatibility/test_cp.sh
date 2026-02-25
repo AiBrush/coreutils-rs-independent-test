@@ -323,6 +323,8 @@ run_cp_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "cp"
+
     finish_test_suite
 }
 

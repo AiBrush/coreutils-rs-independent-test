@@ -219,6 +219,8 @@ run_basenc_tests() {
         "printf '日本語テスト' | $GNU_TOOL --base64 | $GNU_TOOL --base64 -d" \
         "printf '日本語テスト' | $F_TOOL --base64 | $F_TOOL --base64 -d"
 
+    run_gnu_upstream_tests "basenc"
+
     finish_test_suite
 }
 

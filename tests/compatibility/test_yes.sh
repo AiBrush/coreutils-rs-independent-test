@@ -163,6 +163,8 @@ run_yes_tests() {
         "$GNU_TOOL hello | head -n 10000" \
         "$F_TOOL hello | head -n 10000"
 
+    run_gnu_upstream_tests "yes"
+
     finish_test_suite
 }
 

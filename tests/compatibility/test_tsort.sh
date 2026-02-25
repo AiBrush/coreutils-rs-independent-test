@@ -117,6 +117,8 @@ run_tsort_tests() {
         "printf 'libc base\nlibm libc\nopenssl libm\ncurl openssl\nwget curl\n' | $GNU_TOOL" \
         "printf 'libc base\nlibm libc\nopenssl libm\ncurl openssl\nwget curl\n' | $F_TOOL"
 
+    run_gnu_upstream_tests "tsort"
+
     finish_test_suite
 }
 

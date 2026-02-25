@@ -83,6 +83,8 @@ run_nice_tests() {
         "$GNU_TOOL -n abc echo test 2>&1" \
         "$F_TOOL -n abc echo test 2>&1"
 
+    run_gnu_upstream_tests "nice"
+
     finish_test_suite
 }
 

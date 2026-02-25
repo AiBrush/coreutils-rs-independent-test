@@ -238,6 +238,8 @@ run_sha256sum_tests() {
         "eval $GNU_TOOL $many_args" \
         "eval $F_TOOL $many_args"
 
+    run_gnu_upstream_tests "sha256sum"
+
     finish_test_suite
 }
 

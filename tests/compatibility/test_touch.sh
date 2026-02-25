@@ -143,6 +143,8 @@ run_touch_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "touch"
+
     finish_test_suite
 }
 

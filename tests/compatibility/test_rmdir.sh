@@ -95,6 +95,8 @@ run_rmdir_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "rmdir"
+
     finish_test_suite
 }
 

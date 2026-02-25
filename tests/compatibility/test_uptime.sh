@@ -63,6 +63,8 @@ run_uptime_tests() {
         "$GNU_TOOL --invalid-option 2>&1" \
         "$F_TOOL --invalid-option 2>&1"
 
+    run_gnu_upstream_tests "uptime"
+
     finish_test_suite
 }
 

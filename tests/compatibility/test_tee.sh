@@ -117,6 +117,8 @@ run_tee_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "tee"
+
     finish_test_suite
 }
 

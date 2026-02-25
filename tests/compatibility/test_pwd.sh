@@ -85,6 +85,8 @@ run_pwd_tests() {
         "$GNU_TOOL --invalid-option 2>&1" \
         "$F_TOOL --invalid-option 2>&1"
 
+    run_gnu_upstream_tests "pwd"
+
     finish_test_suite
 }
 

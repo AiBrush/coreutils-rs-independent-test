@@ -232,6 +232,8 @@ run_dd_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "dd"
+
     finish_test_suite
 }
 

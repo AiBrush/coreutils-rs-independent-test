@@ -138,6 +138,8 @@ run_timeout_tests() {
         "$GNU_TOOL 10 /nonexistent_cmd_$$ 2>&1" \
         "$F_TOOL 10 /nonexistent_cmd_$$ 2>&1"
 
+    run_gnu_upstream_tests "timeout"
+
     finish_test_suite
 }
 

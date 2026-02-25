@@ -80,6 +80,8 @@ run_sha512sum_tests() {
         "$GNU_TOOL /tmp/nonexistent_file_$$ 2>&1" \
         "$F_TOOL /tmp/nonexistent_file_$$ 2>&1"
 
+    run_gnu_upstream_tests "sha512sum"
+
     finish_test_suite
 }
 

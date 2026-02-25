@@ -14,4 +14,6 @@ fi
 
 skip_test "dir basic" "Not yet implemented / tests pending"
 
+run_gnu_upstream_tests "dir"
+
 finish_test_suite

@@ -186,6 +186,8 @@ run_rev_tests() {
         "cat '$TEST_DATA_DIR/rev_simple.txt' | $GNU_TOOL" \
         "cat '$TEST_DATA_DIR/rev_simple.txt' | $F_TOOL"
 
+    run_gnu_upstream_tests "rev"
+
     finish_test_suite
 }
 

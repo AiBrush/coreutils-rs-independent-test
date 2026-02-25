@@ -105,6 +105,8 @@ EOF
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "ptx"
+
     finish_test_suite
 }
 

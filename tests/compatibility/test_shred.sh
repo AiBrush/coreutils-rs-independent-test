@@ -165,6 +165,8 @@ run_shred_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "shred"
+
     finish_test_suite
 }
 

@@ -214,6 +214,8 @@ run_mv_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "mv"
+
     finish_test_suite
 }
 

@@ -275,6 +275,8 @@ run_split_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "split"
+
     finish_test_suite
 }
 

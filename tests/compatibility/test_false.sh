@@ -57,6 +57,8 @@ run_false_tests() {
         "$GNU_TOOL || echo 'FALLBACK'" \
         "$F_TOOL || echo 'FALLBACK'"
 
+    run_gnu_upstream_tests "false"
+
     finish_test_suite
 }
 

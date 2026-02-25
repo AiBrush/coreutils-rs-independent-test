@@ -85,6 +85,8 @@ run_mkfifo_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "mkfifo"
+
     finish_test_suite
 }
 

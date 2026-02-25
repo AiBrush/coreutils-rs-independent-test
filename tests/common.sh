@@ -453,3 +453,110 @@ resolve_gnu_tool() {
     echo "$tool"
     return 0
 }
+
+# ── GNU Upstream Test Integration ─────────────────────────────────────────────
+# Run GNU upstream tests for a given tool, integrating results into
+# the compatibility test suite counters and JSON output.
+#
+# These are the original GNU coreutils test scripts adapted to run against
+# fcoreutils via init_shim.sh. Each test script exits 0 (pass), 77 (skip),
+# or non-zero (fail).
+#
+# Usage: run_gnu_upstream_tests "cat"
+run_gnu_upstream_tests() {
+    local tool="$1"
+    local gnu_upstream_dir="$PROJECT_ROOT/tests/gnu_upstream"
+    local tool_test_dir="$gnu_upstream_dir/tests/$tool"
+    local misc_dir="$gnu_upstream_dir/tests/misc"
+    local shim="$gnu_upstream_dir/init_shim.sh"
+
+    # Bail out if GNU upstream infrastructure is missing
+    [[ -f "$shim" ]] || return 0
+
+    # Collect test scripts for this tool
+    local test_scripts=()
+
+    # From dedicated tool directory (e.g., tests/gnu_upstream/tests/cat/*.sh)
+    if [[ -d "$tool_test_dir" ]]; then
+        while IFS= read -r f; do
+            [[ -n "$f" ]] && test_scripts+=("$f")
+        done < <(find "$tool_test_dir" -maxdepth 1 -name "*.sh" -type f 2>/dev/null | sort)
+    fi
+
+    # From misc/ directory — exact match (e.g., misc/echo.sh for "echo")
+    if [[ -f "$misc_dir/${tool}.sh" ]]; then
+        test_scripts+=("$misc_dir/${tool}.sh")
+    fi
+
+    # Special mapping: "false" → misc/false-status.sh
+    if [[ "$tool" == "false" && -f "$misc_dir/false-status.sh" ]]; then
+        test_scripts+=("$misc_dir/false-status.sh")
+    fi
+
+    # Nothing to run
+    [[ ${#test_scripts[@]} -gt 0 ]] || return 0
+
+    echo ""
+    echo "=== GNU Upstream Tests ==="
+
+    # Build a temp directory with f* tools symlinked as bare names
+    # so GNU test scripts calling 'cat' get fcoreutils' fcat
+    local ftools_dir
+    ftools_dir=$(mktemp -d)
+    local install_dir="${HOME}/.local/bin"
+    if [[ -d "$install_dir" ]]; then
+        for ftool in "$install_dir"/f*; do
+            [[ -x "$ftool" ]] || continue
+            local tname
+            tname=$(basename "$ftool")
+            local bare="${tname#f}"
+            [[ -n "$bare" && "$bare" =~ ^[a-z0-9_-]+$ ]] || continue
+            ln -sf "$ftool" "$ftools_dir/$bare" 2>/dev/null || true
+        done
+    fi
+
+    for test_script in "${test_scripts[@]}"; do
+        local base
+        base=$(basename "$test_script")
+        [[ "$base" == "init.sh" || "$base" == "init_shim.sh" ]] && continue
+
+        local test_name="gnu/${tool}/${base%.sh}"
+
+        # Patch: replace sourcing of GNU's init.sh with our shim
+        local tmptest
+        tmptest=$(mktemp --suffix=.sh)
+        sed \
+            -e "s|^[[:space:]]*source.*init\.sh.*$|source '$shim'|" \
+            -e "s|^[[:space:]]*\. .*init\.sh.*$|source '$shim'|" \
+            "$test_script" > "$tmptest"
+        chmod +x "$tmptest"
+
+        # Run test with fcoreutils in PATH, with 30s timeout
+        local exit_code=0
+        PATH="$ftools_dir:$PATH" timeout 30 bash "$tmptest" >/dev/null 2>&1 || exit_code=$?
+
+        if [[ $exit_code -eq 0 ]]; then
+            TESTS_RUN=$((TESTS_RUN + 1))
+            TESTS_PASSED=$((TESTS_PASSED + 1))
+            echo -e "  ${GREEN}PASS${NC}: $test_name"
+            record_result "$test_name" "PASS" "" "" ""
+        elif [[ $exit_code -eq 77 || $exit_code -eq 124 ]]; then
+            TESTS_RUN=$((TESTS_RUN + 1))
+            TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
+            local reason="skipped by test"
+            [[ $exit_code -eq 124 ]] && reason="timeout"
+            echo -e "  ${YELLOW}SKIP${NC}: $test_name ($reason)"
+            record_result "$test_name" "SKIP" "$reason" "" ""
+        else
+            TESTS_RUN=$((TESTS_RUN + 1))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
+            echo -e "  ${RED}FAIL${NC}: $test_name (exit=$exit_code)"
+            record_result "$test_name" "FAIL" "GNU upstream test failed with exit code $exit_code" "" ""
+        fi
+
+        rm -f "$tmptest"
+    done
+
+    # Clean up symlink directory
+    rm -rf "$ftools_dir"
+}

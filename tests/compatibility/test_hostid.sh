@@ -55,6 +55,8 @@ run_hostid_tests() {
         "$GNU_TOOL extra_arg 2>&1" \
         "$F_TOOL extra_arg 2>&1"
 
+    run_gnu_upstream_tests "hostid"
+
     finish_test_suite
 }
 

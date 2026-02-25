@@ -264,6 +264,8 @@ run_seq_tests() {
         "$GNU_TOOL 1 2 3 4 2>&1" \
         "$F_TOOL 1 2 3 4 2>&1"
 
+    run_gnu_upstream_tests "seq"
+
     finish_test_suite
 }
 
