@@ -21,29 +21,6 @@ echo "Generating test data (including large files for benchmarks)..."
 bash "$SCRIPT_DIR/../helpers/generate_test_data.sh"
 echo ""
 
-# Build uutils/coreutils if UUTILS_DIR is not already set
-if [[ -z "${UUTILS_DIR:-}" ]]; then
-    echo "Building uutils/coreutils from source..."
-    INSTALL_UUTILS_SCRIPT="$SCRIPT_DIR/../../scripts/install_uutils.sh"
-    if [[ -f "$INSTALL_UUTILS_SCRIPT" ]]; then
-        # Source to capture UUTILS_DIR export; run in subshell to capture output
-        UUTILS_OUTPUT=$(bash "$INSTALL_UUTILS_SCRIPT" 2>&1) && {
-            # Extract UUTILS_DIR from the output
-            UUTILS_DIR_LINE=$(echo "$UUTILS_OUTPUT" | grep "^UUTILS_DIR=" | tail -1)
-            if [[ -n "$UUTILS_DIR_LINE" ]]; then
-                export UUTILS_DIR="${UUTILS_DIR_LINE#UUTILS_DIR=}"
-                echo "uutils binaries at: $UUTILS_DIR"
-            fi
-        } || {
-            echo "WARNING: Failed to build uutils/coreutils. Continuing without uutils."
-            echo "$UUTILS_OUTPUT" | tail -5
-        }
-    else
-        echo "WARNING: install_uutils.sh not found. Continuing without uutils."
-    fi
-    echo ""
-fi
-
 # Auto-discover all benchmark scripts alphabetically
 TOOLS=()
 for script in $(ls "$SCRIPT_DIR"/bench_*.sh 2>/dev/null | sort); do

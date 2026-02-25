@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="mkfifo"
 F_TOOL="fmkfifo"
-U_TOOL=""
 
 run_mkfifo_benchmarks() {
     check_hyperfine

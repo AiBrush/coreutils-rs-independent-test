@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="hostid"
 F_TOOL="fhostid"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/hostid}"
 
 run_hostid_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_hostid_benchmarks() {
     run_benchmark "hostid (no args)" \
         "$GNU_TOOL" \
         "$F_TOOL" \
-        "${U_TOOL:+$U_TOOL}"
 
     save_benchmark_results
 }

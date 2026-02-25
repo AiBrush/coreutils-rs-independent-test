@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="id"
 F_TOOL="fid"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/id}"
 
 run_id_benchmarks() {
     check_hyperfine
@@ -26,22 +25,18 @@ run_id_benchmarks() {
     run_benchmark "id (no args)" \
         "$GNU_TOOL" \
         "$F_TOOL" \
-        "${U_TOOL:+$U_TOOL}"
 
     run_benchmark "id -u" \
         "$GNU_TOOL -u" \
         "$F_TOOL -u" \
-        "${U_TOOL:+$U_TOOL -u}"
 
     run_benchmark "id -g" \
         "$GNU_TOOL -g" \
         "$F_TOOL -g" \
-        "${U_TOOL:+$U_TOOL -g}"
 
     run_benchmark "id -un" \
         "$GNU_TOOL -un" \
         "$F_TOOL -un" \
-        "${U_TOOL:+$U_TOOL -un}"
 
     save_benchmark_results
 }

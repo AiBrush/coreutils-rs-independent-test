@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="nice"
 F_TOOL="fnice"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/nice}"
 
 run_nice_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_nice_benchmarks() {
     run_benchmark "nice true (default priority)" \
         "$GNU_TOOL true" \
         "$F_TOOL true" \
-        "${U_TOOL:+$U_TOOL true}"
 
     echo ""
     echo "=== Explicit nice value ==="
@@ -34,7 +32,6 @@ run_nice_benchmarks() {
     run_benchmark "nice -n 10 true" \
         "$GNU_TOOL -n 10 true" \
         "$F_TOOL -n 10 true" \
-        "${U_TOOL:+$U_TOOL -n 10 true}"
 
     save_benchmark_results
 }

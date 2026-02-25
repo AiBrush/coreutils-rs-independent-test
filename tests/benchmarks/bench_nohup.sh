@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="nohup"
 F_TOOL="fnohup"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/nohup}"
 
 run_nohup_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_nohup_benchmarks() {
     run_benchmark "nohup true" \
         "$GNU_TOOL true 2>/dev/null && rm -f nohup.out" \
         "$F_TOOL true 2>/dev/null && rm -f nohup.out" \
-        "${U_TOOL:+$U_TOOL true 2>/dev/null && rm -f nohup.out}"
 
     save_benchmark_results
 }

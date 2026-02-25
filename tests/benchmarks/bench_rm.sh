@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="rm"
 F_TOOL="frm"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/rm}"
 
 run_rm_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_rm_benchmarks() {
     run_benchmark "rm single file" \
         "cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_rm_gnu && $GNU_TOOL /tmp/bench_rm_gnu" \
         "cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_rm_f && $F_TOOL /tmp/bench_rm_f" \
-        "${U_TOOL:+cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_rm_u && $U_TOOL /tmp/bench_rm_u}"
 
     echo ""
     echo "=== Remove directory recursively ==="
@@ -34,7 +32,6 @@ run_rm_benchmarks() {
     run_benchmark "rm -rf directory" \
         "cp -r '$TEST_DATA_DIR/many_files' /tmp/bench_rm_dir_gnu && $GNU_TOOL -rf /tmp/bench_rm_dir_gnu" \
         "cp -r '$TEST_DATA_DIR/many_files' /tmp/bench_rm_dir_f && $F_TOOL -rf /tmp/bench_rm_dir_f" \
-        "${U_TOOL:+cp -r '$TEST_DATA_DIR/many_files' /tmp/bench_rm_dir_u && $U_TOOL -rf /tmp/bench_rm_dir_u}"
 
     # Cleanup (in case any remain)
     rm -f /tmp/bench_rm_gnu /tmp/bench_rm_f /tmp/bench_rm_u

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="unlink"
 F_TOOL="funlink"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/unlink}"
 
 run_unlink_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_unlink_benchmarks() {
     run_benchmark "unlink a file" \
         "cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_unlink_gnu && $GNU_TOOL /tmp/bench_unlink_gnu" \
         "cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_unlink_f && $F_TOOL /tmp/bench_unlink_f" \
-        "${U_TOOL:+cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_unlink_u && $U_TOOL /tmp/bench_unlink_u}"
 
     # Cleanup
     rm -f /tmp/bench_unlink_gnu /tmp/bench_unlink_f /tmp/bench_unlink_u

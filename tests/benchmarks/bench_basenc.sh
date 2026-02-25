@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="basenc"
 F_TOOL="fbasenc"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/basenc}"
 run_basenc_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -25,12 +24,10 @@ run_basenc_benchmarks() {
     run_benchmark "encode --base64 1MB" \
         "$GNU_TOOL --base64 '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL --base64 '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL --base64 '$TEST_DATA_DIR/text_1m.txt'}"
 
     run_benchmark "encode --base64 10MB" \
         "$GNU_TOOL --base64 '$TEST_DATA_DIR/text_10m.txt'" \
         "$F_TOOL --base64 '$TEST_DATA_DIR/text_10m.txt'" \
-        "${U_TOOL:+$U_TOOL --base64 '$TEST_DATA_DIR/text_10m.txt'}"
 
     echo ""
     echo "=== Encode with --base32 ==="
@@ -38,7 +35,6 @@ run_basenc_benchmarks() {
     run_benchmark "encode --base32 1MB" \
         "$GNU_TOOL --base32 '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL --base32 '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL --base32 '$TEST_DATA_DIR/text_1m.txt'}"
 
     echo ""
     echo "=== Encode with --base16 ==="
@@ -46,7 +42,6 @@ run_basenc_benchmarks() {
     run_benchmark "encode --base16 1MB" \
         "$GNU_TOOL --base16 '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL --base16 '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL --base16 '$TEST_DATA_DIR/text_1m.txt'}"
 
     echo ""
     echo "=== Decode with --base64 ==="
@@ -59,7 +54,6 @@ run_basenc_benchmarks() {
     run_benchmark "decode --base64 -d 1MB" \
         "$GNU_TOOL --base64 -d '$encoded_1m'" \
         "$F_TOOL --base64 -d '$encoded_1m'" \
-        "${U_TOOL:+$U_TOOL --base64 -d '$encoded_1m'}"
 
     rm -f "$encoded_1m"
 

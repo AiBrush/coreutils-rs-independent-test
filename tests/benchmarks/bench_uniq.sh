@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="uniq"
 F_TOOL="funiq"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/uniq}"
 run_uniq_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -25,7 +24,6 @@ run_uniq_benchmarks() {
     run_benchmark "default 10MB many duplicates" \
         "$GNU_TOOL '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/many_duplicates_10m.txt'}"
 
     echo ""
     echo "=== Default mode (low duplicate ratio) ==="
@@ -33,7 +31,6 @@ run_uniq_benchmarks() {
     run_benchmark "default 10MB sorted (low dup)" \
         "$GNU_TOOL '$TEST_DATA_DIR/sorted_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/sorted_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/sorted_10m.txt'}"
 
     echo ""
     echo "=== Count mode (-c) ==="
@@ -41,12 +38,10 @@ run_uniq_benchmarks() {
     run_benchmark "-c count 10MB many dups" \
         "$GNU_TOOL -c '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
         "$F_TOOL -c '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
-        "${U_TOOL:+$U_TOOL -c '$TEST_DATA_DIR/many_duplicates_10m.txt'}"
 
     run_benchmark "-c count 10MB sorted" \
         "$GNU_TOOL -c '$TEST_DATA_DIR/sorted_10m.txt'" \
         "$F_TOOL -c '$TEST_DATA_DIR/sorted_10m.txt'" \
-        "${U_TOOL:+$U_TOOL -c '$TEST_DATA_DIR/sorted_10m.txt'}"
 
     echo ""
     echo "=== Duplicate only (-d) ==="
@@ -54,7 +49,6 @@ run_uniq_benchmarks() {
     run_benchmark "-d duplicates only 10MB" \
         "$GNU_TOOL -d '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
         "$F_TOOL -d '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
-        "${U_TOOL:+$U_TOOL -d '$TEST_DATA_DIR/many_duplicates_10m.txt'}"
 
     echo ""
     echo "=== Unique only (-u) ==="
@@ -62,7 +56,6 @@ run_uniq_benchmarks() {
     run_benchmark "-u unique only 10MB" \
         "$GNU_TOOL -u '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
         "$F_TOOL -u '$TEST_DATA_DIR/many_duplicates_10m.txt'" \
-        "${U_TOOL:+$U_TOOL -u '$TEST_DATA_DIR/many_duplicates_10m.txt'}"
 
     echo ""
     echo "=== Case insensitive (-i) ==="
@@ -70,7 +63,6 @@ run_uniq_benchmarks() {
     run_benchmark "-i case insensitive 10MB" \
         "$GNU_TOOL -i '$TEST_DATA_DIR/sorted_10m.txt'" \
         "$F_TOOL -i '$TEST_DATA_DIR/sorted_10m.txt'" \
-        "${U_TOOL:+$U_TOOL -i '$TEST_DATA_DIR/sorted_10m.txt'}"
 
     echo ""
     echo "=== Repetitive content ==="
@@ -78,7 +70,6 @@ run_uniq_benchmarks() {
     run_benchmark "repetitive 10MB" \
         "$GNU_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'}"
 
     save_benchmark_results
 }

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="tty"
 F_TOOL="ftty"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/tty}"
 
 run_tty_benchmarks() {
     check_hyperfine
@@ -28,7 +27,6 @@ run_tty_benchmarks() {
     run_benchmark "tty (no args)" \
         "$GNU_TOOL || true" \
         "$F_TOOL || true" \
-        "${U_TOOL:+$U_TOOL || true}"
 
     save_benchmark_results
 }

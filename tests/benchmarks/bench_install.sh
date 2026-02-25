@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="install"
 F_TOOL="finstall"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/install}"
 
 run_install_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_install_benchmarks() {
     run_benchmark "install 1MB file" \
         "rm -f /tmp/bench_install_gnu && $GNU_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_install_gnu" \
         "rm -f /tmp/bench_install_f && $F_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_install_f" \
-        "${U_TOOL:+rm -f /tmp/bench_install_u && $U_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_install_u}"
 
     echo ""
     echo "=== Install directory (-d) ==="
@@ -34,7 +32,6 @@ run_install_benchmarks() {
     run_benchmark "install -d create directory" \
         "rm -rf /tmp/bench_install_dir_gnu && $GNU_TOOL -d /tmp/bench_install_dir_gnu/a/b/c" \
         "rm -rf /tmp/bench_install_dir_f && $F_TOOL -d /tmp/bench_install_dir_f/a/b/c" \
-        "${U_TOOL:+rm -rf /tmp/bench_install_dir_u && $U_TOOL -d /tmp/bench_install_dir_u/a/b/c}"
 
     # Cleanup
     rm -f /tmp/bench_install_gnu /tmp/bench_install_f /tmp/bench_install_u

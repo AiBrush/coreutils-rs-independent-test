@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="chgrp"
 F_TOOL="fchgrp"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/chgrp}"
 
 run_chgrp_benchmarks() {
     check_hyperfine
@@ -29,12 +28,10 @@ run_chgrp_benchmarks() {
     run_benchmark "chgrp current group on file" \
         "cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_chgrp_gnu && $GNU_TOOL $CURRENT_GROUP /tmp/bench_chgrp_gnu" \
         "cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_chgrp_f && $F_TOOL $CURRENT_GROUP /tmp/bench_chgrp_f" \
-        "${U_TOOL:+cp '$TEST_DATA_DIR/text_100k.txt' /tmp/bench_chgrp_u && $U_TOOL $CURRENT_GROUP /tmp/bench_chgrp_u}"
 
     run_benchmark "chgrp current group on 1MB file" \
         "cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_chgrp_1m_gnu && $GNU_TOOL $CURRENT_GROUP /tmp/bench_chgrp_1m_gnu" \
         "cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_chgrp_1m_f && $F_TOOL $CURRENT_GROUP /tmp/bench_chgrp_1m_f" \
-        "${U_TOOL:+cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_chgrp_1m_u && $U_TOOL $CURRENT_GROUP /tmp/bench_chgrp_1m_u}"
 
     # Cleanup
     rm -f /tmp/bench_chgrp_gnu /tmp/bench_chgrp_f /tmp/bench_chgrp_u

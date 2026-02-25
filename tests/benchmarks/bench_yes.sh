@@ -8,7 +8,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="yes"
 F_TOOL="fyes"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/yes}"
 
 run_yes_benchmarks() {
     check_hyperfine
@@ -28,12 +27,10 @@ run_yes_benchmarks() {
     run_benchmark "startup --help" \
         "$GNU_TOOL --help > /dev/null" \
         "$F_TOOL --help > /dev/null" \
-        "${U_TOOL:+$U_TOOL --help > /dev/null}"
 
     run_benchmark "startup --version" \
         "$GNU_TOOL --version > /dev/null" \
         "$F_TOOL --version > /dev/null" \
-        "${U_TOOL:+$U_TOOL --version > /dev/null}"
 
     echo ""
     echo "=== Throughput (default y) ==="
@@ -41,12 +38,10 @@ run_yes_benchmarks() {
     run_benchmark "throughput 1M lines" \
         "$GNU_TOOL | head -n 1000000 > /dev/null" \
         "$F_TOOL | head -n 1000000 > /dev/null" \
-        "${U_TOOL:+$U_TOOL | head -n 1000000 > /dev/null}"
 
     run_benchmark "throughput 10M lines" \
         "$GNU_TOOL | head -n 10000000 > /dev/null" \
         "$F_TOOL | head -n 10000000 > /dev/null" \
-        "${U_TOOL:+$U_TOOL | head -n 10000000 > /dev/null}"
 
     echo ""
     echo "=== Throughput (custom arg) ==="
@@ -54,12 +49,10 @@ run_yes_benchmarks() {
     run_benchmark "throughput hello 1M lines" \
         "$GNU_TOOL hello | head -n 1000000 > /dev/null" \
         "$F_TOOL hello | head -n 1000000 > /dev/null" \
-        "${U_TOOL:+$U_TOOL hello | head -n 1000000 > /dev/null}"
 
     run_benchmark "throughput hello 10M lines" \
         "$GNU_TOOL hello | head -n 10000000 > /dev/null" \
         "$F_TOOL hello | head -n 10000000 > /dev/null" \
-        "${U_TOOL:+$U_TOOL hello | head -n 10000000 > /dev/null}"
 
     echo ""
     echo "=== Throughput (byte volume via head -c) ==="
@@ -67,7 +60,6 @@ run_yes_benchmarks() {
     run_benchmark "throughput 100MB" \
         "$GNU_TOOL | head -c 100000000 > /dev/null" \
         "$F_TOOL | head -c 100000000 > /dev/null" \
-        "${U_TOOL:+$U_TOOL | head -c 100000000 > /dev/null}"
 
     echo ""
     echo "=== Binary Size (informational) ==="

@@ -63,11 +63,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install uutils (for 3-way comparison)
-        run: |
-          bash scripts/install_uutils.sh --tools all
-        continue-on-error: true
-
       - name: Install hyperfine
         run: sudo apt-get install -y hyperfine
 
@@ -86,7 +81,6 @@ jobs:
           import json, os, shutil, subprocess
 
           INSTALL_DIR = os.path.expanduser("~/.local/bin")
-          UUTILS_DIR  = os.environ.get("UUTILS_DIR", "/tmp/uutils-build/target/release")
 
           # Auto-discover all f* binaries in the install directory
           tools = []
@@ -108,16 +102,14 @@ jobs:
           for tool in tools:
               f_path  = os.path.join(INSTALL_DIR, "f" + tool)
               gnu_path = which(tool)
-              uu_path  = os.path.join(UUTILS_DIR, tool)
 
               f_size = get_size(f_path)
               if f_size is None:
                   continue
 
               rows[tool] = {
-                  "f_bytes":      f_size,
-                  "gnu_bytes":    get_size(gnu_path) if gnu_path else None,
-                  "uutils_bytes": get_size(uu_path),
+                  "f_bytes":   f_size,
+                  "gnu_bytes": get_size(gnu_path) if gnu_path else None,
               }
 
           out = {
@@ -131,8 +123,6 @@ jobs:
               json.dump(out, f, indent=2)
           print("Binary sizes written to results/sizes.json")
           EOF
-        env:
-          UUTILS_DIR: /tmp/uutils-build/target/release
 
       - name: Copy results to versioned path
         run: |

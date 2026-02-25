@@ -8,7 +8,6 @@ source "$SCRIPT_DIR/../common.sh"
 GNU_TOOL="rev"
 F_TOOL="frev"
 # rev is not in uutils/coreutils (it's from util-linux)
-U_TOOL=""
 
 run_rev_benchmarks() {
     check_hyperfine

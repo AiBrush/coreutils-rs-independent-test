@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="realpath"
 F_TOOL="frealpath"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/realpath}"
 
 run_realpath_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_realpath_benchmarks() {
     run_benchmark "realpath ." \
         "$GNU_TOOL ." \
         "$F_TOOL ." \
-        "${U_TOOL:+$U_TOOL .}"
 
     echo ""
     echo "=== Resolve absolute path ==="
@@ -34,7 +32,6 @@ run_realpath_benchmarks() {
     run_benchmark "realpath /tmp" \
         "$GNU_TOOL /tmp" \
         "$F_TOOL /tmp" \
-        "${U_TOOL:+$U_TOOL /tmp}"
 
     echo ""
     echo "=== Resolve file path ==="
@@ -42,7 +39,6 @@ run_realpath_benchmarks() {
     run_benchmark "realpath test data file" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_1m.txt'}"
 
     save_benchmark_results
 }

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="csplit"
 F_TOOL="fcsplit"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/csplit}"
 
 run_csplit_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_csplit_benchmarks() {
     run_benchmark "csplit 1MB by pattern" \
         "rm -f /tmp/bench_csplit_gnu_* && $GNU_TOOL -z --prefix=/tmp/bench_csplit_gnu_ '$TEST_DATA_DIR/text_1m.txt' '/the/' '{*}' 2>/dev/null" \
         "rm -f /tmp/bench_csplit_f_* && $F_TOOL -z --prefix=/tmp/bench_csplit_f_ '$TEST_DATA_DIR/text_1m.txt' '/the/' '{*}' 2>/dev/null" \
-        "${U_TOOL:+rm -f /tmp/bench_csplit_u_* && $U_TOOL -z --prefix=/tmp/bench_csplit_u_ '$TEST_DATA_DIR/text_1m.txt' '/the/' '{*}' 2>/dev/null}"
 
     # Cleanup
     rm -f /tmp/bench_csplit_gnu_* /tmp/bench_csplit_f_* /tmp/bench_csplit_u_*
