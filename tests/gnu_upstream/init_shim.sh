@@ -114,6 +114,12 @@ print_ver_() {
     echo "init_shim.sh: running $ME"
 }
 
+# --- Framework failure ---
+framework_failure_() {
+    echo "FRAMEWORK FAILURE: $ME: ${1:-setup failed}" >&2
+    exit 99
+}
+
 # --- Silence noisy GNU infrastructure functions ---
 # These are used in some tests but we don't need them
 check_coreutils_or_skip_() { :; }
@@ -121,6 +127,13 @@ emit_superuser_warning() { :; }
 check_prog() {
     command -v "$1" &>/dev/null || skip_ "$1 not available"
 }
+
+# --- Auto-create temp working directory ---
+# Many GNU tests expect to run in a clean temp directory
+# Set up automatically so tests don't need to call setup_ explicitly
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+cd "$tmpdir" || exit 99
 
 # --- Announce startup ---
 echo "Running: $ME (via init_shim.sh)"

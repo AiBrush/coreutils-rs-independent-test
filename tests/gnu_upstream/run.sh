@@ -69,11 +69,12 @@ for test_script in "${TEST_SCRIPTS[@]}"; do
     test_name="${tool_dir}/${base}"
 
     # Patch: replace 'source .../init.sh' or '. .../init.sh' with our shim
+    # Must match to end of line (.*$) to avoid leaving orphaned quotes/commands
+    # from patterns like: . "${srcdir=.}/tests/init.sh"; path_prepend_ ./src
     tmptest=$(mktemp --suffix=.sh)
-    # Replace any sourcing of init.sh with our shim
     sed \
-        -e "s|source.*init\.sh|source '$SHIM'|g" \
-        -e "s|\. .*init\.sh|source '$SHIM'|g" \
+        -e "s|^[[:space:]]*source.*init\.sh.*$|source '$SHIM'|" \
+        -e "s|^[[:space:]]*\. .*init\.sh.*$|source '$SHIM'|" \
         "$test_script" > "$tmptest"
     chmod +x "$tmptest"
 
