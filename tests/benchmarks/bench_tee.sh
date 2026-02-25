@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="tee"
 F_TOOL="ftee"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/tee}"
 
 run_tee_benchmarks() {
     check_hyperfine
@@ -27,13 +26,11 @@ run_tee_benchmarks() {
         "$TEST_DATA_DIR/text_1m.txt" \
         "$GNU_TOOL /dev/null > /dev/null" \
         "$F_TOOL /dev/null > /dev/null" \
-        "${U_TOOL:+$U_TOOL /dev/null > /dev/null}"
 
     run_stdin_benchmark "tee 10MB to /dev/null" \
         "$TEST_DATA_DIR/text_10m.txt" \
         "$GNU_TOOL /dev/null > /dev/null" \
         "$F_TOOL /dev/null > /dev/null" \
-        "${U_TOOL:+$U_TOOL /dev/null > /dev/null}"
 
     save_benchmark_results
 }

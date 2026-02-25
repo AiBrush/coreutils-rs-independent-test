@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="/usr/bin/echo"
 F_TOOL="fecho"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/echo}"
 
 run_echo_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_echo_benchmarks() {
     run_benchmark "echo hello" \
         "$GNU_TOOL hello" \
         "$F_TOOL hello" \
-        "${U_TOOL:+$U_TOOL hello}"
 
     echo ""
     echo "=== No newline (-n) ==="
@@ -34,7 +32,6 @@ run_echo_benchmarks() {
     run_benchmark "echo -n hello" \
         "$GNU_TOOL -n hello" \
         "$F_TOOL -n hello" \
-        "${U_TOOL:+$U_TOOL -n hello}"
 
     echo ""
     echo "=== Escape sequences (-e) ==="
@@ -42,7 +39,6 @@ run_echo_benchmarks() {
     run_benchmark "echo -e with escapes" \
         "$GNU_TOOL -e 'hello\tworld\n'" \
         "$F_TOOL -e 'hello\tworld\n'" \
-        "${U_TOOL:+$U_TOOL -e 'hello\tworld\n'}"
 
     save_benchmark_results
 }

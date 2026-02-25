@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="join"
 F_TOOL="fjoin"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/join}"
 
 run_join_benchmarks() {
     check_hyperfine
@@ -27,7 +26,6 @@ run_join_benchmarks() {
         run_benchmark "default join 10MB" \
             "$GNU_TOOL '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
             "$F_TOOL '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
-            "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'}"
     fi
 
     echo ""
@@ -37,7 +35,6 @@ run_join_benchmarks() {
         run_benchmark "outer join 10MB" \
             "$GNU_TOOL -a 1 -a 2 '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
             "$F_TOOL -a 1 -a 2 '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
-            "${U_TOOL:+$U_TOOL -a 1 -a 2 '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'}"
     fi
 
     echo ""
@@ -47,7 +44,6 @@ run_join_benchmarks() {
         run_benchmark "-v 1 (unmatched from file1) 10MB" \
             "$GNU_TOOL -v 1 '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
             "$F_TOOL -v 1 '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
-            "${U_TOOL:+$U_TOOL -v 1 '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'}"
     fi
 
     echo ""
@@ -57,7 +53,6 @@ run_join_benchmarks() {
         run_benchmark "-o 0,1.2,2.2 10MB" \
             "$GNU_TOOL -o '0,1.2,2.2' '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
             "$F_TOOL -o '0,1.2,2.2' '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'" \
-            "${U_TOOL:+$U_TOOL -o '0,1.2,2.2' '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt'}"
     fi
 
     echo ""
@@ -66,7 +61,6 @@ run_join_benchmarks() {
     run_benchmark "self-join sorted 10MB" \
         "$GNU_TOOL '$TEST_DATA_DIR/sorted_10m.txt' '$TEST_DATA_DIR/sorted_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/sorted_10m.txt' '$TEST_DATA_DIR/sorted_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/sorted_10m.txt' '$TEST_DATA_DIR/sorted_10m.txt'}"
 
     save_benchmark_results
 }

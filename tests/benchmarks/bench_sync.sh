@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="sync"
 F_TOOL="fsync"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/sync}"
 
 run_sync_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_sync_benchmarks() {
     run_benchmark "sync (no args)" \
         "$GNU_TOOL" \
         "$F_TOOL" \
-        "${U_TOOL:+$U_TOOL}"
 
     save_benchmark_results
 }

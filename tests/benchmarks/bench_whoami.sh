@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="whoami"
 F_TOOL="fwhoami"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/whoami}"
 
 run_whoami_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_whoami_benchmarks() {
     run_benchmark "whoami (no args)" \
         "$GNU_TOOL" \
         "$F_TOOL" \
-        "${U_TOOL:+$U_TOOL}"
 
     save_benchmark_results
 }

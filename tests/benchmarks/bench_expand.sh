@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="expand"
 F_TOOL="fexpand"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/expand}"
 
 run_expand_benchmarks() {
     check_hyperfine
@@ -27,13 +26,11 @@ run_expand_benchmarks() {
         run_benchmark "expand 10MB tabbed (default)" \
             "$GNU_TOOL '$TEST_DATA_DIR/tabbed_10m.txt'" \
             "$F_TOOL '$TEST_DATA_DIR/tabbed_10m.txt'" \
-            "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/tabbed_10m.txt'}"
     fi
 
     run_benchmark "expand 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_1m.txt'}"
 
     echo ""
     echo "=== Custom tab stops ==="
@@ -42,12 +39,10 @@ run_expand_benchmarks() {
         run_benchmark "-t 4 10MB tabbed" \
             "$GNU_TOOL -t 4 '$TEST_DATA_DIR/tabbed_10m.txt'" \
             "$F_TOOL -t 4 '$TEST_DATA_DIR/tabbed_10m.txt'" \
-            "${U_TOOL:+$U_TOOL -t 4 '$TEST_DATA_DIR/tabbed_10m.txt'}"
 
         run_benchmark "-t 2 10MB tabbed" \
             "$GNU_TOOL -t 2 '$TEST_DATA_DIR/tabbed_10m.txt'" \
             "$F_TOOL -t 2 '$TEST_DATA_DIR/tabbed_10m.txt'" \
-            "${U_TOOL:+$U_TOOL -t 2 '$TEST_DATA_DIR/tabbed_10m.txt'}"
     fi
 
     echo ""
@@ -57,7 +52,6 @@ run_expand_benchmarks() {
         run_benchmark "--initial 10MB tabbed" \
             "$GNU_TOOL --initial '$TEST_DATA_DIR/tabbed_10m.txt'" \
             "$F_TOOL --initial '$TEST_DATA_DIR/tabbed_10m.txt'" \
-            "${U_TOOL:+$U_TOOL --initial '$TEST_DATA_DIR/tabbed_10m.txt'}"
     fi
 
     echo ""
@@ -66,7 +60,6 @@ run_expand_benchmarks() {
     run_benchmark "expand CSV 10MB" \
         "$GNU_TOOL '$TEST_DATA_DIR/csv_10m.csv'" \
         "$F_TOOL '$TEST_DATA_DIR/csv_10m.csv'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/csv_10m.csv'}"
 
     save_benchmark_results
 }

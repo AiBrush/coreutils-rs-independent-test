@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="arch"
 F_TOOL="farch"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/arch}"
 
 run_arch_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_arch_benchmarks() {
     run_benchmark "arch (no args)" \
         "$GNU_TOOL" \
         "$F_TOOL" \
-        "${U_TOOL:+$U_TOOL}"
 
     save_benchmark_results
 }

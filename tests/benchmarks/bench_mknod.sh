@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="mknod"
 F_TOOL="fmknod"
-U_TOOL=""
 
 run_mknod_benchmarks() {
     check_hyperfine

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="false"
 F_TOOL="ffalse"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/false}"
 
 run_false_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_false_benchmarks() {
     run_benchmark "false (startup overhead)" \
         "$GNU_TOOL || true" \
         "$F_TOOL || true" \
-        "${U_TOOL:+$U_TOOL || true}"
 
     save_benchmark_results
 }

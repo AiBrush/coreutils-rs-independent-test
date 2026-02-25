@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="nproc"
 F_TOOL="fnproc"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/nproc}"
 
 run_nproc_benchmarks() {
     check_hyperfine
@@ -26,12 +25,10 @@ run_nproc_benchmarks() {
     run_benchmark "nproc (no args)" \
         "$GNU_TOOL" \
         "$F_TOOL" \
-        "${U_TOOL:+$U_TOOL}"
 
     run_benchmark "nproc --all" \
         "$GNU_TOOL --all" \
         "$F_TOOL --all" \
-        "${U_TOOL:+$U_TOOL --all}"
 
     save_benchmark_results
 }

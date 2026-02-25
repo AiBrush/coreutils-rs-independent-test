@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="logname"
 F_TOOL="flogname"
-U_TOOL=""
 
 run_logname_benchmarks() {
     check_hyperfine

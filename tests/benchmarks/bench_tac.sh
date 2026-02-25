@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="tac"
 F_TOOL="ftac"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/tac}"
 run_tac_benchmarks() {
     check_hyperfine
     ensure_test_data
@@ -25,23 +24,19 @@ run_tac_benchmarks() {
     run_benchmark "reverse 100KB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_100k.txt'}"
 
     run_benchmark "reverse 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_1m.txt'}"
 
     run_benchmark "reverse 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_10m.txt'}"
 
     if [[ -f "$TEST_DATA_DIR/text_100m.txt" ]]; then
         run_benchmark "reverse 100MB text" \
             "$GNU_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
             "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
-            "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_100m.txt'}"
     fi
 
     echo ""
@@ -50,12 +45,10 @@ run_tac_benchmarks() {
     run_benchmark "reverse CSV 10MB" \
         "$GNU_TOOL '$TEST_DATA_DIR/csv_10m.csv'" \
         "$F_TOOL '$TEST_DATA_DIR/csv_10m.csv'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/csv_10m.csv'}"
 
     run_benchmark "reverse repetitive 10MB" \
         "$GNU_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/repetitive_10m.txt'}"
 
     echo ""
     echo "=== Custom separator ==="
@@ -64,7 +57,6 @@ run_tac_benchmarks() {
         "$TEST_DATA_DIR/text_1m.txt" \
         "$GNU_TOOL -s ' '" \
         "$F_TOOL -s ' '" \
-        "${U_TOOL:+$U_TOOL -s ' '}"
 
     save_benchmark_results
 }

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="dirname"
 F_TOOL="fdirname"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/dirname}"
 
 run_dirname_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_dirname_benchmarks() {
     run_benchmark "dirname simple path" \
         "$GNU_TOOL /usr/local/bin/test" \
         "$F_TOOL /usr/local/bin/test" \
-        "${U_TOOL:+$U_TOOL /usr/local/bin/test}"
 
     echo ""
     echo "=== Dirname deep path ==="
@@ -34,7 +32,6 @@ run_dirname_benchmarks() {
     run_benchmark "dirname deep path" \
         "$GNU_TOOL /a/b/c/d/e/f/g" \
         "$F_TOOL /a/b/c/d/e/f/g" \
-        "${U_TOOL:+$U_TOOL /a/b/c/d/e/f/g}"
 
     save_benchmark_results
 }

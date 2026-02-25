@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="sha1sum"
 F_TOOL="fsha1sum"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/sha1sum}"
 
 run_sha1sum_benchmarks() {
     check_hyperfine
@@ -26,17 +25,14 @@ run_sha1sum_benchmarks() {
     run_benchmark "single 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_1m.txt'}"
 
     run_benchmark "single 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/text_10m.txt'}"
 
     run_benchmark "single 10MB binary" \
         "$GNU_TOOL '$TEST_DATA_DIR/random_10m.bin'" \
         "$F_TOOL '$TEST_DATA_DIR/random_10m.bin'" \
-        "${U_TOOL:+$U_TOOL '$TEST_DATA_DIR/random_10m.bin'}"
 
     echo ""
     echo "=== Multiple files ==="
@@ -49,7 +45,6 @@ run_sha1sum_benchmarks() {
     run_benchmark "100 files" \
         "eval $GNU_TOOL $hundred_files" \
         "eval $F_TOOL $hundred_files" \
-        "${U_TOOL:+eval $U_TOOL $hundred_files}"
 
     save_benchmark_results
 }

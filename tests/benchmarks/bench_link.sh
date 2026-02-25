@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="link"
 F_TOOL="flink"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/link}"
 
 run_link_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_link_benchmarks() {
     run_benchmark "hard link a file" \
         "rm -f /tmp/bench_link_gnu && $GNU_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_link_gnu" \
         "rm -f /tmp/bench_link_f && $F_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_link_f" \
-        "${U_TOOL:+rm -f /tmp/bench_link_u && $U_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_link_u}"
 
     # Cleanup
     rm -f /tmp/bench_link_gnu /tmp/bench_link_f /tmp/bench_link_u

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="pathchk"
 F_TOOL="fpathchk"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/pathchk}"
 
 run_pathchk_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_pathchk_benchmarks() {
     run_benchmark "pathchk default" \
         "$GNU_TOOL /tmp/testfile" \
         "$F_TOOL /tmp/testfile" \
-        "${U_TOOL:+$U_TOOL /tmp/testfile}"
 
     echo ""
     echo "=== POSIX portable check (-p) ==="
@@ -34,7 +32,6 @@ run_pathchk_benchmarks() {
     run_benchmark "pathchk -p (POSIX portable)" \
         "$GNU_TOOL -p /tmp/testfile" \
         "$F_TOOL -p /tmp/testfile" \
-        "${U_TOOL:+$U_TOOL -p /tmp/testfile}"
 
     save_benchmark_results
 }

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="rmdir"
 F_TOOL="frmdir"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/rmdir}"
 
 run_rmdir_benchmarks() {
     check_hyperfine
@@ -26,7 +25,6 @@ run_rmdir_benchmarks() {
     run_benchmark "rmdir single empty directory" \
         "mkdir -p /tmp/bench_rmdir_gnu && $GNU_TOOL /tmp/bench_rmdir_gnu" \
         "mkdir -p /tmp/bench_rmdir_f && $F_TOOL /tmp/bench_rmdir_f" \
-        "${U_TOOL:+mkdir -p /tmp/bench_rmdir_u && $U_TOOL /tmp/bench_rmdir_u}"
 
     echo ""
     echo "=== Remove nested directories (-p) ==="
@@ -34,7 +32,6 @@ run_rmdir_benchmarks() {
     run_benchmark "rmdir -p nested directories" \
         "mkdir -p /tmp/bench_rmdir_p_gnu/a/b/c && $GNU_TOOL -p /tmp/bench_rmdir_p_gnu/a/b/c" \
         "mkdir -p /tmp/bench_rmdir_p_f/a/b/c && $F_TOOL -p /tmp/bench_rmdir_p_f/a/b/c" \
-        "${U_TOOL:+mkdir -p /tmp/bench_rmdir_p_u/a/b/c && $U_TOOL -p /tmp/bench_rmdir_p_u/a/b/c}"
 
     # Cleanup (in case any remain)
     rm -rf /tmp/bench_rmdir_gnu /tmp/bench_rmdir_f /tmp/bench_rmdir_u

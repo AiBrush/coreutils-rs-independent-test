@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="shred"
 F_TOOL="fshred"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/shred}"
 
 run_shred_benchmarks() {
     check_hyperfine
@@ -26,12 +25,10 @@ run_shred_benchmarks() {
     run_benchmark "shred 1MB file" \
         "cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_shred_gnu && $GNU_TOOL /tmp/bench_shred_gnu" \
         "cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_shred_f && $F_TOOL /tmp/bench_shred_f" \
-        "${U_TOOL:+cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_shred_u && $U_TOOL /tmp/bench_shred_u}"
 
     run_benchmark "shred 1MB file with remove (-u)" \
         "cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_shred_u_gnu && $GNU_TOOL -u /tmp/bench_shred_u_gnu" \
         "cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_shred_u_f && $F_TOOL -u /tmp/bench_shred_u_f" \
-        "${U_TOOL:+cp '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_shred_u_uu && $U_TOOL -u /tmp/bench_shred_u_uu}"
 
     # Cleanup (in case any remain)
     rm -f /tmp/bench_shred_gnu /tmp/bench_shred_f /tmp/bench_shred_u

@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/../common.sh"
 
 GNU_TOOL="readlink"
 F_TOOL="freadlink"
-U_TOOL="${UUTILS_DIR:+$UUTILS_DIR/readlink}"
 
 run_readlink_benchmarks() {
     check_hyperfine
@@ -29,7 +28,6 @@ run_readlink_benchmarks() {
     run_benchmark "readlink symlink" \
         "$GNU_TOOL /tmp/bench_readlink_target" \
         "$F_TOOL /tmp/bench_readlink_target" \
-        "${U_TOOL:+$U_TOOL /tmp/bench_readlink_target}"
 
     echo ""
     echo "=== Canonicalize symlink (-f) ==="
@@ -37,7 +35,6 @@ run_readlink_benchmarks() {
     run_benchmark "readlink -f (canonicalize)" \
         "$GNU_TOOL -f /tmp/bench_readlink_target" \
         "$F_TOOL -f /tmp/bench_readlink_target" \
-        "${U_TOOL:+$U_TOOL -f /tmp/bench_readlink_target}"
 
     # Cleanup
     rm -f /tmp/bench_readlink_target
