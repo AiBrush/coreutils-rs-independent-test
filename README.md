@@ -162,12 +162,12 @@ pip install matplotlib
 python3 scripts/plot_speedup.py
 ```
 
-## Platform Functional Tests (v0.13.0)
+## Platform Functional Tests (v0.12.4)
 
 | Platform | Passed | Failed | Skipped | Status |
 |----------|--------|--------|---------|--------|
-| Linux x86_64 | — | — | — | ⏭️ missing |
-| Linux ARM64 | — | — | — | ⏭️ no binary available for aarch64-unknown-linux-gnu |
-| macOS ARM64 | — | — | — | ⏭️ no binary available for aarch64-apple-darwin |
-| Windows x86_64 | — | — | — | ⏭️ no binary available for x86_64-pc-windows-msvc |
-| Windows ARM64 | — | — | — | ⏭️ no binary available for aarch64-pc-windows-msvc |
+| Linux x86_64 | 2201 | 12 | 11 | ⚠️ |
+| Linux ARM64 | 2201 | 12 | 11 | ⚠️ |
+| macOS ARM64 | 191 | 33 | 7 | ⚠️ |
+| Windows x86_64 | 0 | 0 | 0 | ⏭️ no tests ran |
+| Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |
