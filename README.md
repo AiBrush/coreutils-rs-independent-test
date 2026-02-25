@@ -10,12 +10,12 @@
 
 ### Summary
 - **Tools tracked:** 107 total
-- **Compatibility:** 4595/4679 tests passed (98.2%)
+- **Compatibility:** 2203/2224 tests passed (99.1%)
 - **Fastest speedup:** wc at 31.3x faster than GNU
 
 ### Full Tools Comparison
 
-> Sizes are raw binary sizes. Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
+> Sizes from release binaries. Compat = pass rate on Linux x86_64. Speedup = peak across all benchmark scenarios.
 > `-` = no data collected yet for this tool/metric.
 
 | Tool | fcoreutils size | GNU size | Compat f\* vs GNU | Speedup f\* vs GNU |
@@ -129,7 +129,7 @@
 | yes | 1.8 KB | 34.4 KB | ✅ 100% | **4.1x** |
 
 ### Known Issues
-- 55 compatibility test failures across 5 platforms
+- 55 compatibility test failures across 3 platform(s)
 
 ## Per-Version Details
 
@@ -141,31 +141,19 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
-- Runs 4679+ compatibility tests comparing output byte-for-byte against GNU coreutils
+- Runs 2224+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Measures binary sizes of f\* and GNU for each tool
 - Tests run across multiple platforms via GitHub Actions
 
 ## Running Locally
 ```bash
-# Run benchmarks for the latest version
+# Install and test
 ./scripts/install_from_github.sh
+./tests/compatibility/run_all.sh
 ./tests/benchmarks/run_all.sh
 
-# Run compatibility tests
-./tests/compatibility/run_all.sh
-
-# Generate the plot
+# Generate chart
 pip install matplotlib
 python3 scripts/plot_speedup.py
 ```
-
-## Platform Functional Tests (v0.13.0)
-
-| Platform | Passed | Failed | Skipped | Status |
-|----------|--------|--------|---------|--------|
-| Linux x86_64 | 2203 | 10 | 11 | ⚠️ |
-| Linux ARM64 | 2203 | 10 | 11 | ⚠️ |
-| macOS ARM64 | 189 | 35 | 7 | ⚠️ |
-| Windows x86_64 | 0 | 0 | 0 | ⏭️ no tests ran |
-| Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |
