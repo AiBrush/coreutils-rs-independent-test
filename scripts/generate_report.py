@@ -1,405 +1,261 @@
 #!/usr/bin/env python3
-"""Generate README.md and per-version detail reports from results/."""
+"""Generate README.md and per-version detail report from results/.
+
+Data sources (all for a single version):
+  results/compatibility/<version>/linux_x86_64.json  -> per-tool compat data
+  results/benchmarks/<version>/linux_x86_64.json     -> per-tool benchmark data
+  results/benchmarks/<version>/linux_x86_64_sizes.json -> binary sizes
+  results/compatibility/<version>/*.json              -> multi-platform compat summaries
+
+The README uses Linux x86_64 as the canonical platform for both
+compatibility and performance data.
+"""
 
 import json
 import glob
 import os
+import re
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(SCRIPT_DIR, "..")
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
 
-# Load canonical tool list from tests/gnu_tools.txt
-_GNU_TOOLS_FILE = os.path.join(PROJECT_ROOT, "tests", "gnu_tools.txt")
-if os.path.exists(_GNU_TOOLS_FILE):
-    with open(_GNU_TOOLS_FILE) as _f:
-        ALL_TOOLS = [line.strip() for line in _f if line.strip() and not line.startswith('#')]
-else:
-    # Fallback: hardcoded sorted list
-    ALL_TOOLS = sorted([
-        "arch", "b2sum", "base32", "base64", "basename", "basenc", "cat", "chcon",
-        "chgrp", "chmod", "chown", "chroot", "cksum", "comm", "cp", "csplit", "cut",
-        "date", "dd", "df", "dir", "dircolors", "dirname", "du", "echo", "env",
-        "expand", "expr", "factor", "false", "fmt", "fold", "groups", "head",
-        "hostid", "id", "install", "join", "kill", "link", "ln", "logname", "ls",
-        "md5sum", "mkdir", "mkfifo", "mknod", "mktemp", "mv", "nice", "nl",
-        "nohup", "nproc", "numfmt", "od", "paste", "pathchk", "pinky", "pr",
-        "printenv", "printf", "ptx", "pwd", "readlink", "realpath", "rev", "rm",
-        "rmdir", "runcon", "seq", "sha1sum", "sha224sum", "sha256sum", "sha384sum",
-        "sha512sum", "shred", "shuf", "sleep", "sort", "split", "stat", "stdbuf",
-        "stty", "sum", "sync", "tac", "tail", "tee", "test", "timeout", "touch",
-        "tr", "true", "truncate", "tsort", "tty", "uname", "unexpand", "uniq",
-        "unlink", "uptime", "users", "vdir", "wc", "who", "whoami", "yes",
-    ], key=str.lower)
 
+# ── Tool list ────────────────────────────────────────────────────────────────
+
+def load_tools_list():
+    """Load canonical tool list from tests/gnu_tools.txt."""
+    path = os.path.join(PROJECT_ROOT, "tests", "gnu_tools.txt")
+    if not os.path.exists(path):
+        print(f"WARNING: {path} not found")
+        return []
+    with open(path) as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+
+# ── Version discovery ────────────────────────────────────────────────────────
 
 def parse_version(tag):
-    """Extract (major, minor, patch) from version tag."""
-    import re
+    """Extract (major, minor, patch) tuple for sorting."""
     m = re.match(r"v?(\d+)\.(\d+)\.(\d+)", tag)
-    if m:
-        return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
-    return (0, 0, 0)
+    return tuple(int(x) for x in m.groups()) if m else (0, 0, 0)
 
 
 def get_all_versions():
-    """Get all versions that have benchmark or compatibility data."""
+    """Discover all version tags that have any result data."""
     versions = set()
-    for subdir in ["benchmarks", "compatibility"]:
-        pattern = os.path.join(RESULTS_DIR, subdir, "v*")
-        for d in glob.glob(pattern):
+    for subdir in ("benchmarks", "compatibility"):
+        for d in glob.glob(os.path.join(RESULTS_DIR, subdir, "v*")):
             if os.path.isdir(d):
                 versions.add(os.path.basename(d))
     return sorted(versions, key=parse_version)
 
 
-def load_benchmark_data(version):
-    """Load all benchmark JSON files for a version."""
-    bench_dir = os.path.join(RESULTS_DIR, "benchmarks", version)
-    platforms = {}
-    if not os.path.isdir(bench_dir):
-        return platforms
+# ── Data loading ─────────────────────────────────────────────────────────────
 
-    for jf in glob.glob(os.path.join(bench_dir, "linux_*.json")):
-        # Skip sizes files
-        if "_sizes.json" in jf:
-            continue
-        try:
-            with open(jf) as f:
-                data = json.load(f)
-            platform = data.get("platform", os.path.basename(jf).replace(".json", ""))
-            platforms[platform] = data.get("tools", {})
-        except (json.JSONDecodeError, IOError):
-            pass
-    return platforms
-
-
-def load_compatibility_data(version):
-    """Load all compatibility JSON files for a version.
-
-    Returns (platforms, tool_results) where:
-      platforms: dict of platform -> summary dict
-      tool_results: dict of tool_name -> dict of platform -> per-tool data
-    """
-    compat_dir = os.path.join(RESULTS_DIR, "compatibility", version)
-    platforms = {}
-    tool_results = {}
-    if not os.path.isdir(compat_dir):
-        return platforms, tool_results
-
-    for jf in glob.glob(os.path.join(compat_dir, "*.json")):
-        try:
-            with open(jf) as f:
-                data = json.load(f)
-        except (json.JSONDecodeError, IOError):
-            continue
-
-        platform = data.get("platform", os.path.basename(jf).replace(".json", ""))
-
-        if "summary" in data and "total_tests" in data.get("summary", {}):
-            platforms[platform] = data.get("summary", {})
-            # New format: extract per-tool data from "tools" field
-            if "tools" in data and isinstance(data["tools"], dict):
-                for tool, tool_data in data["tools"].items():
-                    if tool not in tool_results:
-                        tool_results[tool] = {}
-                    tool_results[tool][platform] = tool_data
-        elif "tool" in data:
-            # Legacy per-tool file format
-            tool = data["tool"]
-            if tool not in tool_results:
-                tool_results[tool] = {}
-            tool_results[tool][platform] = data
-
-    return platforms, tool_results
-
-
-def load_size_data(version):
-    """Load binary size data for a version from linux_*_sizes.json files."""
-    bench_dir = os.path.join(RESULTS_DIR, "benchmarks", version)
-    sizes = {}
-    if not os.path.isdir(bench_dir):
-        return sizes
-
-    for jf in glob.glob(os.path.join(bench_dir, "linux_*_sizes.json")):
-        try:
-            with open(jf) as f:
-                data = json.load(f)
-            for tool, sz in data.get("sizes", {}).items():
-                if tool not in sizes:
-                    sizes[tool] = sz
-        except (json.JSONDecodeError, IOError):
-            pass
-    return sizes
-
-
-def load_source_sizes():
-    """Load binary sizes from results/source_sizes.json (collected during source build)."""
-    sizes_file = os.path.join(RESULTS_DIR, "source_sizes.json")
-    if not os.path.exists(sizes_file):
-        return {}
+def load_json(path):
+    """Load a JSON file, returning None on any error."""
     try:
-        with open(sizes_file) as f:
-            data = json.load(f)
-        return data.get("sizes", {})
-    except (json.JSONDecodeError, IOError):
-        return {}
-
-
-def load_new_tools_data():
-    """Load source-built compat + bench data."""
-    bench_data = {}
-    compat_data = {}   # tool -> {platform_key -> per_tool_data}
-
-    # Benchmark data: Linux x86_64 only (canonical benchmark platform)
-    bench_file = os.path.join(RESULTS_DIR, "source_bench.json")
-    if os.path.exists(bench_file):
-        try:
-            with open(bench_file) as f:
-                d = json.load(f)
-            for tool, data in d.get("tools", {}).items():
-                if isinstance(data, dict) and data.get("status") != "NOT_IMPLEMENTED":
-                    bench_data[tool] = data
-        except (json.JSONDecodeError, IOError):
-            pass
-
-    # Compat data: source_compat_*.json (platform-specific) and source_compat.json (single file)
-    source_compat_files = glob.glob(os.path.join(RESULTS_DIR, "source_compat_*.json"))
-    # Also handle the single source_compat.json file (no platform suffix)
-    single_compat = os.path.join(RESULTS_DIR, "source_compat.json")
-    if os.path.exists(single_compat):
-        source_compat_files.append(single_compat)
-
-    for jf in source_compat_files:
-        try:
-            with open(jf) as f:
-                d = json.load(f)
-            # Use the platform field from the JSON, falling back to Linux_x86_64
-            # (source builds run on Linux x86_64 with real GNU tools)
-            platform_key = d.get("platform", "Linux_x86_64")
-            for tool, data in d.get("tools", {}).items():
-                if tool not in compat_data:
-                    compat_data[tool] = {}
-                compat_data[tool][platform_key] = data
-        except (json.JSONDecodeError, IOError):
-            pass
-
-    return bench_data, compat_data
-
-
-def compute_speedups(bench_platforms):
-    """Compute best speedup per tool across all platforms.
-
-    Returns tool_speedups dict mapping tool -> best speedup value.
-    """
-    tool_speedups = {}
-    for platform, tools in bench_platforms.items():
-        for tool, data in tools.items():
-            if not isinstance(data, dict) or data.get("status") == "NOT_IMPLEMENTED":
-                continue
-            for b in data.get("benchmarks", []):
-                s = b.get("speedup")
-                if isinstance(s, (int, float)) and s > 0:
-                    if tool not in tool_speedups or s > tool_speedups[tool]:
-                        tool_speedups[tool] = s
-    return tool_speedups
-
-
-def compute_compat_rate(tool, tool_results):
-    """Compute compatibility pass rate (0-100) for a tool.
-
-    Uses Linux x86_64 as the canonical GNU compatibility platform, since
-    macOS and Windows use BSD tools with different output formats.
-    Falls back to any Linux platform, then any platform.
-    """
-    if tool not in tool_results:
+        with open(path) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, IOError, FileNotFoundError):
         return None
 
-    platforms = tool_results[tool]
 
-    # Preferred: Linux x86_64 (actual GNU tools)
-    for platform, data in platforms.items():
-        if "Linux_x86_64" in platform:
-            if data.get("status") == "NOT_IMPLEMENTED":
-                return None
-            t = data.get("total", 0)
-            p = data.get("passed", 0)
-            if t > 0:
-                return p / t * 100
+def load_version_data(version):
+    """Load all data for a single version into a flat structure.
 
-    # Fallback: any Linux platform
-    for platform, data in platforms.items():
-        if platform.startswith("Linux_"):
-            if data.get("status") == "NOT_IMPLEMENTED":
+    Returns dict:
+        compat_tools:  {tool: {total, passed, failed, skipped, status, ...}}
+        bench_tools:   {tool: {benchmarks: [...], ...}}
+        sizes:         {tool: {f_bytes, gnu_bytes}}
+        compat_platforms: {platform_key: {total_tests, passed, failed, ...}}
+    """
+    data = {
+        "compat_tools": {},
+        "bench_tools": {},
+        "sizes": {},
+        "compat_platforms": {},
+    }
+
+    # ── Compatibility (Linux x86_64 = canonical) ──
+    compat_file = os.path.join(
+        RESULTS_DIR, "compatibility", version, "linux_x86_64.json"
+    )
+    compat_json = load_json(compat_file)
+    if compat_json:
+        data["compat_tools"] = compat_json.get("tools", {})
+        if "summary" in compat_json:
+            data["compat_platforms"]["Linux_x86_64"] = compat_json["summary"]
+
+    # ── Other platforms (for the platform table) ──
+    compat_dir = os.path.join(RESULTS_DIR, "compatibility", version)
+    if os.path.isdir(compat_dir):
+        for jf in sorted(glob.glob(os.path.join(compat_dir, "*.json"))):
+            d = load_json(jf)
+            if not d or "summary" not in d:
                 continue
-            t = data.get("total", 0)
-            p = data.get("passed", 0)
-            if t > 0:
-                return p / t * 100
+            platform = d.get("platform", os.path.basename(jf).replace(".json", ""))
+            if platform not in data["compat_platforms"]:
+                data["compat_platforms"][platform] = d["summary"]
 
-    return None
+    # ── Benchmarks ──
+    bench_file = os.path.join(
+        RESULTS_DIR, "benchmarks", version, "linux_x86_64.json"
+    )
+    bench_json = load_json(bench_file)
+    if bench_json and "tools" in bench_json:
+        data["bench_tools"] = bench_json["tools"]
+
+    # ── Sizes ──
+    sizes_file = os.path.join(
+        RESULTS_DIR, "benchmarks", version, "linux_x86_64_sizes.json"
+    )
+    sizes_json = load_json(sizes_file)
+    if sizes_json and "sizes" in sizes_json:
+        data["sizes"] = sizes_json["sizes"]
+
+    return data
 
 
-def get_size_ratio(tool, sizes, key_a, key_b):
-    """Compute ratio key_a/key_b for a tool's binary sizes. Returns float or None."""
-    if tool not in sizes:
+# ── Per-tool data extraction ─────────────────────────────────────────────────
+
+def get_compat_rate(tool, compat_tools):
+    """Get compatibility pass rate for a tool.
+
+    Returns (rate_pct, total, passed) or (None, 0, 0) if no data.
+    """
+    if tool not in compat_tools:
+        return None, 0, 0
+    d = compat_tools[tool]
+    if d.get("status") == "NOT_IMPLEMENTED":
+        return None, 0, 0
+    total = d.get("total", 0)
+    passed = d.get("passed", 0)
+    if total == 0:
+        return None, 0, 0
+    return passed / total * 100, total, passed
+
+
+def get_best_speedup(tool, bench_tools):
+    """Get best (peak) speedup for a tool across all benchmark scenarios."""
+    if tool not in bench_tools:
         return None
-    s = sizes[tool]
-    a = s.get(key_a)
-    b = s.get(key_b)
-    if a and b and b > 0:
-        return a / b
-    return None
+    d = bench_tools[tool]
+    if not isinstance(d, dict) or d.get("status") == "NOT_IMPLEMENTED":
+        return None
+    best = None
+    for b in d.get("benchmarks", []):
+        s = b.get("speedup")
+        if isinstance(s, (int, float)) and s > 0:
+            if best is None or s > best:
+                best = s
+    return best
 
+
+# ── Formatting helpers ───────────────────────────────────────────────────────
 
 def format_size(bytes_val):
-    """Format bytes as human-readable size string."""
+    """Format bytes as human-readable string."""
     if bytes_val is None:
         return "-"
     if bytes_val >= 1_048_576:
         return f"{bytes_val / 1_048_576:.1f} MB"
-    elif bytes_val >= 1024:
+    if bytes_val >= 1024:
         return f"{bytes_val / 1024:.1f} KB"
     return f"{bytes_val} B"
 
 
-def generate_version_report(version, bench_platforms, compat_platforms, tool_results):
-    """Generate a detailed per-version report at results/benchmarks/VERSION/report.md."""
-    lines = []
-    lines.append(f"# fcoreutils {version} — Detailed Results\n")
-    lines.append(f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
-
-    # Compatibility summary
-    total_tests = sum(p.get("total_tests", 0) for p in compat_platforms.values())
-    total_passed = sum(p.get("passed", 0) for p in compat_platforms.values())
-    total_failed = sum(p.get("failed", 0) for p in compat_platforms.values())
-
-    if total_tests > 0:
-        pass_rate = total_passed / total_tests * 100
-        lines.append("## Compatibility\n")
-        lines.append("| Platform | Tests | Passed | Failed | Pass Rate |")
-        lines.append("|----------|-------|--------|--------|-----------|")
-        for platform, summary in sorted(compat_platforms.items()):
-            t = summary.get("total_tests", 0)
-            p = summary.get("passed", 0)
-            f = summary.get("failed", 0)
-            r = f"{p/t*100:.1f}%" if t > 0 else "N/A"
-            lines.append(f"| {platform} | {t} | {p} | {f} | {r} |")
-        lines.append(f"\n**Overall: {total_passed}/{total_tests} ({pass_rate:.1f}%)**\n")
-
-    # Benchmark results
-    if bench_platforms:
-        lines.append("## Performance\n")
-
-        for platform in sorted(bench_platforms.keys()):
-            lines.append(f"### {platform}\n")
-            lines.append("| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |")
-            lines.append("|------|------|-----------|-------------------|---------|")
-
-            for tool in ALL_TOOLS:
-                data = bench_platforms[platform].get(tool, {})
-                if not isinstance(data, dict):
-                    continue
-                if data.get("status") == "NOT_IMPLEMENTED":
-                    lines.append(f"| {tool} | - | - | - | N/A |")
-                    continue
-                benchmarks = data.get("benchmarks", [])
-                if not benchmarks:
-                    continue
-                for b in benchmarks:
-                    name = b.get("name", "")
-                    gnu_t = b.get("gnu_mean")
-                    f_t = b.get("f_mean")
-                    speedup = b.get("speedup")
-                    gnu_str = f"{gnu_t:.4f}s" if isinstance(gnu_t, (int, float)) and gnu_t > 0 else "N/A"
-                    f_str = f"{f_t:.4f}s" if isinstance(f_t, (int, float)) and f_t > 0 else "-"
-                    sp_str = f"**{speedup:.1f}x**" if isinstance(speedup, (int, float)) and speedup > 0 else "-"
-                    lines.append(f"| {tool} | {name} | {gnu_str} | {f_str} | {sp_str} |")
-            lines.append("")
-
-    report_dir = os.path.join(RESULTS_DIR, "benchmarks", version)
-    if not os.path.isdir(report_dir):
-        report_dir = os.path.join(RESULTS_DIR, "compatibility", version)
-    if not os.path.isdir(report_dir):
-        os.makedirs(report_dir, exist_ok=True)
-
-    report_path = os.path.join(report_dir, "report.md")
-    with open(report_path, "w") as f:
-        f.write("\n".join(lines))
-    print(f"  Version report: {report_path}")
+def format_compat(rate):
+    """Format compatibility rate with status emoji."""
+    if rate is None:
+        return "-"
+    if rate >= 100.0:
+        return "\u2705 100%"
+    if rate > 0:
+        return f"\u26a0\ufe0f {rate:.0f}%"
+    return "\u274c 0%"
 
 
-def generate_readme(latest_version, bench_platforms, compat_platforms,
-                    tool_speedups, tool_results, sizes):
-    """Generate the README.md with a full tools comparison table."""
-    total_tests = sum(p.get("total_tests", 0) for p in compat_platforms.values())
-    total_passed = sum(p.get("passed", 0) for p in compat_platforms.values())
+def format_speedup(s):
+    """Format speedup multiplier."""
+    if s is None:
+        return "-"
+    return f"**{s:.1f}x**"
+
+
+# ── README generation ────────────────────────────────────────────────────────
+
+def generate_readme(version, all_tools, data):
+    """Generate README.md from the latest version's data."""
+    compat_tools = data["compat_tools"]
+    bench_tools = data["bench_tools"]
+    sizes = data["sizes"]
+
+    # Summary stats (Linux x86_64)
+    linux_summary = data["compat_platforms"].get("Linux_x86_64", {})
+    total_tests = linux_summary.get("total_tests", 0)
+    total_passed = linux_summary.get("passed", 0)
     pass_pct = f"{total_passed / total_tests * 100:.1f}" if total_tests > 0 else "0"
 
-    # Count tools with any data
-    tools_with_data = sum(
-        1 for t in ALL_TOOLS
-        if t in tool_speedups or t in tool_results
-    )
-
-    # Find fastest tool
+    # Fastest tool
     fastest_tool = ""
     fastest_speedup = 0
-    for tool, s in tool_speedups.items():
-        if s > fastest_speedup:
+    for tool in all_tools:
+        s = get_best_speedup(tool, bench_tools)
+        if s is not None and s > fastest_speedup:
             fastest_speedup = s
             fastest_tool = tool
 
     # Known issues
-    total_failed = sum(p.get("failed", 0) for p in compat_platforms.values())
-    if total_failed > 0:
-        issues = f"- {total_failed} compatibility test failures across {len(compat_platforms)} platforms"
+    total_failed_all = sum(
+        p.get("failed", 0)
+        for p in data["compat_platforms"].values()
+    )
+    n_platforms = len(
+        [p for p in data["compat_platforms"].values() if p.get("total_tests", 0) > 0]
+    )
+    if total_failed_all > 0:
+        issues = (
+            f"- {total_failed_all} compatibility test failures"
+            f" across {n_platforms} platform(s)"
+        )
     else:
         issues = "- No known issues"
 
-    # Check if chart exists
+    # Chart
     chart_path = os.path.join(RESULTS_DIR, "speedup-history.png")
-    chart_section = "![Speedup History](results/speedup-history.png)"
-    if not os.path.exists(chart_path):
+    if os.path.exists(chart_path):
+        chart_section = "![Speedup History](results/speedup-history.png)"
+    else:
         chart_section = "_No chart available yet._"
 
-    # Build the full tools table
-    table_lines = []
-    table_lines.append("| Tool | fcoreutils size | GNU size | Compat f\\* vs GNU | Speedup f\\* vs GNU |")
-    table_lines.append("|------|----------------:|----------:|------------------:|-------------------:|")
+    # ── Build tools table ──
+    table_lines = [
+        "| Tool | fcoreutils size | GNU size | Compat f\\* vs GNU | Speedup f\\* vs GNU |",
+        "|------|----------------:|----------:|------------------:|-------------------:|",
+    ]
 
-    for tool in ALL_TOOLS:
-        compat_gnu = compute_compat_rate(tool, tool_results)
+    for tool in all_tools:
+        rate, total, passed = get_compat_rate(tool, compat_tools)
+        speedup = get_best_speedup(tool, bench_tools)
 
-        f_size   = format_size(sizes.get(tool, {}).get("f_bytes"))
+        f_size = format_size(sizes.get(tool, {}).get("f_bytes"))
         gnu_size = format_size(sizes.get(tool, {}).get("gnu_bytes"))
-
-        if compat_gnu is None:
-            compat_gnu_str = "-"
-        elif compat_gnu >= 100.0:
-            compat_gnu_str = "\u2705 100%"
-        elif compat_gnu > 0:
-            compat_gnu_str = f"\u26a0\ufe0f {compat_gnu:.0f}%"
-        else:
-            compat_gnu_str = "\u274c 0%"
-
-        sg = tool_speedups.get(tool)
-        speedup_gnu_str = f"**{sg:.1f}x**" if sg is not None else "-"
+        compat_str = format_compat(rate)
+        speedup_str = format_speedup(speedup)
 
         table_lines.append(
-            f"| {tool} | {f_size} | {gnu_size} | {compat_gnu_str} | {speedup_gnu_str} |"
+            f"| {tool} | {f_size} | {gnu_size} | {compat_str} | {speedup_str} |"
         )
 
     full_table = "\n".join(table_lines)
 
-    sources = """## Sources
-- [fcoreutils](https://github.com/AiBrush/fcoreutils) — installed from GitHub Releases
-- GNU coreutils — system-installed baseline"""
-
-    readme = f"""# fcoreutils vs GNU coreutils — Independent Benchmark
+    readme = f"""\
+# fcoreutils vs GNU coreutils — Independent Benchmark
 
 > Independent quality assurance for [fcoreutils](https://github.com/AiBrush/fcoreutils), a Rust rewrite of GNU coreutils.
 
@@ -407,16 +263,16 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
 {chart_section}
 
-## Latest Results ({latest_version})
+## Latest Results ({version})
 
 ### Summary
-- **Tools tracked:** {len(ALL_TOOLS)} total
+- **Tools tracked:** {len(all_tools)} total
 - **Compatibility:** {total_passed}/{total_tests} tests passed ({pass_pct}%)
 - **Fastest speedup:** {fastest_tool} at {fastest_speedup:.1f}x faster than GNU
 
 ### Full Tools Comparison
 
-> Sizes are raw binary sizes. Compat is GNU test pass rate. Speedup is peak across all benchmark scenarios.
+> Sizes from release binaries. Compat = pass rate on Linux x86_64. Speedup = peak across all benchmark scenarios.
 > `-` = no data collected yet for this tool/metric.
 
 {full_table}
@@ -428,7 +284,9 @@ def generate_readme(latest_version, bench_platforms, compat_platforms,
 
 Detailed results for each version (benchmarks, compatibility, failures) are in the [`results/`](results/) directory.
 
-{sources}
+## Sources
+- [fcoreutils](https://github.com/AiBrush/fcoreutils) — installed from GitHub Releases
+- GNU coreutils — system-installed baseline
 
 ## How It Works
 - Downloads pre-built fcoreutils binaries from GitHub releases
@@ -439,14 +297,12 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 
 ## Running Locally
 ```bash
-# Run benchmarks for the latest version
+# Install and test
 ./scripts/install_from_github.sh
+./tests/compatibility/run_all.sh
 ./tests/benchmarks/run_all.sh
 
-# Run compatibility tests
-./tests/compatibility/run_all.sh
-
-# Generate the plot
+# Generate chart
 pip install matplotlib
 python3 scripts/plot_speedup.py
 ```
@@ -455,11 +311,78 @@ python3 scripts/plot_speedup.py
     readme_path = os.path.join(PROJECT_ROOT, "README.md")
     with open(readme_path, "w") as f:
         f.write(readme)
-    print(f"README.md generated ({latest_version})")
+    print(f"README.md generated ({version})")
 
+
+# ── Per-version report ───────────────────────────────────────────────────────
+
+def generate_version_report(version, all_tools, data):
+    """Generate a detailed report at results/benchmarks/<version>/report.md."""
+    lines = [f"# fcoreutils {version} — Detailed Results\n"]
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    lines.append(f"Generated: {ts}\n")
+
+    # Platform compatibility table
+    if data["compat_platforms"]:
+        lines.append("## Compatibility\n")
+        lines.append("| Platform | Tests | Passed | Failed | Pass Rate |")
+        lines.append("|----------|------:|-------:|-------:|----------:|")
+        for platform, summary in sorted(data["compat_platforms"].items()):
+            t = summary.get("total_tests", 0)
+            p = summary.get("passed", 0)
+            f = summary.get("failed", 0)
+            r = f"{p / t * 100:.1f}%" if t > 0 else "N/A"
+            lines.append(f"| {platform} | {t} | {p} | {f} | {r} |")
+        lines.append("")
+
+    # Per-tool compatibility
+    if data["compat_tools"]:
+        lines.append("## Per-Tool Compatibility (Linux x86_64)\n")
+        lines.append("| Tool | Total | Passed | Failed | Rate |")
+        lines.append("|------|------:|-------:|-------:|-----:|")
+        for tool in all_tools:
+            rate, total, passed = get_compat_rate(tool, data["compat_tools"])
+            if rate is not None:
+                failed = total - passed
+                lines.append(f"| {tool} | {total} | {passed} | {failed} | {rate:.0f}% |")
+        lines.append("")
+
+    # Benchmarks
+    if data["bench_tools"]:
+        lines.append("## Performance (Linux x86_64)\n")
+        lines.append("| Tool | Test | GNU (mean) | fcoreutils (mean) | Speedup |")
+        lines.append("|------|------|----------:|-----------------:|--------:|")
+        for tool in all_tools:
+            td = data["bench_tools"].get(tool, {})
+            if not isinstance(td, dict) or td.get("status") == "NOT_IMPLEMENTED":
+                continue
+            for b in td.get("benchmarks", []):
+                name = b.get("name", "")
+                gnu_t = b.get("gnu_mean")
+                f_t = b.get("f_mean")
+                speedup = b.get("speedup")
+                gnu_s = f"{gnu_t:.4f}s" if isinstance(gnu_t, (int, float)) else "-"
+                f_s = f"{f_t:.4f}s" if isinstance(f_t, (int, float)) else "-"
+                sp_s = f"**{speedup:.1f}x**" if isinstance(speedup, (int, float)) else "-"
+                lines.append(f"| {tool} | {name} | {gnu_s} | {f_s} | {sp_s} |")
+        lines.append("")
+
+    # Write report
+    report_dir = os.path.join(RESULTS_DIR, "benchmarks", version)
+    if not os.path.isdir(report_dir):
+        report_dir = os.path.join(RESULTS_DIR, "compatibility", version)
+    os.makedirs(report_dir, exist_ok=True)
+
+    report_path = os.path.join(report_dir, "report.md")
+    with open(report_path, "w") as f:
+        f.write("\n".join(lines))
+    print(f"  Version report: {report_path}")
+
+
+# ── Chart ────────────────────────────────────────────────────────────────────
 
 def run_plot_script():
-    """Run plot_speedup.py to regenerate the chart."""
+    """Regenerate the speedup-history chart."""
     plot_script = os.path.join(SCRIPT_DIR, "plot_speedup.py")
     if os.path.exists(plot_script):
         print("Generating speedup chart...")
@@ -469,38 +392,39 @@ def run_plot_script():
             print(f"Warning: Could not generate chart: {e}")
 
 
+# ── Main ─────────────────────────────────────────────────────────────────────
+
 def main():
+    all_tools = load_tools_list()
+    if not all_tools:
+        print("ERROR: Could not load tool list from tests/gnu_tools.txt")
+        return
+
     versions = get_all_versions()
     if not versions:
-        print("No versioned results found in results/. Generating minimal README.")
+        print("No versioned results found. Generating minimal README.")
         readme_path = os.path.join(PROJECT_ROOT, "README.md")
         with open(readme_path, "w") as f:
-            f.write("# fcoreutils vs GNU coreutils — Independent Benchmark\n\n"
-                    "> No benchmark results available yet. Run CI to generate results.\n")
+            f.write(
+                "# fcoreutils vs GNU coreutils — Independent Benchmark\n\n"
+                "> No benchmark results available yet. Run CI to generate results.\n"
+            )
         return
 
     print(f"Found {len(versions)} versions: {', '.join(versions)}")
 
-    # Generate per-version reports
-    for version in versions:
-        bench_platforms = load_benchmark_data(version)
-        compat_platforms, tool_results = load_compatibility_data(version)
-        if bench_platforms or compat_platforms:
-            generate_version_report(version, bench_platforms, compat_platforms, tool_results)
-
-    # Use latest version for README
+    # Only generate report for the latest version
     latest = versions[-1]
-    bench_platforms = load_benchmark_data(latest)
-    compat_platforms, tool_results = load_compatibility_data(latest)
-    tool_speedups = compute_speedups(bench_platforms)
-    sizes = load_size_data(latest)
+    data = load_version_data(latest)
 
-    # Generate chart
+    # Version report (only latest — old reports are immutable)
+    generate_version_report(latest, all_tools, data)
+
+    # Chart
     run_plot_script()
 
-    # Generate README — only release binary data, no source-built supplements
-    generate_readme(latest, bench_platforms, compat_platforms,
-                    tool_speedups, tool_results, sizes)
+    # README
+    generate_readme(latest, all_tools, data)
 
 
 if __name__ == "__main__":
