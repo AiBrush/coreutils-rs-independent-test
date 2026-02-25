@@ -103,8 +103,20 @@
 - [x] Task 5d: gnu_upstream CI job added to .github/workflows/ci.yml
 - [x] Task 5e: Gap tests added to test_printf, test_date, test_od, test_numfmt, test_ls, test_du, test_split, test_wc, test_sort, test_cat
 
+## GNU Upstream Tests Merged into Compatibility (Feb 2026)
+- [x] `tests/common.sh` — Added `run_gnu_upstream_tests()` function:
+  - Discovers GNU upstream test scripts per tool from `tests/gnu_upstream/tests/<tool>/`
+  - Also includes tool-specific misc tests from `tests/gnu_upstream/tests/misc/<tool>.sh`
+  - Creates symlink directory mapping `f*` binaries → bare tool names
+  - Patches test scripts to use `init_shim.sh`, runs with 30s timeout
+  - Records PASS/FAIL/SKIP results via existing `record_result()` framework
+- [x] All 107 compatibility test scripts updated to call `run_gnu_upstream_tests` before `finish_test_suite`
+- [x] ~609 GNU upstream test scripts now count toward per-tool compatibility percentages
+- [x] No changes needed to `generate_report.py`, `run_all.sh`, or CI workflow — results flow automatically
+
 ## Status: COMPLETE
 All tools have compatibility tests, benchmark scripts, and stress tests.
 CI workflow discovers un-benchmarked versions, runs benchmarks, persists results, generates chart + README.
 uutils/coreutils added as third competitor for 3-way performance comparison.
 All tools tested via unified run_all.sh scripts; new-tools workflow merged into main CI.
+GNU upstream tests integrated into compatibility tests — per-tool compat scores now include GNU's own test suite.

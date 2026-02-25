@@ -265,6 +265,8 @@ run_head_tests() {
         skip_test "symlink file" "symlinks not available"
     fi
 
+    run_gnu_upstream_tests "head"
+
     finish_test_suite
 }
 

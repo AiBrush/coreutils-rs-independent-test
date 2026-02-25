@@ -144,6 +144,8 @@ run_basename_tests() {
         "$GNU_TOOL 2>&1" \
         "$F_TOOL 2>&1"
 
+    run_gnu_upstream_tests "basename"
+
     finish_test_suite
 }
 

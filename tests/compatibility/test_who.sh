@@ -106,6 +106,8 @@ run_who_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    run_gnu_upstream_tests "who"
+
     finish_test_suite
 }
 

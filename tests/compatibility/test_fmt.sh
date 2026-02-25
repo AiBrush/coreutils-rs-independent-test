@@ -167,6 +167,8 @@ EOF
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "fmt"
+
     finish_test_suite
 }
 

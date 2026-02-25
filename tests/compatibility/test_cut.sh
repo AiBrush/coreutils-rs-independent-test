@@ -271,6 +271,8 @@ run_cut_tests() {
         skip_test "symlink file" "symlinks not available"
     fi
 
+    run_gnu_upstream_tests "cut"
+
     finish_test_suite
 }
 

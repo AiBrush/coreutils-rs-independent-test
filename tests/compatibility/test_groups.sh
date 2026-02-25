@@ -47,6 +47,8 @@ run_groups_tests() {
         "$GNU_TOOL nonexistent_user_$$ 2>&1" \
         "$F_TOOL nonexistent_user_$$ 2>&1"
 
+    run_gnu_upstream_tests "groups"
+
     finish_test_suite
 }
 

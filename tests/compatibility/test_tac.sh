@@ -185,6 +185,8 @@ run_tac_tests() {
         "cat '$TEST_DATA_DIR/tac_simple.txt' | $GNU_TOOL" \
         "cat '$TEST_DATA_DIR/tac_simple.txt' | $F_TOOL"
 
+    run_gnu_upstream_tests "tac"
+
     finish_test_suite
 }
 

@@ -239,6 +239,8 @@ run_od_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "od"
+
     finish_test_suite
 }
 

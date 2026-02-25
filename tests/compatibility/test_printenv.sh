@@ -14,4 +14,6 @@ fi
 
 skip_test "printenv basic" "Not yet implemented / tests pending"
 
+run_gnu_upstream_tests "printenv"
+
 finish_test_suite

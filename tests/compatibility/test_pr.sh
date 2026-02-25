@@ -179,6 +179,8 @@ EOF
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "pr"
+
     finish_test_suite
 }
 

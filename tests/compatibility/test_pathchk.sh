@@ -111,6 +111,8 @@ run_pathchk_tests() {
         "$GNU_TOOL 2>&1" \
         "$F_TOOL 2>&1"
 
+    run_gnu_upstream_tests "pathchk"
+
     finish_test_suite
 }
 

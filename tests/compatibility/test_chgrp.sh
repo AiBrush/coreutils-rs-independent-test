@@ -136,6 +136,8 @@ run_chgrp_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "chgrp"
+
     finish_test_suite
 }
 

@@ -203,6 +203,8 @@ run_join_tests() {
         "$GNU_TOOL /tmp/nonexistent_file_$$ '$TEST_DATA_DIR/join_file2.txt' 2>&1" \
         "$F_TOOL /tmp/nonexistent_file_$$ '$TEST_DATA_DIR/join_file2.txt' 2>&1"
 
+    run_gnu_upstream_tests "join"
+
     finish_test_suite
 }
 

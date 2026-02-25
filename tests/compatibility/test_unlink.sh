@@ -63,6 +63,8 @@ run_unlink_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "unlink"
+
     finish_test_suite
 }
 

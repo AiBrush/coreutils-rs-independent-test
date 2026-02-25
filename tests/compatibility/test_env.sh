@@ -112,6 +112,8 @@ run_env_tests() {
         "$GNU_TOOL /nonexistent_command_$$ 2>&1" \
         "$F_TOOL /nonexistent_command_$$ 2>&1"
 
+    run_gnu_upstream_tests "env"
+
     finish_test_suite
 }
 

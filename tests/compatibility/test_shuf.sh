@@ -158,6 +158,8 @@ run_shuf_tests() {
         "$GNU_TOOL '$TEST_DATA_DIR/numbered_100.txt' | sort | md5sum" \
         "$F_TOOL '$TEST_DATA_DIR/numbered_100.txt' | sort | md5sum"
 
+    run_gnu_upstream_tests "shuf"
+
     finish_test_suite
 }
 

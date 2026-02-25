@@ -283,6 +283,8 @@ run_test_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "test"
+
     finish_test_suite
 }
 

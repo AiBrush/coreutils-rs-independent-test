@@ -315,6 +315,8 @@ run_printf_tests() {
         "$GNU_TOOL '%-10s|\n' hello" \
         "$F_TOOL '%-10s|\n' hello"
 
+    run_gnu_upstream_tests "printf"
+
     finish_test_suite
 }
 

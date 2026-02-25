@@ -162,6 +162,8 @@ run_base32_tests() {
         "printf '日本語テスト' | $GNU_TOOL | $GNU_TOOL -d" \
         "printf '日本語テスト' | $F_TOOL | $F_TOOL -d"
 
+    run_gnu_upstream_tests "base32"
+
     finish_test_suite
 }
 

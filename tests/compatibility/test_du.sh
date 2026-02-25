@@ -186,6 +186,8 @@ run_du_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "du"
+
     finish_test_suite
 }
 

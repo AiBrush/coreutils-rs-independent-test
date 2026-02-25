@@ -313,6 +313,8 @@ run_ls_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "ls"
+
     finish_test_suite
 }
 

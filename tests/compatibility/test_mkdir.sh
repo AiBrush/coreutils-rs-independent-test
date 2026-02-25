@@ -116,6 +116,8 @@ run_mkdir_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "mkdir"
+
     finish_test_suite
 }
 

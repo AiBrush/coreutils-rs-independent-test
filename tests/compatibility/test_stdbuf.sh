@@ -54,6 +54,8 @@ run_stdbuf_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    run_gnu_upstream_tests "stdbuf"
+
     finish_test_suite
 }
 

@@ -14,4 +14,6 @@ fi
 
 skip_test "chcon basic" "Not yet implemented / requires SELinux environment"
 
+run_gnu_upstream_tests "chcon"
+
 finish_test_suite

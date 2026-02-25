@@ -162,6 +162,8 @@ run_realpath_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "realpath"
+
     finish_test_suite
 }
 

@@ -203,6 +203,8 @@ run_numfmt_tests() {
         "echo '100 200' | $GNU_TOOL --field=2 --to=iec" \
         "echo '100 200' | $F_TOOL --field=2 --to=iec"
 
+    run_gnu_upstream_tests "numfmt"
+
     finish_test_suite
 }
 

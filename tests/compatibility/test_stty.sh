@@ -76,6 +76,8 @@ run_stty_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    run_gnu_upstream_tests "stty"
+
     finish_test_suite
 }
 

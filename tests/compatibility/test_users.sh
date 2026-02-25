@@ -83,6 +83,8 @@ run_users_tests() {
         "$GNU_TOOL --version" \
         "$F_TOOL --version"
 
+    run_gnu_upstream_tests "users"
+
     finish_test_suite
 }
 

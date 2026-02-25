@@ -139,6 +139,8 @@ run_chown_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "chown"
+
     finish_test_suite
 }
 

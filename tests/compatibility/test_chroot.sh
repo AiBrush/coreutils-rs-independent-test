@@ -14,4 +14,6 @@ fi
 
 skip_test "chroot basic" "Not yet implemented / requires root"
 
+run_gnu_upstream_tests "chroot"
+
 finish_test_suite

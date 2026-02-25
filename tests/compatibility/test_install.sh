@@ -175,6 +175,8 @@ run_install_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "install"
+
     finish_test_suite
 }
 

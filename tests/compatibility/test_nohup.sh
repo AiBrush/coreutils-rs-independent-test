@@ -62,6 +62,8 @@ run_nohup_tests() {
     # Clean up
     rm -rf "$WORK_DIR"
 
+    run_gnu_upstream_tests "nohup"
+
     finish_test_suite
 }
 

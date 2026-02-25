@@ -209,6 +209,8 @@ run_md5sum_tests() {
         "eval $GNU_TOOL $many_args" \
         "eval $F_TOOL $many_args"
 
+    run_gnu_upstream_tests "md5sum"
+
     finish_test_suite
 }
 

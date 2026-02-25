@@ -232,6 +232,8 @@ EOF
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "csplit"
+
     finish_test_suite
 }
 

@@ -174,6 +174,8 @@ run_b2sum_tests() {
         "eval $GNU_TOOL $many_args" \
         "eval $F_TOOL $many_args"
 
+    run_gnu_upstream_tests "b2sum"
+
     finish_test_suite
 }
 

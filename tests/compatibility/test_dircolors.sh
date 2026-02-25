@@ -104,6 +104,8 @@ run_dircolors_tests() {
         "printf '# comment\n# another\n' | $GNU_TOOL -b -" \
         "printf '# comment\n# another\n' | $F_TOOL -b -"
 
+    run_gnu_upstream_tests "dircolors"
+
     finish_test_suite
 }
 

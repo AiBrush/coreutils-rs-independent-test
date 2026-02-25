@@ -160,6 +160,8 @@ run_factor_tests() {
         "$GNU_TOOL abc 2>&1" \
         "$F_TOOL abc 2>&1"
 
+    run_gnu_upstream_tests "factor"
+
     finish_test_suite
 }
 

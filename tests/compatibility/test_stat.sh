@@ -185,6 +185,8 @@ run_stat_tests() {
     # Cleanup
     rm -rf "$test_dir"
 
+    run_gnu_upstream_tests "stat"
+
     finish_test_suite
 }
 

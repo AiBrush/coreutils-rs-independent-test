@@ -110,6 +110,8 @@ run_id_tests() {
         "$GNU_TOOL -u -g 2>&1" \
         "$F_TOOL -u -g 2>&1"
 
+    run_gnu_upstream_tests "id"
+
     finish_test_suite
 }
 
