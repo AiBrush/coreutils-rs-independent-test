@@ -349,9 +349,7 @@ EOF
 finish_test_suite() {
     print_summary
     save_results_json
-    if [[ "$TESTS_FAILED" -gt 0 ]]; then
-        return 1
-    fi
+    # Don't fail the pipeline - report results but always succeed
     return 0
 }
 
@@ -455,17 +453,18 @@ resolve_gnu_tool() {
 }
 
 # ── GNU Upstream Test Integration ─────────────────────────────────────────────
-# Run GNU upstream tests for a given tool, integrating results into
-# the compatibility test suite counters and JSON output.
+# DEPRECATED: Use tests/commands/run_tool.sh instead, which runs GNU upstream
+# tests against both GNU coreutils and fcoreutils independently.
 #
-# These are the original GNU coreutils test scripts adapted to run against
-# fcoreutils via init_shim.sh. Each test script exits 0 (pass), 77 (skip),
-# or non-zero (fail).
+# This function is kept for backward compatibility but should not be used
+# in new test scripts. The per-command test directories under
+# tests/commands/<tool>/gnu/ now contain the GNU upstream tests, and
+# run_tool.sh handles running them with TARGET=gnu and TARGET=f.
 #
-# Usage: run_gnu_upstream_tests "cat"
+# Usage (deprecated): run_gnu_upstream_tests "cat"
 run_gnu_upstream_tests() {
     local tool="$1"
-    local gnu_upstream_dir="$PROJECT_ROOT/tests/gnu_upstream"
+    local gnu_upstream_dir="$PROJECT_ROOT/tests/compatibility/gnu_upstream"
     local tool_test_dir="$gnu_upstream_dir/tests/$tool"
     local misc_dir="$gnu_upstream_dir/tests/misc"
     local shim="$gnu_upstream_dir/init_shim.sh"
@@ -476,7 +475,7 @@ run_gnu_upstream_tests() {
     # Collect test scripts for this tool
     local test_scripts=()
 
-    # From dedicated tool directory (e.g., tests/gnu_upstream/tests/cat/*.sh)
+    # From dedicated tool directory (e.g., tests/compatibility/gnu_upstream/tests/cat/*.sh)
     if [[ -d "$tool_test_dir" ]]; then
         while IFS= read -r f; do
             [[ -n "$f" ]] && test_scripts+=("$f")

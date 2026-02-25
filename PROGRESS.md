@@ -97,16 +97,14 @@
 - [x] Task 4b: compatibility/run_all.sh and benchmarks/run_all.sh auto-discover test_*.sh/bench_*.sh
 - [x] Task 4c: generate_report.py loads ALL_TOOLS from gnu_tools.txt at runtime
 - [x] Task 4d: Stubs created: chcon, chroot, dir, kill, printenv, runcon, vdir
-- [x] Task 5a: GNU coreutils upstream tests downloaded to tests/gnu_upstream/tests/
-- [x] Task 5b: tests/gnu_upstream/init_shim.sh — adapts GNU init.sh API for f* binaries
-- [x] Task 5c: tests/gnu_upstream/run.sh — runner with pass/fail/skip JSON output
-- [x] Task 5d: gnu_upstream CI job added to .github/workflows/ci.yml
+- [x] Task 5a: GNU coreutils upstream tests downloaded to tests/compatibility/gnu_upstream/tests/
+- [x] Task 5b: tests/compatibility/gnu_upstream/init_shim.sh — adapts GNU init.sh API for f* binaries
 - [x] Task 5e: Gap tests added to test_printf, test_date, test_od, test_numfmt, test_ls, test_du, test_split, test_wc, test_sort, test_cat
 
 ## GNU Upstream Tests Merged into Compatibility (Feb 2026)
 - [x] `tests/common.sh` — Added `run_gnu_upstream_tests()` function:
-  - Discovers GNU upstream test scripts per tool from `tests/gnu_upstream/tests/<tool>/`
-  - Also includes tool-specific misc tests from `tests/gnu_upstream/tests/misc/<tool>.sh`
+  - Discovers GNU upstream test scripts per tool from `tests/compatibility/gnu_upstream/tests/<tool>/`
+  - Also includes tool-specific misc tests from `tests/compatibility/gnu_upstream/tests/misc/<tool>.sh`
   - Creates symlink directory mapping `f*` binaries → bare tool names
   - Patches test scripts to use `init_shim.sh`, runs with 30s timeout
   - Records PASS/FAIL/SKIP results via existing `record_result()` framework
