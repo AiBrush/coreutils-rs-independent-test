@@ -166,8 +166,8 @@ python3 scripts/plot_speedup.py
 
 | Platform | Passed | Failed | Skipped | Status |
 |----------|--------|--------|---------|--------|
-| Linux x86_64 | 2202 | 11 | 11 | ⚠️ |
-| Linux ARM64 | 2201 | 12 | 11 | ⚠️ |
+| Linux x86_64 | 2201 | 12 | 11 | ⚠️ |
+| Linux ARM64 | 2202 | 11 | 11 | ⚠️ |
 | macOS ARM64 | 189 | 35 | 7 | ⚠️ |
 | Windows x86_64 | 0 | 0 | 0 | ⏭️ no tests ran |
 | Windows ARM64 | — | — | — | 🔍 x86_64 binary under ARM64 emulation — full test suite skipped to avoid SIMD crashes |
