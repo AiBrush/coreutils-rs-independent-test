@@ -95,12 +95,18 @@ escape_json() {
 # --- Step 1: Run custom compatibility tests (test_compat.sh) ---
 COMPAT_SCRIPT="$TOOL_DIR/test_compat.sh"
 COMPAT_STATUS="skipped"
+TOOL_TIMEOUT="${TOOL_TIMEOUT:-300}"  # 5 min per tool
 
 if [[ -f "$COMPAT_SCRIPT" ]]; then
     echo -e "${BLUE}=== $TOOL: Custom compatibility tests ===${NC}"
-    if bash "$COMPAT_SCRIPT"; then
+    compat_exit=0
+    timeout "$TOOL_TIMEOUT" bash "$COMPAT_SCRIPT" || compat_exit=$?
+    if [[ "$compat_exit" -eq 0 ]]; then
         COMPAT_STATUS="passed"
     else
+        if [[ "$compat_exit" -eq 124 ]]; then
+            echo -e "${YELLOW}WARNING: $TOOL compatibility tests timed out after ${TOOL_TIMEOUT}s${NC}"
+        fi
         COMPAT_STATUS="completed"
     fi
 

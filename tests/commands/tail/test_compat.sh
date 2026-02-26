@@ -349,7 +349,8 @@ run_tail_tests() {
     local seek_tmp
     seek_tmp=$(mktemp /tmp/fcoreutils_seek_XXXXXX)
     register_temp "$seek_tmp"
-    yes '=================================' | head -n 1000 > "$seek_tmp"
+    # Use printf loop instead of `yes | head` to avoid SIGPIPE hang on Windows
+    for _ in $(seq 1000); do printf '=================================\n'; done > "$seek_tmp"
 
     run_test "-n 200 from repeated-line file (seek)" \
         "$GNU_TOOL -n200 '$seek_tmp' | wc -l" \
