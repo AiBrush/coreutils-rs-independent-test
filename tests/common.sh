@@ -11,6 +11,9 @@ RESULTS_DIR="${RESULTS_DIR:-$PROJECT_ROOT/results}"
 TEST_DATA_DIR="${TEST_DATA_DIR:-/tmp/fcoreutils-test-data}"
 FAILED_TESTS_DIR="$PROJECT_ROOT/tests/failed_tests"
 
+# Per-command timeout (seconds). Prevents any single command from hanging CI.
+TEST_TIMEOUT="${TEST_TIMEOUT:-30}"
+
 # Counters
 TESTS_RUN=0
 TESTS_PASSED=0
@@ -51,7 +54,7 @@ check_tool_exists() {
     fi
     # Check if tool reports "not yet implemented"
     local test_output
-    test_output=$(echo "test" | "$tool" 2>&1 || true)
+    test_output=$(echo "test" | timeout "$TEST_TIMEOUT" "$tool" 2>&1 || true)
     if echo "$test_output" | grep -qi "not yet implemented"; then
         echo -e "${YELLOW}SKIP: $tool reports 'not yet implemented'${NC}"
         return 1
@@ -96,18 +99,36 @@ run_test() {
     local gnu_exit=0
     local f_exit=0
 
-    # Run GNU tool
+    # Run GNU tool (with timeout to prevent hangs)
     if [[ -n "$stdin_file" ]]; then
-        eval "$gnu_cmd" < "$stdin_file" > "$gnu_out" 2>&1 || gnu_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$gnu_cmd" < "$stdin_file" > "$gnu_out" 2>&1 || gnu_exit=$?
     else
-        eval "$gnu_cmd" > "$gnu_out" 2>&1 || gnu_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$gnu_cmd" > "$gnu_out" 2>&1 || gnu_exit=$?
     fi
 
-    # Run fcoreutils tool
+    # If GNU command timed out (exit 124), skip this test
+    if [[ "$gnu_exit" -eq 124 ]]; then
+        TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
+        echo -e "  ${YELLOW}SKIP${NC}: $test_name (GNU command timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "SKIP" "GNU command timed out" "$gnu_cmd" "$f_cmd"
+        rm -f "$gnu_out" "$f_out"
+        return 0
+    fi
+
+    # Run fcoreutils tool (with timeout to prevent hangs)
     if [[ -n "$stdin_file" ]]; then
-        eval "$f_cmd" < "$stdin_file" > "$f_out" 2>&1 || f_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$f_cmd" < "$stdin_file" > "$f_out" 2>&1 || f_exit=$?
     else
-        eval "$f_cmd" > "$f_out" 2>&1 || f_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$f_cmd" > "$f_out" 2>&1 || f_exit=$?
+    fi
+
+    # If fcoreutils command timed out, treat as failure
+    if [[ "$f_exit" -eq 124 ]]; then
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name (fcoreutils command timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "FAIL" "fcoreutils command timed out after ${TEST_TIMEOUT}s" "$gnu_cmd" "$f_cmd"
+        rm -f "$gnu_out" "$f_out"
+        return 0
     fi
 
     # Compare outputs
@@ -154,18 +175,18 @@ run_exit_code_test() {
     local gnu_exit=0
     local f_exit=0
 
-    # Run GNU tool
+    # Run GNU tool (with timeout)
     if [[ -n "$stdin_file" ]]; then
-        eval "$gnu_cmd" < "$stdin_file" > /dev/null 2>&1 || gnu_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$gnu_cmd" < "$stdin_file" > /dev/null 2>&1 || gnu_exit=$?
     else
-        eval "$gnu_cmd" > /dev/null 2>&1 || gnu_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$gnu_cmd" > /dev/null 2>&1 || gnu_exit=$?
     fi
 
-    # Run fcoreutils tool
+    # Run fcoreutils tool (with timeout)
     if [[ -n "$stdin_file" ]]; then
-        eval "$f_cmd" < "$stdin_file" > /dev/null 2>&1 || f_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$f_cmd" < "$stdin_file" > /dev/null 2>&1 || f_exit=$?
     else
-        eval "$f_cmd" > /dev/null 2>&1 || f_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$f_cmd" > /dev/null 2>&1 || f_exit=$?
     fi
 
     # Both should succeed or both should fail
@@ -196,11 +217,29 @@ run_stdout_test() {
     local f_exit=0
 
     if [[ -n "$stdin_file" ]]; then
-        eval "$gnu_cmd" < "$stdin_file" > "$gnu_out" 2>/dev/null || gnu_exit=$?
-        eval "$f_cmd" < "$stdin_file" > "$f_out" 2>/dev/null || f_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$gnu_cmd" < "$stdin_file" > "$gnu_out" 2>/dev/null || gnu_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$f_cmd" < "$stdin_file" > "$f_out" 2>/dev/null || f_exit=$?
     else
-        eval "$gnu_cmd" > "$gnu_out" 2>/dev/null || gnu_exit=$?
-        eval "$f_cmd" > "$f_out" 2>/dev/null || f_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$gnu_cmd" > "$gnu_out" 2>/dev/null || gnu_exit=$?
+        timeout "$TEST_TIMEOUT" bash -c "$f_cmd" > "$f_out" 2>/dev/null || f_exit=$?
+    fi
+
+    # If GNU command timed out, skip
+    if [[ "$gnu_exit" -eq 124 ]]; then
+        TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
+        echo -e "  ${YELLOW}SKIP${NC}: $test_name (GNU command timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "SKIP" "GNU command timed out" "$gnu_cmd" "$f_cmd"
+        rm -f "$gnu_out" "$f_out"
+        return 0
+    fi
+
+    # If fcoreutils timed out, treat as failure
+    if [[ "$f_exit" -eq 124 ]]; then
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name (fcoreutils command timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "FAIL" "fcoreutils command timed out after ${TEST_TIMEOUT}s" "$gnu_cmd" "$f_cmd"
+        rm -f "$gnu_out" "$f_out"
+        return 0
     fi
 
     local diff_output=""
