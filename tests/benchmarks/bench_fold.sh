@@ -25,16 +25,16 @@ run_fold_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/wide_lines_10m.txt" ]]; then
         run_benchmark "fold 10MB wide lines (default)" \
             "$GNU_TOOL '$TEST_DATA_DIR/wide_lines_10m.txt'" \
-            "$F_TOOL '$TEST_DATA_DIR/wide_lines_10m.txt'" \
+            "$F_TOOL '$TEST_DATA_DIR/wide_lines_10m.txt'"
     fi
 
     run_benchmark "fold 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
+        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
 
     run_benchmark "fold 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== Custom widths ==="
@@ -42,11 +42,11 @@ run_fold_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/wide_lines_10m.txt" ]]; then
         run_benchmark "-w 40 10MB" \
             "$GNU_TOOL -w 40 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
-            "$F_TOOL -w 40 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
+            "$F_TOOL -w 40 '$TEST_DATA_DIR/wide_lines_10m.txt'"
 
         run_benchmark "-w 20 10MB" \
             "$GNU_TOOL -w 20 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
-            "$F_TOOL -w 20 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
+            "$F_TOOL -w 20 '$TEST_DATA_DIR/wide_lines_10m.txt'"
     fi
 
     echo ""
@@ -55,11 +55,11 @@ run_fold_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/wide_lines_10m.txt" ]]; then
         run_benchmark "-s -w 60 10MB" \
             "$GNU_TOOL -s -w 60 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
-            "$F_TOOL -s -w 60 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
+            "$F_TOOL -s -w 60 '$TEST_DATA_DIR/wide_lines_10m.txt'"
 
         run_benchmark "-s -w 40 10MB" \
             "$GNU_TOOL -s -w 40 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
-            "$F_TOOL -s -w 40 '$TEST_DATA_DIR/wide_lines_10m.txt'" \
+            "$F_TOOL -s -w 40 '$TEST_DATA_DIR/wide_lines_10m.txt'"
     fi
 
     echo ""
@@ -67,7 +67,7 @@ run_fold_benchmarks() {
 
     run_benchmark "-b -w 40 10MB" \
         "$GNU_TOOL -b -w 40 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -b -w 40 '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -b -w 40 '$TEST_DATA_DIR/text_10m.txt'"
 
     save_benchmark_results
 }

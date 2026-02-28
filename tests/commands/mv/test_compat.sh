@@ -338,10 +338,10 @@ run_mv_tests() {
     mkdir -p "$tmpb/f_A" "$tmpb/f_B"
 
     TESTS_RUN=$((TESTS_RUN + 1))
-    $GNU_TOOL --backup=numbered -T "$tmpb/gnu_A" "$tmpb/gnu_B" 2>/dev/null
-    local gnu_bdir_ok=$?
-    $F_TOOL --backup=numbered -T "$tmpb/f_A" "$tmpb/f_B" 2>/dev/null
-    local f_bdir_ok=$?
+    local gnu_bdir_ok=0
+    $GNU_TOOL --backup=numbered -T "$tmpb/gnu_A" "$tmpb/gnu_B" 2>/dev/null || gnu_bdir_ok=$?
+    local f_bdir_ok=0
+    $F_TOOL --backup=numbered -T "$tmpb/f_A" "$tmpb/f_B" 2>/dev/null || f_bdir_ok=$?
 
     local gnu_bdir_backup=$(ls -d "$tmpb"/gnu_B.~*~ 2>/dev/null | head -1)
     local f_bdir_backup=$(ls -d "$tmpb"/f_B.~*~ 2>/dev/null | head -1)
@@ -458,10 +458,10 @@ run_mv_tests() {
     mkdir "$tmpt/gnu_d2" "$tmpt/f_d2"
 
     TESTS_RUN=$((TESTS_RUN + 1))
-    $GNU_TOOL "$tmpt/gnu_d2" "$tmpt/gnu_e2/" 2>/dev/null
-    local gnu_ts_exit=$?
-    $F_TOOL "$tmpt/f_d2" "$tmpt/f_e2/" 2>/dev/null
-    local f_ts_exit=$?
+    local gnu_ts_exit=0
+    $GNU_TOOL "$tmpt/gnu_d2" "$tmpt/gnu_e2/" 2>/dev/null || gnu_ts_exit=$?
+    local f_ts_exit=0
+    $F_TOOL "$tmpt/f_d2" "$tmpt/f_e2/" 2>/dev/null || f_ts_exit=$?
 
     if [[ -d "$tmpt/gnu_e2" ]] && [[ -d "$tmpt/f_e2" ]]; then
         TESTS_PASSED=$((TESTS_PASSED + 1))

@@ -24,16 +24,16 @@ run_head_benchmarks() {
 
     run_benchmark "default 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
+        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
 
     run_benchmark "default 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'"
 
     if [[ -f "$TEST_DATA_DIR/text_100m.txt" ]]; then
         run_benchmark "default 100MB text" \
             "$GNU_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
-            "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'" \
+            "$F_TOOL '$TEST_DATA_DIR/text_100m.txt'"
     fi
 
     echo ""
@@ -41,25 +41,25 @@ run_head_benchmarks() {
 
     run_benchmark "-n 1000 10MB" \
         "$GNU_TOOL -n 1000 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -n 1000 '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -n 1000 '$TEST_DATA_DIR/text_10m.txt'"
 
     run_benchmark "-n 100000 10MB" \
         "$GNU_TOOL -n 100000 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -n 100000 '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -n 100000 '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== Byte count (-c) ==="
 
     run_benchmark "-c 1000000 10MB" \
         "$GNU_TOOL -c 1000000 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -c 1000000 '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -c 1000000 '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== Negative count (-n -N) ==="
 
     run_benchmark "-n -100 10MB (all but last 100)" \
         "$GNU_TOOL -n -100 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -n -100 '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -n -100 '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== Multiple files ==="
@@ -70,7 +70,7 @@ run_head_benchmarks() {
     done
     run_benchmark "100 small files" \
         "eval $GNU_TOOL $many_files" \
-        "eval $F_TOOL $many_files" \
+        "eval $F_TOOL $many_files"
 
     save_benchmark_results
 }

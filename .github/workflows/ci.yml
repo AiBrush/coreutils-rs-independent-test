@@ -10,56 +10,16 @@ on:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 1: Compatibility tests — Linux x86_64
+  # Job 1: Setup — install fcoreutils, generate data, measure sizes (runs once)
   # ─────────────────────────────────────────────────────────────────────────────
-  compatibility:
-    name: Compatibility (Linux x86_64)
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install fcoreutils ${{ github.event.inputs.version }}
-        run: |
-          bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate test data
-        run: bash tests/helpers/generate_test_data.sh
-
-      - name: Run compatibility tests
-        run: bash tests/commands/run_all.sh
-        continue-on-error: true
-        env:
-          RESULTS_DIR: ${{ github.workspace }}/results
-
-      - name: Copy results to versioned path
-        run: |
-          mkdir -p results/compatibility/${{ github.event.inputs.version }}
-          cp results/compatibility_results.json \
-             results/compatibility/${{ github.event.inputs.version }}/linux_x86_64.json
-        env: {}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: compat-linux-x86_64
-          path: results/compatibility/${{ github.event.inputs.version }}/linux_x86_64.json
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: Benchmarks — Linux x86_64
-  # ─────────────────────────────────────────────────────────────────────────────
-  benchmarks:
-    name: Benchmarks (Linux x86_64)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install fcoreutils ${{ github.event.inputs.version }}
-        run: |
-          bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install fcoreutils ${{ inputs.version }}
+        run: bash scripts/install_from_github.sh --version ${{ inputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -69,12 +29,6 @@ jobs:
       - name: Generate test data
         run: bash tests/helpers/generate_test_data.sh
 
-      - name: Run benchmarks (release binaries)
-        run: bash tests/benchmarks/run_all.sh
-        continue-on-error: true
-        env:
-          RESULTS_DIR: ${{ github.workspace }}/results
-
       - name: Measure binary sizes
         run: |
           python3 - <<'EOF'
@@ -82,34 +36,22 @@ jobs:
 
           INSTALL_DIR = os.path.expanduser("~/.local/bin")
 
-          # Auto-discover all f* binaries in the install directory
           tools = []
           if os.path.isdir(INSTALL_DIR):
               for name in sorted(os.listdir(INSTALL_DIR)):
                   if name.startswith("f") and os.path.isfile(os.path.join(INSTALL_DIR, name)):
-                      tools.append(name[1:])  # strip the "f" prefix
-
-          def get_size(path):
-              try:
-                  return os.path.getsize(path)
-              except FileNotFoundError:
-                  return None
-
-          def which(cmd):
-              return shutil.which(cmd)
+                      tools.append(name[1:])
 
           rows = {}
           for tool in tools:
-              f_path  = os.path.join(INSTALL_DIR, "f" + tool)
-              gnu_path = which(tool)
-
-              f_size = get_size(f_path)
+              f_path = os.path.join(INSTALL_DIR, "f" + tool)
+              gnu_path = shutil.which(tool)
+              f_size = os.path.getsize(f_path) if os.path.exists(f_path) else None
               if f_size is None:
                   continue
-
               rows[tool] = {
-                  "f_bytes":   f_size,
-                  "gnu_bytes": get_size(gnu_path) if gnu_path else None,
+                  "f_bytes": f_size,
+                  "gnu_bytes": os.path.getsize(gnu_path) if gnu_path else None,
               }
 
           out = {
@@ -121,29 +63,347 @@ jobs:
           os.makedirs("results", exist_ok=True)
           with open("results/sizes.json", "w") as f:
               json.dump(out, f, indent=2)
-          print("Binary sizes written to results/sizes.json")
+          print(f"Binary sizes measured for {len(rows)} tools")
           EOF
 
-      - name: Copy results to versioned path
+      - name: Package setup artifact
         run: |
-          VERSION=${{ github.event.inputs.version }}
-          mkdir -p results/benchmarks/$VERSION
-          cp results/benchmark_results.json \
-             results/benchmarks/$VERSION/linux_x86_64.json
-          cp results/sizes.json \
-             results/benchmarks/$VERSION/linux_x86_64_sizes.json
-        env: {}
+          mkdir -p ci-setup/bin
+          # Copy fcoreutils binaries
+          cp -a "$HOME/.local/bin"/* ci-setup/bin/
+          # Copy hyperfine binary
+          cp "$(which hyperfine)" ci-setup/bin/hyperfine
+          # Tar test data to avoid artifact filename restrictions
+          # (special_names/ contains files with quotes and other chars forbidden by NTFS)
+          chmod -R u+r /tmp/fcoreutils-test-data/
+          tar cf ci-setup/test-data.tar -C /tmp fcoreutils-test-data
 
-      - name: Upload artifact
+      - name: Upload setup artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bench-linux-x86_64
-          path: |
-            results/benchmarks/${{ github.event.inputs.version }}/linux_x86_64.json
-            results/benchmarks/${{ github.event.inputs.version }}/linux_x86_64_sizes.json
+          name: setup-linux
+          path: ci-setup/
+          compression-level: 6
+
+      - name: Upload sizes
+        uses: actions/upload-artifact@v4
+        with:
+          name: sizes
+          path: results/sizes.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: Functional tests — 4-platform matrix
+  # Job 2: Compatibility tests — one per tool (107 parallel jobs)
+  # ─────────────────────────────────────────────────────────────────────────────
+  compat:
+    name: Compat/${{ matrix.tool }}
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool:
+          - arch
+          - b2sum
+          - base32
+          - base64
+          - basename
+          - basenc
+          - cat
+          - chcon
+          - chgrp
+          - chmod
+          - chown
+          - chroot
+          - cksum
+          - comm
+          - cp
+          - csplit
+          - cut
+          - date
+          - dd
+          - df
+          - dir
+          - dircolors
+          - dirname
+          - du
+          - echo
+          - env
+          - expand
+          - expr
+          - factor
+          - "false"
+          - fmt
+          - fold
+          - groups
+          - head
+          - hostid
+          - id
+          - install
+          - join
+          - kill
+          - link
+          - ln
+          - logname
+          - ls
+          - md5sum
+          - mkdir
+          - mkfifo
+          - mknod
+          - mktemp
+          - mv
+          - nice
+          - nl
+          - nohup
+          - nproc
+          - numfmt
+          - od
+          - paste
+          - pathchk
+          - pinky
+          - pr
+          - printenv
+          - printf
+          - ptx
+          - pwd
+          - readlink
+          - realpath
+          - rev
+          - rm
+          - rmdir
+          - runcon
+          - seq
+          - sha1sum
+          - sha224sum
+          - sha256sum
+          - sha384sum
+          - sha512sum
+          - shred
+          - shuf
+          - sleep
+          - sort
+          - split
+          - stat
+          - stdbuf
+          - stty
+          - sum
+          - sync
+          - tac
+          - tail
+          - tee
+          - "test"
+          - timeout
+          - touch
+          - tr
+          - "true"
+          - truncate
+          - tsort
+          - tty
+          - uname
+          - unexpand
+          - uniq
+          - unlink
+          - uptime
+          - users
+          - vdir
+          - wc
+          - who
+          - whoami
+          - "yes"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: setup-linux
+          path: ci-setup
+
+      - name: Restore environment
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          cp -a ci-setup/bin/* "$HOME/.local/bin/"
+          chmod +x "$HOME/.local/bin"/*
+          # Extract test data from tarball
+          tar xf ci-setup/test-data.tar -C /tmp
+          # Restore permission test fixtures
+          [[ -f /tmp/fcoreutils-test-data/unreadable.txt ]] && chmod 000 /tmp/fcoreutils-test-data/unreadable.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run compatibility test
+        run: bash tests/commands/run_tool.sh ${{ matrix.tool }}
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compat-${{ matrix.tool }}
+          path: results/${{ matrix.tool }}_results.json
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 3: Benchmarks — one per tool (107 parallel jobs)
+  # ─────────────────────────────────────────────────────────────────────────────
+  bench:
+    name: Bench/${{ matrix.tool }}
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool:
+          - arch
+          - b2sum
+          - base32
+          - base64
+          - basename
+          - basenc
+          - cat
+          - chcon
+          - chgrp
+          - chmod
+          - chown
+          - chroot
+          - cksum
+          - comm
+          - cp
+          - csplit
+          - cut
+          - date
+          - dd
+          - df
+          - dir
+          - dircolors
+          - dirname
+          - du
+          - echo
+          - env
+          - expand
+          - expr
+          - factor
+          - "false"
+          - fmt
+          - fold
+          - groups
+          - head
+          - hostid
+          - id
+          - install
+          - join
+          - kill
+          - link
+          - ln
+          - logname
+          - ls
+          - md5sum
+          - mkdir
+          - mkfifo
+          - mknod
+          - mktemp
+          - mv
+          - nice
+          - nl
+          - nohup
+          - nproc
+          - numfmt
+          - od
+          - paste
+          - pathchk
+          - pinky
+          - pr
+          - printenv
+          - printf
+          - ptx
+          - pwd
+          - readlink
+          - realpath
+          - rev
+          - rm
+          - rmdir
+          - runcon
+          - seq
+          - sha1sum
+          - sha224sum
+          - sha256sum
+          - sha384sum
+          - sha512sum
+          - shred
+          - shuf
+          - sleep
+          - sort
+          - split
+          - stat
+          - stdbuf
+          - stty
+          - sum
+          - sync
+          - tac
+          - tail
+          - tee
+          - "test"
+          - timeout
+          - touch
+          - tr
+          - "true"
+          - truncate
+          - tsort
+          - tty
+          - uname
+          - unexpand
+          - uniq
+          - unlink
+          - uptime
+          - users
+          - vdir
+          - wc
+          - who
+          - whoami
+          - "yes"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: setup-linux
+          path: ci-setup
+
+      - name: Restore environment
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          cp -a ci-setup/bin/* "$HOME/.local/bin/"
+          chmod +x "$HOME/.local/bin"/*
+          # Extract test data from tarball
+          tar xf ci-setup/test-data.tar -C /tmp
+          # Restore permission test fixtures
+          [[ -f /tmp/fcoreutils-test-data/unreadable.txt ]] && chmod 000 /tmp/fcoreutils-test-data/unreadable.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run benchmark
+        run: |
+          mkdir -p results
+          script="tests/benchmarks/bench_${{ matrix.tool }}.sh"
+          if [[ -f "$script" ]]; then
+            bash "$script"
+          else
+            echo '{"tool":"${{ matrix.tool }}","status":"NO_BENCHMARK"}' > "results/${{ matrix.tool }}_benchmark.json"
+          fi
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-${{ matrix.tool }}
+          path: results/${{ matrix.tool }}_benchmark.json
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 4: Functional tests — 4-platform matrix (sequential per platform)
   # ─────────────────────────────────────────────────────────────────────────────
   functional:
     name: Functional (${{ matrix.name }})
@@ -157,31 +417,24 @@ jobs:
             triple: aarch64-unknown-linux-gnu
             result_name: linux_aarch64
             run_full_tests: "true"
-            shell: bash
 
           - name: macos-arm64
             runner: macos-latest
             triple: aarch64-apple-darwin
             result_name: darwin_arm64
             run_full_tests: "true"
-            shell: bash
 
           - name: windows-x86_64
             runner: windows-latest
             triple: x86_64-pc-windows-msvc
             result_name: windows_x86_64
             run_full_tests: "true"
-            shell: bash
 
           - name: windows-arm64
             runner: windows-11-arm
             triple: aarch64-pc-windows-msvc
             result_name: windows_arm64
-            # ARM64 Windows: Git Bash reports x86_64, installs x86_64 binary under emulation.
-            # Many tools crash with SIGILL due to SIMD instructions not supported in emulation.
-            # Skip the full suite; just do a quick smoke test instead.
             run_full_tests: "false"
-            shell: bash
 
     defaults:
       run:
@@ -190,10 +443,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install fcoreutils ${{ github.event.inputs.version }}
+      - name: Install fcoreutils ${{ inputs.version }}
         id: install
         run: |
-          if bash scripts/install_from_github.sh --version ${{ github.event.inputs.version }}; then
+          if bash scripts/install_from_github.sh --version ${{ inputs.version }}; then
             echo "installed=true" >> "$GITHUB_OUTPUT"
           else
             echo "installed=false" >> "$GITHUB_OUTPUT"
@@ -210,7 +463,7 @@ jobs:
       - name: Write skipped result (no binary available)
         if: steps.install.outputs.installed != 'true'
         run: |
-          mkdir -p results/compatibility/${{ github.event.inputs.version }}
+          mkdir -p results/compatibility/${{ inputs.version }}
           python3 - <<'EOF'
           import json, os
           result = {
@@ -219,8 +472,8 @@ jobs:
               "platform": "${{ matrix.triple }}",
               "type": "compatibility",
           }
-          os.makedirs("results/compatibility/${{ github.event.inputs.version }}", exist_ok=True)
-          with open("results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json", "w") as f:
+          os.makedirs("results/compatibility/${{ inputs.version }}", exist_ok=True)
+          with open("results/compatibility/${{ inputs.version }}/${{ matrix.result_name }}.json", "w") as f:
               json.dump(result, f, indent=2)
           print("Wrote skipped result.")
           EOF
@@ -239,9 +492,9 @@ jobs:
       - name: Copy results to versioned path
         if: steps.install.outputs.installed == 'true' && matrix.run_full_tests == 'true'
         run: |
-          mkdir -p results/compatibility/${{ github.event.inputs.version }}
+          mkdir -p results/compatibility/${{ inputs.version }}
           cp results/compatibility_results.json \
-             results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
+             results/compatibility/${{ inputs.version }}/${{ matrix.result_name }}.json
 
       - name: Smoke test (quick sanity check, full tests skipped)
         if: steps.install.outputs.installed == 'true' && matrix.run_full_tests == 'false'
@@ -249,7 +502,7 @@ jobs:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: "utf-8"
         run: |
-          echo "Running smoke test for ${{ matrix.name }} (x86_64 binary under ARM64 emulation)"
+          echo "Running smoke test for ${{ matrix.name }}"
           INSTALL_DIR="$HOME/.local/bin"
           pass=0; fail=0; crash=0
           for tool in fwc fsort fcut ftr funiq ftac fbase64 fsha256sum fhead ftail fcat; do
@@ -272,7 +525,7 @@ jobs:
           done
           echo "Smoke test: $pass OK, $fail missing, $crash crashed"
 
-          mkdir -p "results/compatibility/${{ github.event.inputs.version }}"
+          mkdir -p "results/compatibility/${{ inputs.version }}"
           python3 - <<'PYEOF'
           import json, os
           result = {
@@ -287,73 +540,25 @@ jobs:
               },
               "tools": {}
           }
-          path = "results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json"
+          path = "results/compatibility/${{ inputs.version }}/${{ matrix.result_name }}.json"
           with open(path, "w") as f:
               json.dump(result, f, indent=2)
           print(f"Wrote smoke-only result to {path}")
           PYEOF
 
-      - name: Print summary table
-        env:
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: |
-          python3 - <<'EOF'
-          import json, os, sys
-
-          result_file = "results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json"
-          if not os.path.exists(result_file):
-              print("No results file found.")
-              sys.exit(0)
-
-          data = json.load(open(result_file))
-          if data.get("skipped"):
-              print(f"Platform: ${{ matrix.name }} — SKIPPED ({data.get('reason', 'unknown')})")
-              sys.exit(0)
-
-          summary = data.get("summary", {})
-          passed  = summary.get("passed", 0)
-          failed  = summary.get("failed", 0)
-          skipped = summary.get("skipped", 0)
-          total   = summary.get("total_tests", passed + failed + skipped)
-
-          status = "✅" if failed == 0 else "⚠️"
-          print(f"Platform: ${{ matrix.name }}")
-          print(f"  Passed:  {passed}")
-          print(f"  Failed:  {failed}")
-          print(f"  Skipped: {skipped}")
-          print(f"  Total:   {total}")
-          print(f"  Status:  {status}")
-
-          tools = data.get("tools", {})
-          if tools:
-              print("\nPer-tool breakdown:")
-              print(f"  {'Tool':<20} {'Pass':>6} {'Fail':>6} {'Skip':>6}")
-              print(f"  {'-'*20} {'-'*6} {'-'*6} {'-'*6}")
-              for tool_name, td in sorted(tools.items()):
-                  if td.get("status") == "NOT_IMPLEMENTED":
-                      print(f"  {tool_name:<20} {'—':>6} {'—':>6} {'N/A':>6}")
-                  else:
-                      p = td.get("passed", 0)
-                      f = td.get("failed", 0)
-                      s = td.get("skipped", 0)
-                      marker = " ❌" if f > 0 else ""
-                      print(f"  {tool_name:<20} {p:>6} {f:>6} {s:>6}{marker}")
-          EOF
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: functional-${{ matrix.name }}
-          path: results/compatibility/${{ github.event.inputs.version }}/${{ matrix.result_name }}.json
+          path: results/compatibility/${{ inputs.version }}/${{ matrix.result_name }}.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 4: Report — publish results to repo
+  # Job 5: Report — aggregate all results and publish
   # ─────────────────────────────────────────────────────────────────────────────
   report:
     name: Publish Report
     runs-on: ubuntu-latest
-    needs: [compatibility, benchmarks, functional]
+    needs: [compat, bench, setup, functional]
     if: always()
     permissions:
       contents: write
@@ -362,47 +567,178 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download compat-linux-x86_64
+      - name: Download all compatibility results
         uses: actions/download-artifact@v4
         with:
-          name: compat-linux-x86_64
-          path: results/compatibility/${{ github.event.inputs.version }}/
+          pattern: compat-*
+          path: results/compat-raw/
+          merge-multiple: true
         continue-on-error: true
 
-      - name: Download bench-linux-x86_64
+      - name: Download all benchmark results
         uses: actions/download-artifact@v4
         with:
-          name: bench-linux-x86_64
-          path: results/benchmarks/${{ github.event.inputs.version }}/
+          pattern: bench-*
+          path: results/bench-raw/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Download sizes
+        uses: actions/download-artifact@v4
+        with:
+          name: sizes
+          path: results/
         continue-on-error: true
 
       - name: Download functional-linux-arm64
         uses: actions/download-artifact@v4
         with:
           name: functional-linux-arm64
-          path: results/compatibility/${{ github.event.inputs.version }}/
+          path: results/compatibility/${{ inputs.version }}/
         continue-on-error: true
 
       - name: Download functional-macos-arm64
         uses: actions/download-artifact@v4
         with:
           name: functional-macos-arm64
-          path: results/compatibility/${{ github.event.inputs.version }}/
+          path: results/compatibility/${{ inputs.version }}/
         continue-on-error: true
 
       - name: Download functional-windows-x86_64
         uses: actions/download-artifact@v4
         with:
           name: functional-windows-x86_64
-          path: results/compatibility/${{ github.event.inputs.version }}/
+          path: results/compatibility/${{ inputs.version }}/
         continue-on-error: true
 
       - name: Download functional-windows-arm64
         uses: actions/download-artifact@v4
         with:
           name: functional-windows-arm64
-          path: results/compatibility/${{ github.event.inputs.version }}/
+          path: results/compatibility/${{ inputs.version }}/
         continue-on-error: true
+
+      - name: Aggregate compatibility results
+        run: |
+          python3 - <<'PYEOF'
+          import json, glob, os
+          from datetime import datetime, timezone
+
+          results_dir = "results/compat-raw"
+          tool_details = {}
+          total_passed = 0
+          total_failed = 0
+          total_skipped = 0
+          total_run = 0
+          tools_tested = 0
+          tools_skipped = 0
+
+          for f in sorted(glob.glob(os.path.join(results_dir, "*_results.json"))):
+              tool_name = os.path.basename(f).replace("_results.json", "")
+              try:
+                  data = json.load(open(f))
+              except Exception as e:
+                  tool_details[tool_name] = {
+                      "status": "error", "error": str(e),
+                      "total": 0, "passed": 0, "failed": 0, "skipped": 0,
+                      "failed_tests": []
+                  }
+                  continue
+
+              status = data.get("status", "")
+              if status == "NOT_IMPLEMENTED":
+                  tool_details[tool_name] = {
+                      "status": "NOT_IMPLEMENTED",
+                      "total": 0, "passed": 0, "failed": 0, "skipped": 0,
+                      "failed_tests": []
+                  }
+                  tools_skipped += 1
+              else:
+                  s = data.get("summary", {})
+                  passed = s.get("passed", 0)
+                  failed = s.get("failed", 0)
+                  skipped = s.get("skipped", 0)
+                  total = s.get("total", 0)
+                  total_passed += passed
+                  total_failed += failed
+                  total_skipped += skipped
+                  total_run += total
+                  tools_tested += 1
+                  failed_tests = []
+                  for t in data.get("tests", []):
+                      if t.get("status") == "FAIL" or t.get("f_status") == "FAIL":
+                          failed_tests.append(t.get("name", "?"))
+                  tool_details[tool_name] = {
+                      "status": "tested",
+                      "total": total, "passed": passed,
+                      "failed": failed, "skipped": skipped,
+                      "failed_tests": failed_tests
+                  }
+
+          version = os.environ["VERSION"]
+          aggregate = {
+              "type": "compatibility",
+              "platform": "Linux_x86_64",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "summary": {
+                  "total_tests": total_run,
+                  "passed": total_passed,
+                  "failed": total_failed,
+                  "skipped": total_skipped,
+                  "tools_tested": tools_tested,
+                  "tools_skipped": tools_skipped
+              },
+              "tools": tool_details
+          }
+
+          out_dir = f"results/compatibility/{version}"
+          os.makedirs(out_dir, exist_ok=True)
+          with open(f"{out_dir}/linux_x86_64.json", "w") as f:
+              json.dump(aggregate, f, indent=2)
+          print(f"Aggregated {tools_tested + tools_skipped} tool results into {out_dir}/linux_x86_64.json")
+          PYEOF
+        env:
+          VERSION: ${{ inputs.version }}
+
+      - name: Aggregate benchmark results
+        run: |
+          python3 - <<'PYEOF'
+          import json, glob, os, shutil
+          from datetime import datetime, timezone
+
+          results_dir = "results/bench-raw"
+          tools = {}
+
+          for f in sorted(glob.glob(os.path.join(results_dir, "*_benchmark.json"))):
+              try:
+                  data = json.load(open(f))
+                  tool = data.get("tool", "")
+                  if tool:
+                      tools[tool] = data
+              except Exception:
+                  pass
+
+          version = os.environ["VERSION"]
+          aggregate = {
+              "type": "benchmark",
+              "platform": "Linux_x86_64",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "tools": tools
+          }
+
+          out_dir = f"results/benchmarks/{version}"
+          os.makedirs(out_dir, exist_ok=True)
+          with open(f"{out_dir}/linux_x86_64.json", "w") as f:
+              json.dump(aggregate, f, indent=2)
+
+          # Copy sizes if available
+          if os.path.exists("results/sizes.json"):
+              shutil.copy("results/sizes.json", f"{out_dir}/linux_x86_64_sizes.json")
+
+          print(f"Aggregated {len(tools)} benchmark results into {out_dir}/linux_x86_64.json")
+          PYEOF
+        env:
+          VERSION: ${{ inputs.version }}
 
       - name: Install Python dependencies
         run: pip install matplotlib
@@ -417,7 +753,6 @@ jobs:
 
       - name: Append multi-platform section to README
         run: |
-          VERSION=${{ github.event.inputs.version }}
           python3 - <<'PYEOF'
           import json, os, re
 
@@ -466,17 +801,14 @@ jobs:
           |----------|--------|--------|---------|--------|
           """ + "\n".join(rows) + "\n"
 
-          # Dedent the section (strip leading spaces from each line)
           section = "\n".join(line.strip() for line in section.splitlines()) + "\n"
 
           readme = "README.md"
           if not os.path.exists(readme):
               with open(readme, "w") as f:
                   f.write(section)
-              print("README.md created with platform section.")
           else:
               content = open(readme).read()
-              # Replace existing section if present, otherwise append
               pattern = r"## Platform Functional Tests \(.*?\)\n[\s\S]*?(?=\n##|\Z)"
               if re.search(pattern, content):
                   content = re.sub(pattern, section.rstrip(), content)
@@ -484,19 +816,18 @@ jobs:
                   content = content.rstrip() + "\n\n" + section
               with open(readme, "w") as f:
                   f.write(content)
-              print(f"README.md updated with platform section for {version}.")
+          print(f"README.md updated with platform section for {version}.")
           PYEOF
         env:
-          VERSION: ${{ github.event.inputs.version }}
+          VERSION: ${{ inputs.version }}
 
       - name: Commit and push results
         env:
-          VERSION: ${{ github.event.inputs.version }}
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Only stage files for this version + global outputs (chart, README)
           git add "results/compatibility/$VERSION/" \
                   "results/benchmarks/$VERSION/" \
                   results/speedup-history.png \

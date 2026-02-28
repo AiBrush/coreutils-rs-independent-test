@@ -25,7 +25,7 @@ run_paste_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/paste_bench_col1_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/paste_bench_col2_10m.txt" ]]; then
         run_benchmark "2 columns 10MB" \
             "$GNU_TOOL '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt'" \
-            "$F_TOOL '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt'" \
+            "$F_TOOL '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt'"
     fi
 
     echo ""
@@ -34,7 +34,7 @@ run_paste_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/paste_bench_col1_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/paste_bench_col2_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/paste_bench_col3_10m.txt" ]]; then
         run_benchmark "3 columns 10MB" \
             "$GNU_TOOL '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt' '$TEST_DATA_DIR/paste_bench_col3_10m.txt'" \
-            "$F_TOOL '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt' '$TEST_DATA_DIR/paste_bench_col3_10m.txt'" \
+            "$F_TOOL '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt' '$TEST_DATA_DIR/paste_bench_col3_10m.txt'"
     fi
 
     echo ""
@@ -43,7 +43,7 @@ run_paste_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/paste_bench_col1_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/paste_bench_col2_10m.txt" ]]; then
         run_benchmark "-d comma 10MB" \
             "$GNU_TOOL -d, '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt'" \
-            "$F_TOOL -d, '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt'" \
+            "$F_TOOL -d, '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt'"
     fi
 
     echo ""
@@ -52,7 +52,7 @@ run_paste_benchmarks() {
     if [[ -f "$TEST_DATA_DIR/paste_bench_col1_10m.txt" ]]; then
         run_benchmark "-s 10MB single file" \
             "$GNU_TOOL -s '$TEST_DATA_DIR/paste_bench_col1_10m.txt'" \
-            "$F_TOOL -s '$TEST_DATA_DIR/paste_bench_col1_10m.txt'" \
+            "$F_TOOL -s '$TEST_DATA_DIR/paste_bench_col1_10m.txt'"
     fi
 
     echo ""
@@ -61,7 +61,7 @@ run_paste_benchmarks() {
     run_stdin_benchmark "stdin split 2-way 10MB" \
         "$TEST_DATA_DIR/text_10m.txt" \
         "$GNU_TOOL - -" \
-        "$F_TOOL - -" \
+        "$F_TOOL - -"
 
     save_benchmark_results
 }

@@ -108,8 +108,8 @@ EOF
 
     gnu_dir="$test_dir/gnu_line5"; f_dir="$test_dir/f_line5"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/input20" 5 10 15 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL "$test_dir/input20" 5 10 15 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/input20" 5 10 15 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL "$test_dir/input20" 5 10 15 2>/dev/null) || true
     compare_csplit_dirs "csplit at lines 5 10 15" "$gnu_dir" "$f_dir"
 
     # Roundtrip
@@ -126,8 +126,8 @@ EOF
 
     gnu_dir="$test_dir/gnu_line10"; f_dir="$test_dir/f_line10"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/input20" 10 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL "$test_dir/input20" 10 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/input20" 10 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL "$test_dir/input20" 10 2>/dev/null) || true
     compare_csplit_dirs "csplit at line 10" "$gnu_dir" "$f_dir"
 
     # === Section 2: Regex Splitting ===
@@ -136,14 +136,14 @@ EOF
 
     gnu_dir="$test_dir/gnu_regex"; f_dir="$test_dir/f_regex"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/pattern_input.txt" '/---/' '{*}' 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL "$test_dir/pattern_input.txt" '/---/' '{*}' 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/pattern_input.txt" '/---/' '{*}' 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL "$test_dir/pattern_input.txt" '/---/' '{*}' 2>/dev/null) || true
     compare_csplit_dirs "csplit /---/ {*}" "$gnu_dir" "$f_dir"
 
     gnu_dir="$test_dir/gnu_chapter"; f_dir="$test_dir/f_chapter"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/chapters.txt" '/Chapter/' '{*}' 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL "$test_dir/chapters.txt" '/Chapter/' '{*}' 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/chapters.txt" '/Chapter/' '{*}' 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL "$test_dir/chapters.txt" '/Chapter/' '{*}' 2>/dev/null) || true
     compare_csplit_dirs "csplit /Chapter/ {*}" "$gnu_dir" "$f_dir"
 
     # === Section 3: Custom Prefix (-f) ===
@@ -152,8 +152,8 @@ EOF
 
     gnu_dir="$test_dir/gnu_prefix"; f_dir="$test_dir/f_prefix"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL -f chunk "$test_dir/input20" 10 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL -f chunk "$test_dir/input20" 10 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL -f chunk "$test_dir/input20" 10 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL -f chunk "$test_dir/input20" 10 2>/dev/null) || true
 
     TESTS_RUN=$((TESTS_RUN + 1))
     local gnu_pfiles f_pfiles
@@ -175,8 +175,8 @@ EOF
 
     gnu_dir="$test_dir/gnu_n4"; f_dir="$test_dir/f_n4"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL -n 4 "$test_dir/input20" 10 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL -n 4 "$test_dir/input20" 10 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL -n 4 "$test_dir/input20" 10 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL -n 4 "$test_dir/input20" 10 2>/dev/null) || true
     compare_csplit_dirs "csplit -n 4" "$gnu_dir" "$f_dir"
 
     # === Section 5: Suppress size output (-s) ===
@@ -226,8 +226,8 @@ EOF
 
     gnu_dir="$test_dir/gnu_offset"; f_dir="$test_dir/f_offset"
     mkdir -p "$gnu_dir" "$f_dir"
-    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/chapters.txt" '/Chapter/+1' '{*}' 2>/dev/null)
-    (cd "$f_dir" && $F_TOOL "$test_dir/chapters.txt" '/Chapter/+1' '{*}' 2>/dev/null)
+    (cd "$gnu_dir" && $GNU_TOOL "$test_dir/chapters.txt" '/Chapter/+1' '{*}' 2>/dev/null) || true
+    (cd "$f_dir" && $F_TOOL "$test_dir/chapters.txt" '/Chapter/+1' '{*}' 2>/dev/null) || true
     compare_csplit_dirs "csplit /Chapter/+1 {*}" "$gnu_dir" "$f_dir"
 
     # === Section 10: GNU Upstream Tests ===
