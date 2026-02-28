@@ -10,10 +10,91 @@ on:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 1: Compatibility tests — one per tool (107 parallel jobs)
+  # Job 1: Setup — install fcoreutils, generate data, measure sizes (runs once)
+  # ─────────────────────────────────────────────────────────────────────────────
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fcoreutils ${{ inputs.version }}
+        run: bash scripts/install_from_github.sh --version ${{ inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install hyperfine
+        run: sudo apt-get install -y hyperfine
+
+      - name: Generate test data
+        run: bash tests/helpers/generate_test_data.sh
+
+      - name: Measure binary sizes
+        run: |
+          python3 - <<'EOF'
+          import json, os, shutil, subprocess
+
+          INSTALL_DIR = os.path.expanduser("~/.local/bin")
+
+          tools = []
+          if os.path.isdir(INSTALL_DIR):
+              for name in sorted(os.listdir(INSTALL_DIR)):
+                  if name.startswith("f") and os.path.isfile(os.path.join(INSTALL_DIR, name)):
+                      tools.append(name[1:])
+
+          rows = {}
+          for tool in tools:
+              f_path = os.path.join(INSTALL_DIR, "f" + tool)
+              gnu_path = shutil.which(tool)
+              f_size = os.path.getsize(f_path) if os.path.exists(f_path) else None
+              if f_size is None:
+                  continue
+              rows[tool] = {
+                  "f_bytes": f_size,
+                  "gnu_bytes": os.path.getsize(gnu_path) if gnu_path else None,
+              }
+
+          out = {
+              "type": "sizes",
+              "platform": subprocess.check_output(["uname", "-sm"]).decode().strip(),
+              "sizes": rows,
+          }
+
+          os.makedirs("results", exist_ok=True)
+          with open("results/sizes.json", "w") as f:
+              json.dump(out, f, indent=2)
+          print(f"Binary sizes measured for {len(rows)} tools")
+          EOF
+
+      - name: Package setup artifact
+        run: |
+          mkdir -p ci-setup/bin ci-setup/test-data
+          # Copy fcoreutils binaries
+          cp -a "$HOME/.local/bin"/* ci-setup/bin/
+          # Copy hyperfine binary
+          cp "$(which hyperfine)" ci-setup/bin/hyperfine
+          # Copy test data
+          cp -a /tmp/fcoreutils-test-data/* ci-setup/test-data/
+
+      - name: Upload setup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-linux
+          path: ci-setup/
+          compression-level: 6
+
+      - name: Upload sizes
+        uses: actions/upload-artifact@v4
+        with:
+          name: sizes
+          path: results/sizes.json
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 2: Compatibility tests — one per tool (107 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   compat:
     name: Compat/${{ matrix.tool }}
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -129,24 +210,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache fcoreutils
-        uses: actions/cache@v4
-        id: cache-install
+      - name: Download setup artifact
+        uses: actions/download-artifact@v4
         with:
-          path: ~/.local/bin
-          key: fcoreutils-${{ inputs.version }}-linux-x86_64
+          name: setup-linux
+          path: ci-setup
 
-      - name: Install fcoreutils
-        if: steps.cache-install.outputs.cache-hit != 'true'
-        run: bash scripts/install_from_github.sh --version ${{ inputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Add to PATH
-        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Generate test data
-        run: bash tests/helpers/generate_test_data.sh
+      - name: Restore environment
+        run: |
+          mkdir -p "$HOME/.local/bin" /tmp/fcoreutils-test-data
+          cp -a ci-setup/bin/* "$HOME/.local/bin/"
+          cp -a ci-setup/test-data/* /tmp/fcoreutils-test-data/
+          chmod +x "$HOME/.local/bin"/*
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run compatibility test
         run: bash tests/commands/run_tool.sh ${{ matrix.tool }}
@@ -163,10 +239,11 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: Benchmarks — one per tool (107 parallel jobs)
+  # Job 3: Benchmarks — one per tool (107 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   bench:
     name: Bench/${{ matrix.tool }}
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -282,27 +359,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache fcoreutils
-        uses: actions/cache@v4
-        id: cache-install
+      - name: Download setup artifact
+        uses: actions/download-artifact@v4
         with:
-          path: ~/.local/bin
-          key: fcoreutils-${{ inputs.version }}-linux-x86_64
+          name: setup-linux
+          path: ci-setup
 
-      - name: Install fcoreutils
-        if: steps.cache-install.outputs.cache-hit != 'true'
-        run: bash scripts/install_from_github.sh --version ${{ inputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Add to PATH
-        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Install hyperfine
-        run: sudo apt-get install -y hyperfine
-
-      - name: Generate test data
-        run: bash tests/helpers/generate_test_data.sh
+      - name: Restore environment
+        run: |
+          mkdir -p "$HOME/.local/bin" /tmp/fcoreutils-test-data
+          cp -a ci-setup/bin/* "$HOME/.local/bin/"
+          cp -a ci-setup/test-data/* /tmp/fcoreutils-test-data/
+          chmod +x "$HOME/.local/bin"/*
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run benchmark
         run: |
@@ -326,76 +395,6 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: Binary sizes
-  # ─────────────────────────────────────────────────────────────────────────────
-  sizes:
-    name: Binary sizes
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install fcoreutils ${{ inputs.version }}
-        run: |
-          bash scripts/install_from_github.sh --version ${{ inputs.version }}
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Measure binary sizes
-        run: |
-          python3 - <<'EOF'
-          import json, os, shutil, subprocess
-
-          INSTALL_DIR = os.path.expanduser("~/.local/bin")
-
-          tools = []
-          if os.path.isdir(INSTALL_DIR):
-              for name in sorted(os.listdir(INSTALL_DIR)):
-                  if name.startswith("f") and os.path.isfile(os.path.join(INSTALL_DIR, name)):
-                      tools.append(name[1:])
-
-          def get_size(path):
-              try:
-                  return os.path.getsize(path)
-              except FileNotFoundError:
-                  return None
-
-          def which(cmd):
-              return shutil.which(cmd)
-
-          rows = {}
-          for tool in tools:
-              f_path  = os.path.join(INSTALL_DIR, "f" + tool)
-              gnu_path = which(tool)
-
-              f_size = get_size(f_path)
-              if f_size is None:
-                  continue
-
-              rows[tool] = {
-                  "f_bytes":   f_size,
-                  "gnu_bytes": get_size(gnu_path) if gnu_path else None,
-              }
-
-          out = {
-              "type": "sizes",
-              "platform": subprocess.check_output(["uname", "-sm"]).decode().strip(),
-              "sizes": rows,
-          }
-
-          os.makedirs("results", exist_ok=True)
-          with open("results/sizes.json", "w") as f:
-              json.dump(out, f, indent=2)
-          print("Binary sizes written to results/sizes.json")
-          EOF
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sizes
-          path: results/sizes.json
-
-  # ─────────────────────────────────────────────────────────────────────────────
   # Job 4: Functional tests — 4-platform matrix (sequential per platform)
   # ─────────────────────────────────────────────────────────────────────────────
   functional:
@@ -410,28 +409,24 @@ jobs:
             triple: aarch64-unknown-linux-gnu
             result_name: linux_aarch64
             run_full_tests: "true"
-            shell: bash
 
           - name: macos-arm64
             runner: macos-latest
             triple: aarch64-apple-darwin
             result_name: darwin_arm64
             run_full_tests: "true"
-            shell: bash
 
           - name: windows-x86_64
             runner: windows-latest
             triple: x86_64-pc-windows-msvc
             result_name: windows_x86_64
             run_full_tests: "true"
-            shell: bash
 
           - name: windows-arm64
             runner: windows-11-arm
             triple: aarch64-pc-windows-msvc
             result_name: windows_arm64
             run_full_tests: "false"
-            shell: bash
 
     defaults:
       run:
@@ -499,7 +494,7 @@ jobs:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: "utf-8"
         run: |
-          echo "Running smoke test for ${{ matrix.name }} (x86_64 binary under ARM64 emulation)"
+          echo "Running smoke test for ${{ matrix.name }}"
           INSTALL_DIR="$HOME/.local/bin"
           pass=0; fail=0; crash=0
           for tool in fwc fsort fcut ftr funiq ftac fbase64 fsha256sum fhead ftail fcat; do
@@ -555,7 +550,7 @@ jobs:
   report:
     name: Publish Report
     runs-on: ubuntu-latest
-    needs: [compat, bench, sizes, functional]
+    needs: [compat, bench, setup, functional]
     if: always()
     permissions:
       contents: write
@@ -619,6 +614,7 @@ jobs:
         run: |
           python3 - <<'PYEOF'
           import json, glob, os
+          from datetime import datetime, timezone
 
           results_dir = "results/compat-raw"
           tool_details = {}
@@ -675,7 +671,7 @@ jobs:
           aggregate = {
               "type": "compatibility",
               "platform": "Linux_x86_64",
-              "timestamp": "",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "summary": {
                   "total_tests": total_run,
                   "passed": total_passed,
@@ -699,7 +695,8 @@ jobs:
       - name: Aggregate benchmark results
         run: |
           python3 - <<'PYEOF'
-          import json, glob, os
+          import json, glob, os, shutil
+          from datetime import datetime, timezone
 
           results_dir = "results/bench-raw"
           tools = {}
@@ -717,6 +714,7 @@ jobs:
           aggregate = {
               "type": "benchmark",
               "platform": "Linux_x86_64",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "tools": tools
           }
 
@@ -727,7 +725,6 @@ jobs:
 
           # Copy sizes if available
           if os.path.exists("results/sizes.json"):
-              import shutil
               shutil.copy("results/sizes.json", f"{out_dir}/linux_x86_64_sizes.json")
 
           print(f"Aggregated {len(tools)} benchmark results into {out_dir}/linux_x86_64.json")
@@ -748,7 +745,6 @@ jobs:
 
       - name: Append multi-platform section to README
         run: |
-          VERSION=${{ inputs.version }}
           python3 - <<'PYEOF'
           import json, os, re
 
@@ -797,14 +793,12 @@ jobs:
           |----------|--------|--------|---------|--------|
           """ + "\n".join(rows) + "\n"
 
-          # Dedent the section (strip leading spaces from each line)
           section = "\n".join(line.strip() for line in section.splitlines()) + "\n"
 
           readme = "README.md"
           if not os.path.exists(readme):
               with open(readme, "w") as f:
                   f.write(section)
-              print("README.md created with platform section.")
           else:
               content = open(readme).read()
               pattern = r"## Platform Functional Tests \(.*?\)\n[\s\S]*?(?=\n##|\Z)"
@@ -814,7 +808,7 @@ jobs:
                   content = content.rstrip() + "\n\n" + section
               with open(readme, "w") as f:
                   f.write(content)
-              print(f"README.md updated with platform section for {version}.")
+          print(f"README.md updated with platform section for {version}.")
           PYEOF
         env:
           VERSION: ${{ inputs.version }}
@@ -826,7 +820,6 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Only stage files for this version + global outputs (chart, README)
           git add "results/compatibility/$VERSION/" \
                   "results/benchmarks/$VERSION/" \
                   results/speedup-history.png \
