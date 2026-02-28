@@ -73,7 +73,8 @@ jobs:
           cp -a "$HOME/.local/bin"/* ci-setup/bin/
           # Copy hyperfine binary
           cp "$(which hyperfine)" ci-setup/bin/hyperfine
-          # Copy test data
+          # Copy test data (fix permissions on unreadable.txt so cp can read it)
+          chmod -R u+r /tmp/fcoreutils-test-data/
           cp -a /tmp/fcoreutils-test-data/* ci-setup/test-data/
 
       - name: Upload setup artifact
@@ -222,6 +223,8 @@ jobs:
           cp -a ci-setup/bin/* "$HOME/.local/bin/"
           cp -a ci-setup/test-data/* /tmp/fcoreutils-test-data/
           chmod +x "$HOME/.local/bin"/*
+          # Restore permission test fixtures
+          [[ -f /tmp/fcoreutils-test-data/unreadable.txt ]] && chmod 000 /tmp/fcoreutils-test-data/unreadable.txt
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run compatibility test
@@ -371,6 +374,8 @@ jobs:
           cp -a ci-setup/bin/* "$HOME/.local/bin/"
           cp -a ci-setup/test-data/* /tmp/fcoreutils-test-data/
           chmod +x "$HOME/.local/bin"/*
+          # Restore permission test fixtures
+          [[ -f /tmp/fcoreutils-test-data/unreadable.txt ]] && chmod 000 /tmp/fcoreutils-test-data/unreadable.txt
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run benchmark
