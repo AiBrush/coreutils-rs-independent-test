@@ -40,8 +40,8 @@ for dir in "$SCRIPT_DIR"/*/; do
     tool=$(basename "$dir")
     # Skip non-tool directories
     [[ "$tool" == "_shared" || "$tool" == "support" ]] && continue
-    # Must have at least test_compat.sh or gnu/ directory
-    if [[ -f "$dir/test_compat.sh" ]] || [[ -d "$dir/gnu" ]]; then
+    # Must have at least test_compat.sh, test_functional.sh, or gnu/ directory
+    if [[ -f "$dir/test_compat.sh" ]] || [[ -f "$dir/test_functional.sh" ]] || [[ -d "$dir/gnu" ]]; then
         TOOLS+=("$tool")
     fi
 done
