@@ -186,9 +186,11 @@ run_rm_tests() {
     mkdir -p "$rvdir/gnu/a/a" "$rvdir/f/a/a"
     touch "$rvdir/gnu/b" "$rvdir/f/b"
 
+    # Normalize paths: replace the work-directory prefix so that the different
+    # subdirectory names (gnu/ vs f/) do not cause a false diff.
     run_stdout_test "GNU r-1: rm --verbose -r tree and file" \
-        "$GNU_TOOL --verbose -r '$rvdir/gnu/a' '$rvdir/gnu/b'" \
-        "$F_TOOL --verbose -r '$rvdir/f/a' '$rvdir/f/b'"
+        "$GNU_TOOL --verbose -r '$rvdir/gnu/a' '$rvdir/gnu/b' | sed 's|$rvdir/gnu|WORK|g'" \
+        "$F_TOOL --verbose -r '$rvdir/f/a' '$rvdir/f/b' | sed 's|$rvdir/f|WORK|g'"
 
     # Verify everything was removed
     TESTS_RUN=$((TESTS_RUN + 1))
@@ -283,8 +285,8 @@ run_rm_tests() {
     touch "$dddir/gnu/b" "$dddir/f/b"
 
     run_stdout_test "GNU d-1: rm --verbose --dir empty dir and file" \
-        "$GNU_TOOL --verbose --dir '$dddir/gnu/a' '$dddir/gnu/b'" \
-        "$F_TOOL --verbose --dir '$dddir/f/a' '$dddir/f/b'"
+        "$GNU_TOOL --verbose --dir '$dddir/gnu/a' '$dddir/gnu/b' | sed 's|$dddir/gnu|WORK|g'" \
+        "$F_TOOL --verbose --dir '$dddir/f/a' '$dddir/f/b' | sed 's|$dddir/f|WORK|g'"
 
     TESTS_RUN=$((TESTS_RUN + 1))
     local gnu_d1_gone=1 f_d1_gone=1
@@ -377,8 +379,8 @@ run_rm_tests() {
     touch "$vsdir/gnu/a/x" "$vsdir/f/a/x"
 
     run_stdout_test "GNU v-slash: rm -rv with trailing slashes" \
-        "$GNU_TOOL --verbose -r '$vsdir/gnu/a///'" \
-        "$F_TOOL --verbose -r '$vsdir/f/a///'"
+        "$GNU_TOOL --verbose -r '$vsdir/gnu/a///' | sed 's|$vsdir/gnu|WORK|g'" \
+        "$F_TOOL --verbose -r '$vsdir/f/a///' | sed 's|$vsdir/f|WORK|g'"
 
     # === Section 9: Error Handling ===
     echo ""

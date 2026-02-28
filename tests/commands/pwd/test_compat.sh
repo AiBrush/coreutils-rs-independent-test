@@ -6,7 +6,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../common.sh"
 
-GNU_TOOL=$(resolve_gnu_tool "pwd")
+# On Linux, resolve_gnu_tool returns "pwd" which the shell resolves to the
+# bash builtin.  The builtin only supports -L and -P (no long options like
+# --physical, --logical).  Use /usr/bin/pwd when it exists so that long-option
+# tests work against the real GNU binary.
+if [[ -x /usr/bin/pwd ]]; then
+    GNU_TOOL="/usr/bin/pwd"
+else
+    GNU_TOOL=$(resolve_gnu_tool "pwd")
+fi
 F_TOOL="fpwd"
 
 run_pwd_tests() {

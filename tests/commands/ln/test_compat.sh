@@ -153,14 +153,16 @@ run_ln_tests() {
     echo "foo" > "$F_GNU_WORK/sf_a"
 
     # Replace symlink pointing to missing target
+    # Normalize readlink output: strip the work-directory prefix so that the
+    # different temp-dir names (gnu vs fgnu) do not cause a false diff.
     run_test "gnu: -sf replace ENOENT link" \
-        "$GNU_TOOL -sf missing '$GNU_WORK/enoent_link' && $GNU_TOOL -sf '$GNU_WORK/sf_a' '$GNU_WORK/enoent_link' && readlink '$GNU_WORK/enoent_link'" \
-        "$F_TOOL -sf missing '$F_GNU_WORK/enoent_link' && $F_TOOL -sf '$F_GNU_WORK/sf_a' '$F_GNU_WORK/enoent_link' && readlink '$F_GNU_WORK/enoent_link'"
+        "$GNU_TOOL -sf missing '$GNU_WORK/enoent_link' && $GNU_TOOL -sf '$GNU_WORK/sf_a' '$GNU_WORK/enoent_link' && readlink '$GNU_WORK/enoent_link' | sed 's|$GNU_WORK|WORK|g'" \
+        "$F_TOOL -sf missing '$F_GNU_WORK/enoent_link' && $F_TOOL -sf '$F_GNU_WORK/sf_a' '$F_GNU_WORK/enoent_link' && readlink '$F_GNU_WORK/enoent_link' | sed 's|$F_GNU_WORK|WORK|g'"
 
     # Replace symlink pointing to a/b (ENOTDIR)
     run_test "gnu: -sf replace ENOTDIR link" \
-        "$GNU_TOOL -sf a/b '$GNU_WORK/enotdir_link' && $GNU_TOOL -sf '$GNU_WORK/sf_a' '$GNU_WORK/enotdir_link' && readlink '$GNU_WORK/enotdir_link'" \
-        "$F_TOOL -sf a/b '$F_GNU_WORK/enotdir_link' && $F_TOOL -sf '$F_GNU_WORK/sf_a' '$F_GNU_WORK/enotdir_link' && readlink '$F_GNU_WORK/enotdir_link'"
+        "$GNU_TOOL -sf a/b '$GNU_WORK/enotdir_link' && $GNU_TOOL -sf '$GNU_WORK/sf_a' '$GNU_WORK/enotdir_link' && readlink '$GNU_WORK/enotdir_link' | sed 's|$GNU_WORK|WORK|g'" \
+        "$F_TOOL -sf a/b '$F_GNU_WORK/enotdir_link' && $F_TOOL -sf '$F_GNU_WORK/sf_a' '$F_GNU_WORK/enotdir_link' && readlink '$F_GNU_WORK/enotdir_link' | sed 's|$F_GNU_WORK|WORK|g'"
 
     echo ""
     echo "=== GNU Upstream: Target Directory ==="
