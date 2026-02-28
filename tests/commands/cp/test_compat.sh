@@ -582,8 +582,8 @@ run_cp_tests() {
 
     TESTS_RUN=$((TESTS_RUN + 1))
     local gnu_dst_mode f_dst_mode
-    gnu_dst_mode=$(stat -c '%a' "$pmdir/gnu/dst" 2>/dev/null || stat -f '%Lp' "$pmdir/gnu/dst")
-    f_dst_mode=$(stat -c '%a' "$pmdir/f/dst" 2>/dev/null || stat -f '%Lp' "$pmdir/f/dst")
+    gnu_dst_mode=$(stat -c '%a' "$pmdir/gnu/dst" 2>/dev/null || stat -f '%Lp' "$pmdir/gnu/dst" 2>/dev/null || echo "MISSING")
+    f_dst_mode=$(stat -c '%a' "$pmdir/f/dst" 2>/dev/null || stat -f '%Lp' "$pmdir/f/dst" 2>/dev/null || echo "MISSING")
     if [[ "$gnu_dst_mode" == "$f_dst_mode" ]]; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
         echo -e "  ${GREEN}PASS${NC}: --no-preserve=mode gives default mode ($gnu_dst_mode)"
@@ -601,8 +601,8 @@ run_cp_tests() {
 
     TESTS_RUN=$((TESTS_RUN + 1))
     local gnu_dst2_mode f_dst2_mode
-    gnu_dst2_mode=$(stat -c '%a' "$pmdir/gnu/dst2" 2>/dev/null || stat -f '%Lp' "$pmdir/gnu/dst2")
-    f_dst2_mode=$(stat -c '%a' "$pmdir/f/dst2" 2>/dev/null || stat -f '%Lp' "$pmdir/f/dst2")
+    gnu_dst2_mode=$(stat -c '%a' "$pmdir/gnu/dst2" 2>/dev/null || stat -f '%Lp' "$pmdir/gnu/dst2" 2>/dev/null || echo "MISSING")
+    f_dst2_mode=$(stat -c '%a' "$pmdir/f/dst2" 2>/dev/null || stat -f '%Lp' "$pmdir/f/dst2" 2>/dev/null || echo "MISSING")
     if [[ "$gnu_dst2_mode" == "$f_dst2_mode" ]]; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
         echo -e "  ${GREEN}PASS${NC}: --no-preserve then --preserve=all mode ($gnu_dst2_mode)"

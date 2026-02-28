@@ -526,7 +526,7 @@ run_chmod_tests() {
 
     # From no-x.sh: chmod -R on directory with no execute permission
     # Requires getlimits_ and $EACCES variable; skip
-    skip_test "GNU: chmod -R on no-x directory diagnostic" "Requires getlimits_ ($EACCES variable)"
+    skip_test "GNU: chmod -R on no-x directory diagnostic" "Requires getlimits_ (EACCES variable)"
 
     # === Section 7: Error Handling ===
     echo ""

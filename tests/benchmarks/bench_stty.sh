@@ -17,6 +17,13 @@ run_stty_benchmarks() {
         return 0
     fi
 
+    # stty requires a real TTY; in CI /dev/null and /dev/tty both fail
+    if ! $GNU_TOOL -a < /dev/tty &>/dev/null && ! $GNU_TOOL -a < /dev/null &>/dev/null; then
+        echo "stty: no TTY available, skipping benchmark"
+        echo '{"tool":"stty","status":"NOT_IMPLEMENTED","note":"no TTY available in CI"}' > "$RESULTS_DIR/stty_benchmark.json"
+        return 0
+    fi
+
     init_benchmark "stty"
 
     echo ""

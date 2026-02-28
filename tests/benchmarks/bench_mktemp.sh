@@ -22,6 +22,7 @@ run_mktemp_benchmarks() {
     echo ""
     echo "=== Create temp file ==="
 
+    GNU_BINARY_OVERRIDE="mktemp" \
     run_benchmark "mktemp default" \
         "f=\$($GNU_TOOL) && rm -f \"\$f\"" \
         "f=\$($F_TOOL) && rm -f \"\$f\"" \
@@ -29,6 +30,7 @@ run_mktemp_benchmarks() {
     echo ""
     echo "=== Create temp directory ==="
 
+    GNU_BINARY_OVERRIDE="mktemp" \
     run_benchmark "mktemp -d directory" \
         "d=\$($GNU_TOOL -d) && rmdir \"\$d\"" \
         "d=\$($F_TOOL -d) && rmdir \"\$d\"" \

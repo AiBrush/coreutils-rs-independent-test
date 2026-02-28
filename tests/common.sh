@@ -443,7 +443,19 @@ cleanup_temps() {
     done
 }
 
-trap cleanup_temps EXIT
+# Combined EXIT handler: save partial results on crash, then clean up temps
+_on_exit() {
+    # If a test suite was initialized but results were never written (crash),
+    # save whatever partial results we have. Skip if the results file already
+    # exists (e.g. NOT_IMPLEMENTED early-exit wrote its own JSON).
+    if [[ -n "${TOOL_NAME:-}" ]] && [[ -n "${RESULTS_DIR:-}" ]] && \
+       [[ ! -f "$RESULTS_DIR/${TOOL_NAME}_results.json" ]]; then
+        save_results_json 2>/dev/null || true
+    fi
+    cleanup_temps
+}
+
+trap _on_exit EXIT
 
 # ── Functional (Expected-Value) Test Framework ────────────────────────────────
 # These functions compare fcoreutils output against hardcoded expected values,
