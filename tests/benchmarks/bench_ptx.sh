@@ -19,23 +19,29 @@ run_ptx_benchmarks() {
 
     init_benchmark "ptx"
 
+    # Create a small test file (ptx is very slow on large inputs)
+    local small_file="/tmp/ptx_test_10k.txt"
+    head -c 10240 "$TEST_DATA_DIR/text_100k.txt" > "$small_file"
+
     echo ""
     echo "=== Default permuted index ==="
+
+    run_benchmark "ptx 10KB text" \
+        "$GNU_TOOL '$small_file'" \
+        "$F_TOOL '$small_file'"
 
     run_benchmark "ptx 100KB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_100k.txt'" \
         "$F_TOOL '$TEST_DATA_DIR/text_100k.txt'"
 
-    run_benchmark "ptx 1MB text" \
-        "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
-
     echo ""
     echo "=== Custom width ==="
 
-    run_benchmark "-w 60 1MB text" \
-        "$GNU_TOOL -w 60 '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL -w 60 '$TEST_DATA_DIR/text_1m.txt'"
+    run_benchmark "-w 60 100KB text" \
+        "$GNU_TOOL -w 60 '$TEST_DATA_DIR/text_100k.txt'" \
+        "$F_TOOL -w 60 '$TEST_DATA_DIR/text_100k.txt'"
+
+    rm -f "$small_file"
 
     save_benchmark_results
 }

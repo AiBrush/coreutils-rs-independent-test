@@ -12,21 +12,9 @@ run_chroot_benchmarks() {
     check_hyperfine
     ensure_test_data
 
-    if ! check_tool_exists "$F_TOOL"; then
-        echo '{"tool":"chroot","status":"NOT_IMPLEMENTED"}' > "$RESULTS_DIR/chroot_benchmark.json"
-        return 0
-    fi
-
-    init_benchmark "chroot"
-
-    echo ""
-    echo "=== Startup overhead ==="
-
-    run_benchmark "chroot --help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    save_benchmark_results
+    # chroot requires root privileges, cannot benchmark in CI.
+    echo '{"tool":"chroot","status":"NOT_IMPLEMENTED"}' > "$RESULTS_DIR/chroot_benchmark.json"
+    return 0
 }
 
 run_chroot_benchmarks

@@ -95,7 +95,8 @@ escape_json() {
 # --- Step 1: Run custom tests ---
 # On Linux x86_64: run test_compat.sh (compares against GNU coreutils)
 # On all other platforms: run test_functional.sh (standalone expected-value tests)
-source "$SCRIPT_DIR/../common.sh" 2>/dev/null || true  # for is_linux, is_x86_64
+# Source common.sh for platform detection and portable timeout
+source "$SCRIPT_DIR/../common.sh" 2>/dev/null || true
 
 COMPAT_SCRIPT="$TOOL_DIR/test_compat.sh"
 FUNCTIONAL_SCRIPT="$TOOL_DIR/test_functional.sh"
@@ -204,7 +205,9 @@ if [[ ${#GNU_TESTS[@]} -gt 0 ]]; then
 
         # --- Run with TARGET=gnu (system PATH) ---
         gnu_exit=0
-        TARGET=gnu timeout 30 bash "$tmptest" >/dev/null 2>&1 || gnu_exit=$?
+        export TARGET=gnu
+        timeout 30 bash "$tmptest" >/dev/null 2>&1 || gnu_exit=$?
+        unset TARGET
 
         if [[ $gnu_exit -eq 0 ]]; then
             gnu_status="PASS"
@@ -220,7 +223,9 @@ if [[ ${#GNU_TESTS[@]} -gt 0 ]]; then
 
         # --- Run with TARGET=f (fcoreutils symlinks in PATH) ---
         f_exit=0
-        TARGET=f PATH="$FTOOLS_DIR:$PATH" timeout 30 bash "$tmptest" >/dev/null 2>&1 || f_exit=$?
+        export TARGET=f
+        PATH="$FTOOLS_DIR:$PATH" timeout 30 bash "$tmptest" >/dev/null 2>&1 || f_exit=$?
+        unset TARGET
 
         if [[ $f_exit -eq 0 ]]; then
             f_status="PASS"

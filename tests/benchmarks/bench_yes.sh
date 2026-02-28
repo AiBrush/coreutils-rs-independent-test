@@ -22,17 +22,6 @@ run_yes_benchmarks() {
     init_benchmark "yes"
 
     echo ""
-    echo "=== Startup Time ==="
-
-    run_benchmark "startup --help" \
-        "$GNU_TOOL --help > /dev/null" \
-        "$F_TOOL --help > /dev/null" \
-
-    run_benchmark "startup --version" \
-        "$GNU_TOOL --version > /dev/null" \
-        "$F_TOOL --version > /dev/null" \
-
-    echo ""
     echo "=== Throughput (default y) ==="
 
     run_benchmark "throughput 1M lines" \

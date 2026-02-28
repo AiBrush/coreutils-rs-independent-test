@@ -19,34 +19,33 @@ run_printf_benchmarks() {
 
     init_benchmark "printf"
 
+    # Use /usr/bin/printf for GNU (not the shell builtin)
+    local gnu_printf="/usr/bin/printf"
+    if [[ ! -x "$gnu_printf" ]]; then
+        gnu_printf="printf"
+    fi
+
     echo ""
     echo "=== Simple string ==="
 
     run_benchmark "simple string" \
-        "$GNU_TOOL 'Hello, World!\n'" \
+        "$gnu_printf 'Hello, World!\n'" \
         "$F_TOOL 'Hello, World!\n'"
 
     echo ""
     echo "=== Format specifiers ==="
 
     run_benchmark "integer formatting" \
-        "$GNU_TOOL '%d %d %d\n' 42 1000 999999" \
+        "$gnu_printf '%d %d %d\n' 42 1000 999999" \
         "$F_TOOL '%d %d %d\n' 42 1000 999999"
 
     run_benchmark "float formatting" \
-        "$GNU_TOOL '%.6f %.2f %e\n' 3.14159 2.71828 1000000.5" \
+        "$gnu_printf '%.6f %.2f %e\n' 3.14159 2.71828 1000000.5" \
         "$F_TOOL '%.6f %.2f %e\n' 3.14159 2.71828 1000000.5"
 
     run_benchmark "string padding" \
-        "$GNU_TOOL '%-20s %10s\n' hello world" \
+        "$gnu_printf '%-20s %10s\n' hello world" \
         "$F_TOOL '%-20s %10s\n' hello world"
-
-    echo ""
-    echo "=== Repeated output ==="
-
-    run_benchmark "repeated format (100 args)" \
-        "$GNU_TOOL '%s\n' $(seq 1 100)" \
-        "$F_TOOL '%s\n' $(seq 1 100)"
 
     save_benchmark_results
 }

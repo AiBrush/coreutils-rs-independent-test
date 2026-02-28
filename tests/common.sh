@@ -14,6 +14,18 @@ FAILED_TESTS_DIR="$PROJECT_ROOT/tests/failed_tests"
 # Per-command timeout (seconds). Prevents any single command from hanging CI.
 TEST_TIMEOUT="${TEST_TIMEOUT:-30}"
 
+# ── Portable timeout ──────────────────────────────────────────────────────────
+# GNU timeout is not available on macOS/Windows by default.
+# Use gtimeout (Homebrew) or fall back to running without timeout.
+if ! command -v timeout &>/dev/null; then
+    if command -v gtimeout &>/dev/null; then
+        timeout() { gtimeout "$@"; }
+    else
+        # No timeout available — run the command directly (skip the timeout arg)
+        timeout() { local _t="$1"; shift; "$@"; }
+    fi
+fi
+
 # Counters
 TESTS_RUN=0
 TESTS_PASSED=0
