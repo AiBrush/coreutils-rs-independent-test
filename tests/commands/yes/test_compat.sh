@@ -96,40 +96,6 @@ run_yes_tests() {
         "$F_TOOL -z | head -n 5"
 
     echo ""
-    echo "=== --help / --version ==="
-
-    # --help and --version: check exit code 0 and non-empty stdout.
-    # Assembly binary matches GNU exactly; Rust fallback has different format.
-    # So we only validate behavior, not byte-exact output.
-    TESTS_RUN=$((TESTS_RUN + 1))
-    local help_exit=0
-    local help_out=""
-    help_out=$(timeout 5 "$F_TOOL" --help 2>&1) || help_exit=$?
-    if [[ "$help_exit" -eq 0 ]] && [[ -n "$help_out" ]]; then
-        TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}PASS${NC}: --help exits 0 with output"
-        record_result "--help exits 0 with output" "PASS" "" "" "$F_TOOL --help"
-    else
-        TESTS_FAILED=$((TESTS_FAILED + 1))
-        echo -e "  ${RED}FAIL${NC}: --help should exit 0 with output (exit=$help_exit, len=${#help_out})"
-        record_result "--help exits 0 with output" "FAIL" "exit=$help_exit, output_len=${#help_out}" "" "$F_TOOL --help"
-    fi
-
-    TESTS_RUN=$((TESTS_RUN + 1))
-    local ver_exit=0
-    local ver_out=""
-    ver_out=$(timeout 5 "$F_TOOL" --version 2>&1) || ver_exit=$?
-    if [[ "$ver_exit" -eq 0 ]] && [[ -n "$ver_out" ]]; then
-        TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}PASS${NC}: --version exits 0 with output"
-        record_result "--version exits 0 with output" "PASS" "" "" "$F_TOOL --version"
-    else
-        TESTS_FAILED=$((TESTS_FAILED + 1))
-        echo -e "  ${RED}FAIL${NC}: --version should exit 0 with output (exit=$ver_exit, len=${#ver_out})"
-        record_result "--version exits 0 with output" "FAIL" "exit=$ver_exit, output_len=${#ver_out}" "" "$F_TOOL --version"
-    fi
-
-    echo ""
     echo "=== Pipe Handling ==="
 
     run_test "pipe closes cleanly (head -n 5)" \

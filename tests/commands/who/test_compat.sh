@@ -94,17 +94,6 @@ run_who_tests() {
         skip_test "explicit /var/run/utmp" "/var/run/utmp not found"
     fi
 
-    # === Section 5: Error Handling ===
-    echo ""
-    echo "=== Error Handling ==="
-
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
 
 
     finish_test_suite

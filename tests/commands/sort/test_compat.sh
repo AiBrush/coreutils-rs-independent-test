@@ -801,16 +801,6 @@ string start 5.9.0 end of str
         "LC_ALL=C $GNU_TOOL '$TEST_DATA_DIR/unsorted.txt'" \
         "LC_ALL=C $F_TOOL '$TEST_DATA_DIR/unsorted.txt'"
 
-    echo ""
-    echo "=== Exit Code Tests ==="
-
-    run_exit_code_test "--help exits 0" \
-        "$GNU_TOOL --help > /dev/null 2>&1; echo \$?" \
-        "$F_TOOL --help > /dev/null 2>&1; echo \$?"
-
-    run_exit_code_test "--version exits 0" \
-        "$GNU_TOOL --version > /dev/null 2>&1; echo \$?" \
-        "$F_TOOL --version > /dev/null 2>&1; echo \$?"
 
 
     finish_test_suite

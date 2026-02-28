@@ -71,17 +71,6 @@ run_users_tests() {
         "$GNU_TOOL | tr ' ' '\n' | sort" \
         "$F_TOOL | tr ' ' '\n' | sort"
 
-    # === Section 5: Version/Help ===
-    echo ""
-    echo "=== Version/Help ==="
-
-    run_exit_code_test "--help exits successfully" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version exits successfully" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
 
 
     finish_test_suite

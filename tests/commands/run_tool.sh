@@ -92,15 +92,41 @@ escape_json() {
     python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip()))" 2>/dev/null <<< "$1" || echo "\"$1\""
 }
 
-# --- Step 1: Run custom compatibility tests (test_compat.sh) ---
+# --- Step 1: Run custom tests ---
+# On Linux x86_64: run test_compat.sh (compares against GNU coreutils)
+# On all other platforms: run test_functional.sh (standalone expected-value tests)
+source "$SCRIPT_DIR/../common.sh" 2>/dev/null || true  # for is_linux, is_x86_64
+
 COMPAT_SCRIPT="$TOOL_DIR/test_compat.sh"
+FUNCTIONAL_SCRIPT="$TOOL_DIR/test_functional.sh"
 COMPAT_STATUS="skipped"
 TOOL_TIMEOUT="${TOOL_TIMEOUT:-300}"  # 5 min per tool
 
-if [[ -f "$COMPAT_SCRIPT" ]]; then
-    echo -e "${BLUE}=== $TOOL: Custom compatibility tests ===${NC}"
+# Choose which test script to run based on platform
+SELECTED_SCRIPT=""
+if is_linux && is_x86_64; then
+    # Linux x86_64: prefer compat tests (compare against GNU)
+    if [[ -f "$COMPAT_SCRIPT" ]]; then
+        SELECTED_SCRIPT="$COMPAT_SCRIPT"
+    fi
+else
+    # Non-Linux-x86_64: use functional tests (standalone expected values)
+    if [[ -f "$FUNCTIONAL_SCRIPT" ]]; then
+        SELECTED_SCRIPT="$FUNCTIONAL_SCRIPT"
+    elif [[ -f "$COMPAT_SCRIPT" ]]; then
+        # Fallback to compat if no functional tests exist
+        SELECTED_SCRIPT="$COMPAT_SCRIPT"
+    fi
+fi
+
+if [[ -n "$SELECTED_SCRIPT" ]]; then
+    local_label="Custom compatibility tests"
+    if [[ "$SELECTED_SCRIPT" == *"test_functional.sh" ]]; then
+        local_label="Functional tests"
+    fi
+    echo -e "${BLUE}=== $TOOL: $local_label ===${NC}"
     compat_exit=0
-    timeout "$TOOL_TIMEOUT" bash "$COMPAT_SCRIPT" || compat_exit=$?
+    timeout "$TOOL_TIMEOUT" bash "$SELECTED_SCRIPT" || compat_exit=$?
     if [[ "$compat_exit" -eq 0 ]]; then
         COMPAT_STATUS="passed"
     else

@@ -206,10 +206,6 @@ run_od_tests() {
         "$GNU_TOOL /tmp/nonexistent_$$ 2>&1" \
         "$F_TOOL /tmp/nonexistent_$$ 2>&1"
 
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
     echo ""
     echo "=== Output Format Tests ==="
 

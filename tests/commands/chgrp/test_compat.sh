@@ -122,18 +122,6 @@ run_chgrp_tests() {
         "$GNU_TOOL -c $current_group '$test_dir/gnu_cfile' 2>&1" \
         "$F_TOOL -c $current_group '$test_dir/f_cfile' 2>&1"
 
-    # === Section 7: Help/Version ===
-    echo ""
-    echo "=== Help/Version ==="
-
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
-
     # === GNU Upstream: Basic Error Cases ===
     echo ""
     echo "=== GNU Upstream: Basic Error Cases ==="

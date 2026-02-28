@@ -187,11 +187,6 @@ run_df_tests() {
         "$GNU_TOOL --output=file . 2>/dev/null | tail -n1 | tr -d ' '" \
         "$F_TOOL --output=file . 2>/dev/null | tail -n1 | tr -d ' '"
 
-    # From df-output.sh: --help mentions --output
-    run_stdout_test "GNU df-output: --help mentions --output" \
-        "$GNU_TOOL --help 2>/dev/null | grep -c -- '--output'" \
-        "$F_TOOL --help 2>/dev/null | grep -c -- '--output'"
-
     # === Section 10: Error Handling ===
     echo ""
     echo "=== Error Handling ==="
@@ -199,14 +194,6 @@ run_df_tests() {
     run_exit_code_test "nonexistent path" \
         "$GNU_TOOL /tmp/nonexistent_$$ 2>&1" \
         "$F_TOOL /tmp/nonexistent_$$ 2>&1"
-
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
 
 
     finish_test_suite

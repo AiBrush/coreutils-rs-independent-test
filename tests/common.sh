@@ -433,6 +433,125 @@ cleanup_temps() {
 
 trap cleanup_temps EXIT
 
+# ── Functional (Expected-Value) Test Framework ────────────────────────────────
+# These functions compare fcoreutils output against hardcoded expected values,
+# without needing GNU coreutils installed. Used on non-Linux-x86_64 platforms.
+
+# Run a functional test comparing command stdout against expected value
+# Usage: run_expected_test "test_name" "f_command" "expected_stdout"
+run_expected_test() {
+    local test_name="$1"
+    local f_cmd="$2"
+    local expected="$3"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+
+    local f_out="/tmp/f_expected_out_$$"
+    local exp_out="/tmp/f_expected_exp_$$"
+    local f_exit=0
+
+    timeout "$TEST_TIMEOUT" bash -c "$f_cmd" > "$f_out" 2>&1 || f_exit=$?
+
+    if [[ "$f_exit" -eq 124 ]]; then
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name (timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "FAIL" "fcoreutils command timed out after ${TEST_TIMEOUT}s" "" "$f_cmd"
+        rm -f "$f_out" "$exp_out"
+        return 0
+    fi
+
+    printf '%s\n' "$expected" > "$exp_out"
+
+    local diff_output=""
+    if diff_output=$(diff "$exp_out" "$f_out" 2>&1); then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: $test_name"
+        record_result "$test_name" "PASS" "" "" "$f_cmd"
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name"
+        echo -e "    Command:  $f_cmd"
+        echo -e "    Expected: $(head -3 "$exp_out")"
+        echo -e "    Got:      $(head -3 "$f_out")"
+        record_result "$test_name" "FAIL" "$diff_output" "" "$f_cmd"
+    fi
+
+    rm -f "$f_out" "$exp_out"
+}
+
+# Run a functional test checking only exit code
+# Usage: run_expected_exit_test "test_name" "f_command" expected_exit_code
+run_expected_exit_test() {
+    local test_name="$1"
+    local f_cmd="$2"
+    local expected_exit="$3"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+
+    local f_exit=0
+    timeout "$TEST_TIMEOUT" bash -c "$f_cmd" > /dev/null 2>&1 || f_exit=$?
+
+    if [[ "$f_exit" -eq 124 ]]; then
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name (timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "FAIL" "fcoreutils command timed out after ${TEST_TIMEOUT}s" "" "$f_cmd"
+        return 0
+    fi
+
+    if [[ "$f_exit" -eq "$expected_exit" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: $test_name (exit=$f_exit)"
+        record_result "$test_name" "PASS" "" "" "$f_cmd"
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name (expected exit=$expected_exit, got exit=$f_exit)"
+        record_result "$test_name" "FAIL" "Exit code mismatch: expected=$expected_exit, got=$f_exit" "" "$f_cmd"
+    fi
+}
+
+# Run a functional test piping stdin into command and comparing stdout
+# Usage: run_expected_stdin_test "test_name" "f_command" "stdin_input" "expected_stdout"
+run_expected_stdin_test() {
+    local test_name="$1"
+    local f_cmd="$2"
+    local stdin_input="$3"
+    local expected="$4"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+
+    local f_out="/tmp/f_stdin_out_$$"
+    local exp_out="/tmp/f_stdin_exp_$$"
+    local f_exit=0
+
+    printf '%s' "$stdin_input" | timeout "$TEST_TIMEOUT" bash -c "$f_cmd" > "$f_out" 2>&1 || f_exit=$?
+
+    if [[ "$f_exit" -eq 124 ]]; then
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name (timed out after ${TEST_TIMEOUT}s)"
+        record_result "$test_name" "FAIL" "fcoreutils command timed out after ${TEST_TIMEOUT}s" "" "$f_cmd"
+        rm -f "$f_out" "$exp_out"
+        return 0
+    fi
+
+    printf '%s\n' "$expected" > "$exp_out"
+
+    local diff_output=""
+    if diff_output=$(diff "$exp_out" "$f_out" 2>&1); then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: $test_name"
+        record_result "$test_name" "PASS" "" "" "$f_cmd"
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: $test_name"
+        echo -e "    Command:  $f_cmd"
+        echo -e "    Expected: $(head -3 "$exp_out")"
+        echo -e "    Got:      $(head -3 "$f_out")"
+        record_result "$test_name" "FAIL" "$diff_output" "" "$f_cmd"
+    fi
+
+    rm -f "$f_out" "$exp_out"
+}
+
 # ── Platform Detection ─────────────────────────────────────────────────────────
 
 is_linux() { [[ "$(uname -s)" == "Linux" ]]; }

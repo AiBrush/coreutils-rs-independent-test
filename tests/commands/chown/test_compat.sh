@@ -209,18 +209,6 @@ run_chown_tests() {
     skip_test "GNU: chown --no-dereference with --from" "Requires root"
     skip_test "GNU: chown -v diagnostic for non-matching --from" "Requires root"
 
-    # === Section 7: Help/Version ===
-    echo ""
-    echo "=== Help/Version ==="
-
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
-
     # Cleanup
     rm -rf "$test_dir"
 

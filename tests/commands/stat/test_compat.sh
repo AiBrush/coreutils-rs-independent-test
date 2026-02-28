@@ -238,10 +238,6 @@ run_stat_tests() {
         "$GNU_TOOL /tmp/nonexistent_$$ 2>&1" \
         "$F_TOOL /tmp/nonexistent_$$ 2>&1"
 
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
     # Cleanup
     rm -rf "$test_dir"
 

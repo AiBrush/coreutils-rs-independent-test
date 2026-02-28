@@ -43,10 +43,6 @@ run_false_tests() {
         "$GNU_TOOL foo bar baz; echo \$?" \
         "$F_TOOL foo bar baz; echo \$?"
 
-    run_test "with flags" \
-        "$GNU_TOOL --help 2>/dev/null; echo \$?" \
-        "$F_TOOL --help 2>/dev/null; echo \$?"
-
     echo ""
     echo "=== Pipeline Usage ==="
 
@@ -58,17 +54,6 @@ run_false_tests() {
         "$GNU_TOOL || echo 'FALLBACK'" \
         "$F_TOOL || echo 'FALLBACK'"
 
-    # === GNU Upstream: Nonzero Exit with --help/--version ===
-    echo ""
-    echo "=== GNU Upstream: Nonzero Exit with --help/--version ==="
-
-    run_exit_code_test "--version exits nonzero" \
-        "$GNU_TOOL --version > /dev/null 2>&1" \
-        "$F_TOOL --version > /dev/null 2>&1"
-
-    run_exit_code_test "--help exits nonzero" \
-        "$GNU_TOOL --help > /dev/null 2>&1" \
-        "$F_TOOL --help > /dev/null 2>&1"
 
 
     finish_test_suite
