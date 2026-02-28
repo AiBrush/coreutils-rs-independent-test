@@ -24,29 +24,29 @@ run_unexpand_benchmarks() {
 
     run_benchmark "unexpand 1MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'" \
+        "$F_TOOL '$TEST_DATA_DIR/text_1m.txt'"
 
     run_benchmark "unexpand 10MB text" \
         "$GNU_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== All spaces (-a) ==="
 
     run_benchmark "-a 1MB text" \
         "$GNU_TOOL -a '$TEST_DATA_DIR/text_1m.txt'" \
-        "$F_TOOL -a '$TEST_DATA_DIR/text_1m.txt'" \
+        "$F_TOOL -a '$TEST_DATA_DIR/text_1m.txt'"
 
     run_benchmark "-a 10MB text" \
         "$GNU_TOOL -a '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -a '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -a '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== Custom tab stop ==="
 
     run_benchmark "-t 4 10MB text" \
         "$GNU_TOOL -t 4 '$TEST_DATA_DIR/text_10m.txt'" \
-        "$F_TOOL -t 4 '$TEST_DATA_DIR/text_10m.txt'" \
+        "$F_TOOL -t 4 '$TEST_DATA_DIR/text_10m.txt'"
 
     echo ""
     echo "=== Expanded tabbed content ==="
@@ -56,7 +56,7 @@ run_unexpand_benchmarks() {
         run_stdin_benchmark "expand|unexpand pipeline 10MB" \
             "$TEST_DATA_DIR/tabbed_10m.txt" \
             "expand | $GNU_TOOL -a" \
-            "expand | $F_TOOL -a" \
+            "expand | $F_TOOL -a"
     fi
 
     save_benchmark_results
