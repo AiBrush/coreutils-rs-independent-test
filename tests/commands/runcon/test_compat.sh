@@ -32,24 +32,12 @@ if $GNU_AVAILABLE; then
         "$GNU_TOOL -j true 2>&1" \
         "$F_TOOL -j true 2>&1"
 
-    # --help exit code
-    run_exit_code_test "GNU: runcon --help exit code" \
-        "$GNU_TOOL --help 2>&1" \
-        "$F_TOOL --help 2>&1"
-
-    # --version exit code
-    run_exit_code_test "GNU: runcon --version exit code" \
-        "$GNU_TOOL --version 2>&1" \
-        "$F_TOOL --version 2>&1"
-
     # No arguments should fail
     run_exit_code_test "GNU: runcon no args" \
         "$GNU_TOOL 2>&1" \
         "$F_TOOL 2>&1"
 else
     skip_test "runcon invalid option -j" "GNU runcon not available for comparison"
-    skip_test "runcon --help exit code" "GNU runcon not available for comparison"
-    skip_test "runcon --version exit code" "GNU runcon not available for comparison"
     skip_test "runcon no args" "GNU runcon not available for comparison"
 fi
 

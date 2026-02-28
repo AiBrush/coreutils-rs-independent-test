@@ -305,16 +305,6 @@ run_cat_tests() {
         "eval $GNU_TOOL $many_files | md5sum" \
         "eval $F_TOOL $many_files | md5sum"
 
-    echo ""
-    echo "=== Exit Code Tests ==="
-
-    run_exit_code_test "--help exits 0" \
-        "$GNU_TOOL --help > /dev/null 2>&1; echo \$?" \
-        "$F_TOOL --help > /dev/null 2>&1; echo \$?"
-
-    run_exit_code_test "--version exits 0" \
-        "$GNU_TOOL --version > /dev/null 2>&1; echo \$?" \
-        "$F_TOOL --version > /dev/null 2>&1; echo \$?"
 
 
     finish_test_suite

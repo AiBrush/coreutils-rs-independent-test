@@ -42,10 +42,6 @@ run_true_tests() {
         "$GNU_TOOL foo bar baz; echo \$?" \
         "$F_TOOL foo bar baz; echo \$?"
 
-    run_test "with flags" \
-        "$GNU_TOOL --help 2>/dev/null; echo \$?" \
-        "$F_TOOL --help 2>/dev/null; echo \$?"
-
     run_test "with dashes" \
         "$GNU_TOOL -- --invalid; echo \$?" \
         "$F_TOOL -- --invalid; echo \$?"

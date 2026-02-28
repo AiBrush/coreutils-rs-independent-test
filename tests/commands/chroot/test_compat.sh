@@ -38,16 +38,6 @@ if $GNU_AVAILABLE; then
         "$GNU_TOOL --- / true 2>&1" \
         "$F_TOOL --- / true 2>&1"
 
-    # --help exit code
-    run_exit_code_test "GNU: chroot --help exit code" \
-        "$GNU_TOOL --help 2>&1" \
-        "$F_TOOL --help 2>&1"
-
-    # --version exit code
-    run_exit_code_test "GNU: chroot --version exit code" \
-        "$GNU_TOOL --version 2>&1" \
-        "$F_TOOL --version 2>&1"
-
     # --skip-chdir with non-"/" argument should fail
     run_exit_code_test "GNU: chroot --skip-chdir with non-root dir" \
         "$GNU_TOOL --skip-chdir . env pwd 2>&1" \

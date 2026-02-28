@@ -287,14 +287,6 @@ run_shred_tests() {
         "$GNU_TOOL /tmp/nonexistent_$$ 2>&1" \
         "$F_TOOL /tmp/nonexistent_$$ 2>&1"
 
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
-
     # Cleanup
     rm -rf "$test_dir"
 

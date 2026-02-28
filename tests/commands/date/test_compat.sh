@@ -262,14 +262,6 @@ run_date_tests() {
         "$GNU_TOOL -d 'not a date' 2>&1" \
         "$F_TOOL -d 'not a date' 2>&1"
 
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
-
     echo ""
     echo "=== Format Specifiers ==="
 

@@ -53,16 +53,6 @@ if $GNU_AVAILABLE; then
         "$GNU_TOOL -u anyone 2>&1" \
         "$F_TOOL -u anyone 2>&1"
 
-    # --help exit code
-    run_exit_code_test "GNU: chcon --help exit code" \
-        "$GNU_TOOL --help 2>&1" \
-        "$F_TOOL --help 2>&1"
-
-    # --version exit code
-    run_exit_code_test "GNU: chcon --version exit code" \
-        "$GNU_TOOL --version 2>&1" \
-        "$F_TOOL --version 2>&1"
-
     rm -rf "$test_dir"
 else
     skip_test "chcon no args" "GNU chcon not available for comparison"

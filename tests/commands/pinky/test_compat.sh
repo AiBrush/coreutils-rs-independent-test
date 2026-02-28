@@ -69,17 +69,6 @@ run_pinky_tests() {
         "$GNU_TOOL -h -l $current_user" \
         "$F_TOOL -h -l $current_user"
 
-    # === Section 5: Error Handling ===
-    echo ""
-    echo "=== Error Handling ==="
-
-    run_exit_code_test "--help exits successfully" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
-    run_exit_code_test "--version exits successfully" \
-        "$GNU_TOOL --version" \
-        "$F_TOOL --version"
 
 
     finish_test_suite

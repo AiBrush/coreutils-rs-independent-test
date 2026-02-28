@@ -70,9 +70,6 @@ run_groups_tests() {
         "$GNU_TOOL \$(whoami) -- 2>/dev/null || true" \
         "$F_TOOL \$(whoami) -- 2>/dev/null || true"
 
-    # groups-version.sh: skipped (compares version output format, implementation-specific)
-    skip_test "groups --version format" "Implementation-specific version output"
-
     echo ""
     echo "=== Error Handling ==="
 

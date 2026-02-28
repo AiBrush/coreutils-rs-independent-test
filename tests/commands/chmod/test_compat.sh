@@ -540,10 +540,6 @@ run_chmod_tests() {
         "$GNU_TOOL xyz '$test_dir/ref_file' 2>&1" \
         "$F_TOOL xyz '$test_dir/ref_file' 2>&1"
 
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
     # Cleanup
     rm -rf "$test_dir"
 

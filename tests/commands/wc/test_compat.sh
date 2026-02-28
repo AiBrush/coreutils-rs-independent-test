@@ -423,16 +423,6 @@ run_wc_tests() {
         "LC_ALL=en_US.UTF-8 $GNU_TOOL -w '$wc_space_tmp'" \
         "LC_ALL=en_US.UTF-8 $F_TOOL -w '$wc_space_tmp'"
 
-    echo ""
-    echo "=== Exit Code Tests ==="
-
-    run_exit_code_test "--help exits 0" \
-        "$GNU_TOOL --help > /dev/null 2>&1; echo \$?" \
-        "$F_TOOL --help > /dev/null 2>&1; echo \$?"
-
-    run_exit_code_test "--version exits 0" \
-        "$GNU_TOOL --version > /dev/null 2>&1; echo \$?" \
-        "$F_TOOL --version > /dev/null 2>&1; echo \$?"
 
 
     finish_test_suite

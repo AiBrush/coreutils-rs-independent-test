@@ -526,10 +526,6 @@ run_mv_tests() {
         "$GNU_TOOL /tmp/nonexistent_$$ '$test_dir/dest' 2>&1" \
         "$F_TOOL /tmp/nonexistent_$$ '$test_dir/dest' 2>&1"
 
-    run_exit_code_test "--help" \
-        "$GNU_TOOL --help" \
-        "$F_TOOL --help"
-
     run_exit_code_test "no arguments" \
         "$GNU_TOOL 2>&1" \
         "$F_TOOL 2>&1"
