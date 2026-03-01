@@ -540,6 +540,89 @@ run_chmod_tests() {
         "$GNU_TOOL xyz '$test_dir/ref_file' 2>&1" \
         "$F_TOOL xyz '$test_dir/ref_file' 2>&1"
 
+    # === Section 8: Verbose Mode (-v) ===
+    echo ""
+    echo "=== Verbose Mode (-v) ==="
+
+    echo "test" > "$test_dir/gnu_verbose_f"
+    echo "test" > "$test_dir/f_verbose_f"
+    $GNU_TOOL 600 "$test_dir/gnu_verbose_f" "$test_dir/f_verbose_f"
+
+    run_exit_code_test "chmod_verbose (-v 644)" \
+        "$GNU_TOOL -v 644 '$test_dir/gnu_verbose_f' 2>&1" \
+        "$F_TOOL -v 644 '$test_dir/f_verbose_f' 2>&1"
+
+    rm -f "$test_dir/gnu_verbose_f" "$test_dir/f_verbose_f"
+
+    # === Section 9: No-Change Idempotent ===
+    echo ""
+    echo "=== No-Change Idempotent ==="
+
+    echo "test" > "$test_dir/gnu_idem_f"
+    echo "test" > "$test_dir/f_idem_f"
+    $GNU_TOOL 644 "$test_dir/gnu_idem_f" "$test_dir/f_idem_f"
+
+    # Apply same mode again — should be a no-op
+    compare_chmod "chmod_no_change_idempotent (644 already set)" "644" "644"
+
+    rm -f "$test_dir/gnu_idem_f" "$test_dir/f_idem_f"
+
+    # === Section 10: Multiple Files ===
+    echo ""
+    echo "=== Multiple Files ==="
+
+    echo "a" > "$test_dir/gnu_multi1"
+    echo "b" > "$test_dir/gnu_multi2"
+    echo "c" > "$test_dir/gnu_multi3"
+    echo "a" > "$test_dir/f_multi1"
+    echo "b" > "$test_dir/f_multi2"
+    echo "c" > "$test_dir/f_multi3"
+
+    $GNU_TOOL 644 "$test_dir/gnu_multi1" "$test_dir/gnu_multi2" "$test_dir/gnu_multi3"
+    $F_TOOL 644 "$test_dir/f_multi1" "$test_dir/f_multi2" "$test_dir/f_multi3"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_m1 gnu_m2 gnu_m3 f_m1 f_m2 f_m3
+    gnu_m1=$(stat -c '%a' "$test_dir/gnu_multi1" 2>/dev/null || stat -f '%Lp' "$test_dir/gnu_multi1")
+    gnu_m2=$(stat -c '%a' "$test_dir/gnu_multi2" 2>/dev/null || stat -f '%Lp' "$test_dir/gnu_multi2")
+    gnu_m3=$(stat -c '%a' "$test_dir/gnu_multi3" 2>/dev/null || stat -f '%Lp' "$test_dir/gnu_multi3")
+    f_m1=$(stat -c '%a' "$test_dir/f_multi1" 2>/dev/null || stat -f '%Lp' "$test_dir/f_multi1")
+    f_m2=$(stat -c '%a' "$test_dir/f_multi2" 2>/dev/null || stat -f '%Lp' "$test_dir/f_multi2")
+    f_m3=$(stat -c '%a' "$test_dir/f_multi3" 2>/dev/null || stat -f '%Lp' "$test_dir/f_multi3")
+    if [[ "$gnu_m1" == "$f_m1" ]] && [[ "$gnu_m2" == "$f_m2" ]] && [[ "$gnu_m3" == "$f_m3" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: chmod_multiple_files (644 on 3 files)"
+        record_result "chmod_multiple_files" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: chmod_multiple_files (GNU=$gnu_m1,$gnu_m2,$gnu_m3 F=$f_m1,$f_m2,$f_m3)"
+        record_result "chmod_multiple_files" "FAIL" "GNU=$gnu_m1,$gnu_m2,$gnu_m3 F=$f_m1,$f_m2,$f_m3" "" ""
+    fi
+
+    rm -f "$test_dir/gnu_multi1" "$test_dir/gnu_multi2" "$test_dir/gnu_multi3"
+    rm -f "$test_dir/f_multi1" "$test_dir/f_multi2" "$test_dir/f_multi3"
+
+    # === Section 11: Leading Zero Modes ===
+    echo ""
+    echo "=== Leading Zero Modes ==="
+
+    compare_chmod "chmod_leading_zero 0644" "0644"
+    compare_chmod "chmod_leading_zero 00755" "00755"
+    compare_chmod "chmod_leading_zero 0777" "0777"
+    compare_chmod "chmod_leading_zero 0000" "0000"
+
+    # === Section 12: --help and --version Flags ===
+    echo ""
+    echo "=== Help and Version Flags ==="
+
+    run_exit_code_test "chmod_help_flag (--help exit code)" \
+        "$GNU_TOOL --help 2>&1" \
+        "$F_TOOL --help 2>&1"
+
+    run_exit_code_test "chmod_version_flag (--version exit code)" \
+        "$GNU_TOOL --version 2>&1" \
+        "$F_TOOL --version 2>&1"
+
     # Cleanup
     rm -rf "$test_dir"
 
