@@ -1,0 +1,3164 @@
+{
+  "type": "benchmark",
+  "platform": "Linux_x86_64",
+  "timestamp": "2026-03-01T21:53:35Z",
+  "tools": {
+    "arch": {
+      "tool": "arch",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:01Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "arch (no args)",
+          "gnu_mean": 0.000886,
+          "f_mean": 0.00097,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "b2sum": {
+      "tool": "b2sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:18Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 100KB text",
+          "gnu_mean": 0.001109,
+          "f_mean": 0.001154,
+          "speedup": 1.0
+        },
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.002295,
+          "f_mean": 0.00207,
+          "speedup": 1.1
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.01508,
+          "f_mean": 0.012617,
+          "speedup": 1.2
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.015567,
+          "f_mean": 0.012727,
+          "speedup": 1.2
+        },
+        {
+          "name": "-l 256 10MB",
+          "gnu_mean": 0.014864,
+          "f_mean": 0.012136,
+          "speedup": 1.2
+        },
+        {
+          "name": "-l 128 10MB",
+          "gnu_mean": 0.014823,
+          "f_mean": 0.012188,
+          "speedup": 1.2
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.002491,
+          "f_mean": 0.002051,
+          "speedup": 1.2
+        }
+      ]
+    },
+    "base32": {
+      "tool": "base32",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:13Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "encode 100KB text",
+          "gnu_mean": 0.001304,
+          "f_mean": 0.001454,
+          "speedup": 0.9
+        },
+        {
+          "name": "encode 1MB text",
+          "gnu_mean": 0.002537,
+          "f_mean": 0.002164,
+          "speedup": 1.2
+        },
+        {
+          "name": "encode 10MB text",
+          "gnu_mean": 0.016357,
+          "f_mean": 0.011344,
+          "speedup": 1.4
+        },
+        {
+          "name": "encode 10MB binary",
+          "gnu_mean": 0.016556,
+          "f_mean": 0.011829,
+          "speedup": 1.4
+        },
+        {
+          "name": "decode 1MB",
+          "gnu_mean": 0.00354,
+          "f_mean": 0.002557,
+          "speedup": 1.4
+        },
+        {
+          "name": "decode 10MB",
+          "gnu_mean": 0.027178,
+          "f_mean": 0.016581,
+          "speedup": 1.6
+        }
+      ]
+    },
+    "base64": {
+      "tool": "base64",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:56Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "encode 100KB text",
+          "gnu_mean": 0.000721,
+          "f_mean": 0.001164,
+          "speedup": 0.6
+        },
+        {
+          "name": "encode 1MB text",
+          "gnu_mean": 0.001545,
+          "f_mean": 0.00125,
+          "speedup": 1.2
+        },
+        {
+          "name": "encode 10MB text",
+          "gnu_mean": 0.012183,
+          "f_mean": 0.005615,
+          "speedup": 2.2
+        },
+        {
+          "name": "encode 10MB binary",
+          "gnu_mean": 0.010381,
+          "f_mean": 0.005585,
+          "speedup": 1.9
+        },
+        {
+          "name": "decode 1MB",
+          "gnu_mean": 0.003535,
+          "f_mean": 0.00238,
+          "speedup": 1.5
+        },
+        {
+          "name": "decode 10MB",
+          "gnu_mean": 0.030494,
+          "f_mean": 0.004363,
+          "speedup": 7.0
+        },
+        {
+          "name": "encode -w 76 10MB",
+          "gnu_mean": 0.010682,
+          "f_mean": 0.005835,
+          "speedup": 1.8
+        },
+        {
+          "name": "encode -w 0 (no wrap) 10MB",
+          "gnu_mean": 0.008371,
+          "f_mean": 0.004452,
+          "speedup": 1.9
+        }
+      ]
+    },
+    "basename": {
+      "tool": "basename",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:16Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "basename simple path",
+          "gnu_mean": 0.000605,
+          "f_mean": 0.000779,
+          "speedup": 0.8
+        },
+        {
+          "name": "basename with suffix (.txt)",
+          "gnu_mean": 0.00061,
+          "f_mean": 0.000783,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "basenc": {
+      "tool": "basenc",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:15Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "encode --base64 1MB",
+          "gnu_mean": 0.002007,
+          "f_mean": 0.001304,
+          "speedup": 1.5
+        },
+        {
+          "name": "encode --base64 10MB",
+          "gnu_mean": 0.012586,
+          "f_mean": 0.004983,
+          "speedup": 2.5
+        },
+        {
+          "name": "encode --base32 1MB",
+          "gnu_mean": 0.002239,
+          "f_mean": 0.002286,
+          "speedup": 1.0
+        },
+        {
+          "name": "encode --base16 1MB",
+          "gnu_mean": 0.002449,
+          "f_mean": 0.002636,
+          "speedup": 0.9
+        },
+        {
+          "name": "decode --base64 -d 1MB",
+          "gnu_mean": 0.004055,
+          "f_mean": 0.003467,
+          "speedup": 1.2
+        }
+      ]
+    },
+    "cat": {
+      "tool": "cat",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:03Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "passthrough 1MB",
+          "gnu_mean": 0.000976,
+          "f_mean": 0.00107,
+          "speedup": 0.9
+        },
+        {
+          "name": "passthrough 10MB",
+          "gnu_mean": 0.00147,
+          "f_mean": 0.00132,
+          "speedup": 1.1
+        },
+        {
+          "name": "-n 1MB",
+          "gnu_mean": 0.002795,
+          "f_mean": 0.001934,
+          "speedup": 1.4
+        },
+        {
+          "name": "-n 10MB",
+          "gnu_mean": 0.010398,
+          "f_mean": 0.00617,
+          "speedup": 1.7
+        },
+        {
+          "name": "-b 10MB",
+          "gnu_mean": 0.010273,
+          "f_mean": 0.005869,
+          "speedup": 1.8
+        },
+        {
+          "name": "-A 1MB",
+          "gnu_mean": 0.001928,
+          "f_mean": 0.001697,
+          "speedup": 1.1
+        },
+        {
+          "name": "100 small files",
+          "gnu_mean": 0.002883,
+          "f_mean": 0.002353,
+          "speedup": 1.2
+        },
+        {
+          "name": "binary 10MB",
+          "gnu_mean": 0.001524,
+          "f_mean": 0.001296,
+          "speedup": 1.2
+        }
+      ]
+    },
+    "chcon": {
+      "tool": "chcon",
+      "status": "NOT_IMPLEMENTED"
+    },
+    "chgrp": {
+      "tool": "chgrp",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:01Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "chgrp current group on file",
+          "gnu_mean": 0.001622,
+          "f_mean": 0.001894,
+          "speedup": 0.9
+        },
+        {
+          "name": "chgrp current group on 1MB file",
+          "gnu_mean": 0.001994,
+          "f_mean": 0.002325,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "chown": {
+      "tool": "chown",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:05Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "chown current user on file",
+          "gnu_mean": 0.002255,
+          "f_mean": 0.002378,
+          "speedup": 0.9
+        },
+        {
+          "name": "chown current user on 1MB file",
+          "gnu_mean": 0.003018,
+          "f_mean": 0.003259,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "chroot": {
+      "tool": "chroot",
+      "status": "NOT_IMPLEMENTED"
+    },
+    "cksum": {
+      "tool": "cksum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:05Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.001432,
+          "f_mean": 0.001229,
+          "speedup": 1.2
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.003222,
+          "f_mean": 0.003263,
+          "speedup": 1.0
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.00291,
+          "f_mean": 0.002462,
+          "speedup": 1.2
+        }
+      ]
+    },
+    "comm": {
+      "tool": "comm",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:28Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 10MB sorted",
+          "gnu_mean": 0.030002,
+          "f_mean": 0.006995,
+          "speedup": 4.3
+        },
+        {
+          "name": "-12 (common only) 10MB",
+          "gnu_mean": 0.021308,
+          "f_mean": 0.005507,
+          "speedup": 3.9
+        },
+        {
+          "name": "-23 (unique to file1) 10MB",
+          "gnu_mean": 0.021933,
+          "f_mean": 0.006147,
+          "speedup": 3.6
+        },
+        {
+          "name": "-3 10MB",
+          "gnu_mean": 0.022796,
+          "f_mean": 0.006884,
+          "speedup": 3.3
+        },
+        {
+          "name": "identical 10MB sorted",
+          "gnu_mean": 0.029745,
+          "f_mean": 0.011486,
+          "speedup": 2.6
+        }
+      ]
+    },
+    "cp": {
+      "tool": "cp",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:14Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "cp small file (1KB)",
+          "gnu_mean": 0.002118,
+          "f_mean": 0.001806,
+          "speedup": 1.2
+        },
+        {
+          "name": "cp medium file (1MB)",
+          "gnu_mean": 0.002907,
+          "f_mean": 0.002714,
+          "speedup": 1.1
+        },
+        {
+          "name": "cp large file (10MB)",
+          "gnu_mean": 0.01049,
+          "f_mean": 0.010243,
+          "speedup": 1.0
+        },
+        {
+          "name": "cp -r many small files (100 files)",
+          "gnu_mean": 0.007138,
+          "f_mean": 0.006172,
+          "speedup": 1.2
+        },
+        {
+          "name": "cp -r deep directory (8 levels)",
+          "gnu_mean": 0.003064,
+          "f_mean": 0.002935,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "cut": {
+      "tool": "cut",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:09Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "-b1-100 10MB CSV",
+          "gnu_mean": 0.022903,
+          "f_mean": 0.003941,
+          "speedup": 5.8
+        },
+        {
+          "name": "-c1-100 10MB CSV",
+          "gnu_mean": 0.0229,
+          "f_mean": 0.003836,
+          "speedup": 6.0
+        },
+        {
+          "name": "-d, -f1 10MB CSV",
+          "gnu_mean": 0.016799,
+          "f_mean": 0.009453,
+          "speedup": 1.8
+        },
+        {
+          "name": "-d, -f1,3,5 10MB CSV",
+          "gnu_mean": 0.021968,
+          "f_mean": 0.011455,
+          "speedup": 1.9
+        },
+        {
+          "name": "-d, -f2-4 10MB CSV",
+          "gnu_mean": 0.024376,
+          "f_mean": 0.010264,
+          "speedup": 2.4
+        },
+        {
+          "name": "--complement -d, -f1 10MB CSV",
+          "gnu_mean": 0.030661,
+          "f_mean": 0.010847,
+          "speedup": 2.8
+        },
+        {
+          "name": "-d, -f1 100KB text",
+          "gnu_mean": 0.00087,
+          "f_mean": 0.001164,
+          "speedup": 0.7
+        },
+        {
+          "name": "-d, -f1 1MB text",
+          "gnu_mean": 0.003306,
+          "f_mean": 0.002917,
+          "speedup": 1.1
+        },
+        {
+          "name": "-d: -f1 colon file",
+          "gnu_mean": 0.000834,
+          "f_mean": 0.001147,
+          "speedup": 0.7
+        }
+      ]
+    },
+    "date": {
+      "tool": "date",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:03Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "date (default)",
+          "gnu_mean": 0.000854,
+          "f_mean": 0.001018,
+          "speedup": 0.8
+        },
+        {
+          "name": "+%Y-%m-%d %H:%M:%S",
+          "gnu_mean": 0.00091,
+          "f_mean": 0.000976,
+          "speedup": 0.9
+        },
+        {
+          "name": "+%s (epoch)",
+          "gnu_mean": 0.000935,
+          "f_mean": 0.000973,
+          "speedup": 1.0
+        },
+        {
+          "name": "ISO 8601 format",
+          "gnu_mean": 0.000865,
+          "f_mean": 0.000913,
+          "speedup": 0.9
+        },
+        {
+          "name": "RFC 3339",
+          "gnu_mean": 0.00087,
+          "f_mean": 0.000989,
+          "speedup": 0.9
+        },
+        {
+          "name": "-u (UTC)",
+          "gnu_mean": 0.000854,
+          "f_mean": 0.000965,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "dd": {
+      "tool": "dd",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:04Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "dd read 10MB (bs=4096)",
+          "gnu_mean": 0.004811,
+          "f_mean": 0.004616,
+          "speedup": 1.0
+        },
+        {
+          "name": "dd write 10MB from /dev/zero (bs=1M count=10)",
+          "gnu_mean": 0.010553,
+          "f_mean": 0.013012,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "df": {
+      "tool": "df",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:01Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "df (default)",
+          "gnu_mean": 0.001191,
+          "f_mean": 0.001039,
+          "speedup": 1.1
+        },
+        {
+          "name": "-h (human readable)",
+          "gnu_mean": 0.001237,
+          "f_mean": 0.001072,
+          "speedup": 1.2
+        },
+        {
+          "name": "df /",
+          "gnu_mean": 0.000957,
+          "f_mean": 0.001039,
+          "speedup": 0.9
+        },
+        {
+          "name": "-i (inodes)",
+          "gnu_mean": 0.001217,
+          "f_mean": 0.001052,
+          "speedup": 1.2
+        }
+      ]
+    },
+    "dir": {
+      "tool": "dir",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:14Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "dir current directory",
+          "gnu_mean": 0.00108,
+          "f_mean": 0.00131,
+          "speedup": 0.8
+        },
+        {
+          "name": "100 files directory",
+          "gnu_mean": 0.001161,
+          "f_mean": 0.001585,
+          "speedup": 0.7
+        },
+        {
+          "name": "-la 100 files",
+          "gnu_mean": 0.001965,
+          "f_mean": 0.00201,
+          "speedup": 1.0
+        },
+        {
+          "name": "-R test data",
+          "gnu_mean": 0.001185,
+          "f_mean": 0.001815,
+          "speedup": 0.7
+        }
+      ]
+    },
+    "dircolors": {
+      "tool": "dircolors",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:05Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "dircolors -b (default)",
+          "gnu_mean": 0.000827,
+          "f_mean": 0.001004,
+          "speedup": 0.8
+        },
+        {
+          "name": "dircolors -c (csh)",
+          "gnu_mean": 0.000839,
+          "f_mean": 0.001056,
+          "speedup": 0.8
+        },
+        {
+          "name": "dircolors -p (print)",
+          "gnu_mean": 0.000836,
+          "f_mean": 0.000919,
+          "speedup": 0.9
+        },
+        {
+          "name": "custom db file",
+          "gnu_mean": 0.000936,
+          "f_mean": 0.001084,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "dirname": {
+      "tool": "dirname",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:25Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "dirname simple path",
+          "gnu_mean": 0.0006,
+          "f_mean": 0.000806,
+          "speedup": 0.7
+        },
+        {
+          "name": "dirname deep path",
+          "gnu_mean": 0.000596,
+          "f_mean": 0.001057,
+          "speedup": 0.6
+        }
+      ]
+    },
+    "du": {
+      "tool": "du",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:58Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "du test data dir",
+          "gnu_mean": 0.001432,
+          "f_mean": 0.00199,
+          "speedup": 0.7
+        },
+        {
+          "name": "-s (summary)",
+          "gnu_mean": 0.001462,
+          "f_mean": 0.002031,
+          "speedup": 0.7
+        },
+        {
+          "name": "-sh (human summary)",
+          "gnu_mean": 0.001412,
+          "f_mean": 0.001987,
+          "speedup": 0.7
+        },
+        {
+          "name": "--max-depth=1",
+          "gnu_mean": 0.001423,
+          "f_mean": 0.002018,
+          "speedup": 0.7
+        },
+        {
+          "name": "-b (bytes)",
+          "gnu_mean": 0.001388,
+          "f_mean": 0.001964,
+          "speedup": 0.7
+        }
+      ]
+    },
+    "echo": {
+      "tool": "echo",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:16Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "echo hello",
+          "gnu_mean": 0.000815,
+          "f_mean": 0.001026,
+          "speedup": 0.8
+        },
+        {
+          "name": "echo -n hello",
+          "gnu_mean": 0.000792,
+          "f_mean": 0.000946,
+          "speedup": 0.8
+        },
+        {
+          "name": "echo -e with escapes",
+          "gnu_mean": 0.000825,
+          "f_mean": 0.001043,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "env": {
+      "tool": "env",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:37Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "print all env vars",
+          "gnu_mean": 0.000864,
+          "f_mean": 0.001065,
+          "speedup": 0.8
+        },
+        {
+          "name": "env true (run command)",
+          "gnu_mean": 0.001576,
+          "f_mean": 0.001922,
+          "speedup": 0.8
+        },
+        {
+          "name": "env VAR=value true",
+          "gnu_mean": 0.001762,
+          "f_mean": 0.001721,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "expand": {
+      "tool": "expand",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:22Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "expand 10MB tabbed (default)",
+          "gnu_mean": 0.045833,
+          "f_mean": 0.035619,
+          "speedup": 1.3
+        },
+        {
+          "name": "expand 1MB text",
+          "gnu_mean": 0.003325,
+          "f_mean": 0.001047,
+          "speedup": 3.2
+        },
+        {
+          "name": "-t 4 10MB tabbed",
+          "gnu_mean": 0.042237,
+          "f_mean": 0.035292,
+          "speedup": 1.2
+        },
+        {
+          "name": "-t 2 10MB tabbed",
+          "gnu_mean": 0.035875,
+          "f_mean": 0.035276,
+          "speedup": 1.0
+        },
+        {
+          "name": "--initial 10MB tabbed",
+          "gnu_mean": 0.023271,
+          "f_mean": 0.006639,
+          "speedup": 3.5
+        },
+        {
+          "name": "expand CSV 10MB",
+          "gnu_mean": 0.019091,
+          "f_mean": 0.001748,
+          "speedup": 10.9
+        }
+      ]
+    },
+    "expr": {
+      "tool": "expr",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:02Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "expr 1 + 1",
+          "gnu_mean": 0.000909,
+          "f_mean": 0.001044,
+          "speedup": 0.9
+        },
+        {
+          "name": "expr 999999 * 999999",
+          "gnu_mean": 0.000969,
+          "f_mean": 0.001153,
+          "speedup": 0.8
+        },
+        {
+          "name": "expr length 'hello world'",
+          "gnu_mean": 0.000879,
+          "f_mean": 0.001028,
+          "speedup": 0.9
+        },
+        {
+          "name": "expr 'hello' : 'hel'",
+          "gnu_mean": 0.000908,
+          "f_mean": 0.00114,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "factor": {
+      "tool": "factor",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:12Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "factor 1234567890",
+          "gnu_mean": 0.000959,
+          "f_mean": 0.001146,
+          "speedup": 0.8
+        },
+        {
+          "name": "factor 999999999999999989 (large prime)",
+          "gnu_mean": 0.0009,
+          "f_mean": 0.00108,
+          "speedup": 0.8
+        },
+        {
+          "name": "factor 1-100000 via stdin",
+          "gnu_mean": 0.018689,
+          "f_mean": 0.011613,
+          "speedup": 1.6
+        }
+      ]
+    },
+    "false": {
+      "tool": "false",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:40Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "false (startup overhead)",
+          "gnu_mean": 7.7e-05,
+          "f_mean": 0.000697,
+          "speedup": 0.1
+        }
+      ]
+    },
+    "fmt": {
+      "tool": "fmt",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:20Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "fmt 1MB text",
+          "gnu_mean": 0.016792,
+          "f_mean": 0.020153,
+          "speedup": 0.8
+        },
+        {
+          "name": "fmt 10MB text",
+          "gnu_mean": 0.143484,
+          "f_mean": 0.163472,
+          "speedup": 0.9
+        },
+        {
+          "name": "-w 40 10MB",
+          "gnu_mean": 0.122782,
+          "f_mean": 0.118382,
+          "speedup": 1.0
+        },
+        {
+          "name": "-w 120 10MB",
+          "gnu_mean": 0.175905,
+          "f_mean": 0.220529,
+          "speedup": 0.8
+        },
+        {
+          "name": "fmt wide lines 10MB",
+          "gnu_mean": 0.166849,
+          "f_mean": 0.200695,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "fold": {
+      "tool": "fold",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:44Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "fold 10MB wide lines (default)",
+          "gnu_mean": 0.037184,
+          "f_mean": 0.005731,
+          "speedup": 6.5
+        },
+        {
+          "name": "fold 1MB text",
+          "gnu_mean": 0.004205,
+          "f_mean": 0.001824,
+          "speedup": 2.3
+        },
+        {
+          "name": "fold 10MB text",
+          "gnu_mean": 0.034399,
+          "f_mean": 0.008139,
+          "speedup": 4.2
+        },
+        {
+          "name": "-w 40 10MB",
+          "gnu_mean": 0.035293,
+          "f_mean": 0.006136,
+          "speedup": 5.8
+        },
+        {
+          "name": "-w 20 10MB",
+          "gnu_mean": 0.035811,
+          "f_mean": 0.007247,
+          "speedup": 4.9
+        },
+        {
+          "name": "-s -w 60 10MB",
+          "gnu_mean": 0.03745,
+          "f_mean": 0.00648,
+          "speedup": 5.8
+        },
+        {
+          "name": "-s -w 40 10MB",
+          "gnu_mean": 0.040237,
+          "f_mean": 0.006835,
+          "speedup": 5.9
+        },
+        {
+          "name": "-b -w 40 10MB",
+          "gnu_mean": 0.032721,
+          "f_mean": 0.005936,
+          "speedup": 5.5
+        }
+      ]
+    },
+    "groups": {
+      "tool": "groups",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:44Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "groups (no args)",
+          "gnu_mean": 0.000976,
+          "f_mean": 0.001049,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "head": {
+      "tool": "head",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:13Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 1MB text",
+          "gnu_mean": 0.000847,
+          "f_mean": 0.001121,
+          "speedup": 0.8
+        },
+        {
+          "name": "default 10MB text",
+          "gnu_mean": 0.000865,
+          "f_mean": 0.001093,
+          "speedup": 0.8
+        },
+        {
+          "name": "-n 1000 10MB",
+          "gnu_mean": 0.000914,
+          "f_mean": 0.001134,
+          "speedup": 0.8
+        },
+        {
+          "name": "-n 100000 10MB",
+          "gnu_mean": 0.006525,
+          "f_mean": 0.003249,
+          "speedup": 2.0
+        },
+        {
+          "name": "-c 1000000 10MB",
+          "gnu_mean": 0.001206,
+          "f_mean": 0.001061,
+          "speedup": 1.1
+        },
+        {
+          "name": "-n -100 10MB (all but last 100)",
+          "gnu_mean": 0.004168,
+          "f_mean": 0.001894,
+          "speedup": 2.2
+        },
+        {
+          "name": "100 small files",
+          "gnu_mean": 0.001539,
+          "f_mean": 0.001747,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "hostid": {
+      "tool": "hostid",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:18Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "hostid (no args)",
+          "gnu_mean": 0.000938,
+          "f_mean": 0.001046,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "id": {
+      "tool": "id",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:02Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "id (no args)",
+          "gnu_mean": 0.001229,
+          "f_mean": 0.001135,
+          "speedup": 1.1
+        },
+        {
+          "name": "id -u",
+          "gnu_mean": 0.001058,
+          "f_mean": 0.000952,
+          "speedup": 1.1
+        },
+        {
+          "name": "id -g",
+          "gnu_mean": 0.001581,
+          "f_mean": 0.001184,
+          "speedup": 1.3
+        },
+        {
+          "name": "id -un",
+          "gnu_mean": 0.001126,
+          "f_mean": 0.001045,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "install": {
+      "tool": "install",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:20Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "install 1MB file",
+          "gnu_mean": 0.002889,
+          "f_mean": 0.002648,
+          "speedup": 1.1
+        },
+        {
+          "name": "install -d create directory",
+          "gnu_mean": 0.002295,
+          "f_mean": 0.002115,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "join": {
+      "tool": "join",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:20Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default join 10MB",
+          "error": "benchmark failed"
+        },
+        {
+          "name": "outer join 10MB",
+          "error": "benchmark failed"
+        },
+        {
+          "name": "-v 1 (unmatched from file1) 10MB",
+          "error": "benchmark failed"
+        },
+        {
+          "name": "-o 0,1.2,2.2 10MB",
+          "error": "benchmark failed"
+        },
+        {
+          "name": "self-join sorted 10MB",
+          "gnu_mean": 0.051607,
+          "f_mean": 0.038116,
+          "speedup": 1.4
+        }
+      ]
+    },
+    "kill": {
+      "tool": "kill",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:04Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "kill -l (list signals)",
+          "gnu_mean": 2.8e-05,
+          "f_mean": 0.000922,
+          "speedup": 0.0
+        }
+      ]
+    },
+    "link": {
+      "tool": "link",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:03Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "hard link a file",
+          "gnu_mean": 0.00165,
+          "f_mean": 0.001798,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "ln": {
+      "tool": "ln",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:02Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "symlink single file",
+          "gnu_mean": 0.001688,
+          "f_mean": 0.001807,
+          "speedup": 0.9
+        },
+        {
+          "name": "symlink force overwrite (-sf)",
+          "gnu_mean": 0.001764,
+          "f_mean": 0.002746,
+          "speedup": 0.6
+        },
+        {
+          "name": "hard link single file",
+          "gnu_mean": 0.001717,
+          "f_mean": 0.001793,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "logname": {
+      "tool": "logname",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:34Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "logname (no args)",
+          "gnu_mean": 0.000866,
+          "f_mean": 0.001007,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "ls": {
+      "tool": "ls",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:17Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "ls current directory",
+          "gnu_mean": 0.001071,
+          "f_mean": 0.00132,
+          "speedup": 0.8
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.001202,
+          "f_mean": 0.001483,
+          "speedup": 0.8
+        },
+        {
+          "name": "-la 100 files",
+          "gnu_mean": 0.001959,
+          "f_mean": 0.001772,
+          "speedup": 1.1
+        },
+        {
+          "name": "-la test data dir",
+          "gnu_mean": 0.002319,
+          "f_mean": 0.002028,
+          "speedup": 1.1
+        },
+        {
+          "name": "-R test data",
+          "gnu_mean": 0.001128,
+          "f_mean": 0.0015,
+          "speedup": 0.8
+        },
+        {
+          "name": "-lt 100 files",
+          "gnu_mean": 0.001973,
+          "f_mean": 0.001789,
+          "speedup": 1.1
+        },
+        {
+          "name": "-lS test data dir",
+          "gnu_mean": 0.00219,
+          "f_mean": 0.001906,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "md5sum": {
+      "tool": "md5sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:43Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 100KB text",
+          "gnu_mean": 0.001544,
+          "f_mean": 0.001306,
+          "speedup": 1.2
+        },
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.003201,
+          "f_mean": 0.003105,
+          "speedup": 1.0
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.017924,
+          "f_mean": 0.020632,
+          "speedup": 0.9
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.018632,
+          "f_mean": 0.021512,
+          "speedup": 0.9
+        },
+        {
+          "name": "10 files",
+          "gnu_mean": 0.001458,
+          "f_mean": 0.001239,
+          "speedup": 1.2
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.002538,
+          "f_mean": 0.00193,
+          "speedup": 1.3
+        }
+      ]
+    },
+    "mkdir": {
+      "tool": "mkdir",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:33Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "mkdir single directory",
+          "gnu_mean": 0.001375,
+          "f_mean": 0.001567,
+          "speedup": 0.9
+        },
+        {
+          "name": "mkdir -p nested directories",
+          "gnu_mean": 0.001487,
+          "f_mean": 0.001621,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "mkfifo": {
+      "tool": "mkfifo",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:54Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "mkfifo single fifo",
+          "gnu_mean": 0.001844,
+          "f_mean": 0.001816,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "mknod": {
+      "tool": "mknod",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:04Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "mknod named pipe",
+          "gnu_mean": 0.001881,
+          "f_mean": 0.001894,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "mktemp": {
+      "tool": "mktemp",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:46Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "mktemp default",
+          "gnu_mean": 0.001851,
+          "f_mean": 0.002033,
+          "speedup": 0.9
+        },
+        {
+          "name": "mktemp -d directory",
+          "gnu_mean": 0.001851,
+          "f_mean": 0.00199,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "mv": {
+      "tool": "mv",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:58Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "mv same-fs small (1MB)",
+          "gnu_mean": 0.003942,
+          "f_mean": 0.003762,
+          "speedup": 1.0
+        },
+        {
+          "name": "mv same-fs large (10MB)",
+          "gnu_mean": 0.01152,
+          "f_mean": 0.011311,
+          "speedup": 1.0
+        },
+        {
+          "name": "mv many files (100 files)",
+          "gnu_mean": null,
+          "f_mean": 0.010756,
+          "speedup": null,
+          "gnu_missing": true
+        }
+      ]
+    },
+    "nice": {
+      "tool": "nice",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:49Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "nice true (default priority)",
+          "gnu_mean": 0.00132,
+          "f_mean": 0.00137,
+          "speedup": 1.0
+        },
+        {
+          "name": "nice -n 10 true",
+          "gnu_mean": 0.001295,
+          "f_mean": 0.001375,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "nl": {
+      "tool": "nl",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:24Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 1MB",
+          "gnu_mean": 0.004879,
+          "f_mean": 0.001776,
+          "speedup": 2.7
+        },
+        {
+          "name": "default 10MB",
+          "gnu_mean": 0.036501,
+          "f_mean": 0.007222,
+          "speedup": 5.1
+        },
+        {
+          "name": "-b a 10MB",
+          "gnu_mean": 0.036011,
+          "f_mean": 0.007143,
+          "speedup": 5.0
+        },
+        {
+          "name": "-b a 10MB with blanks",
+          "gnu_mean": 0.044879,
+          "f_mean": 0.00936,
+          "speedup": 4.8
+        },
+        {
+          "name": "-b a -n rz 10MB",
+          "gnu_mean": 0.035778,
+          "f_mean": 0.006992,
+          "speedup": 5.1
+        },
+        {
+          "name": "-b a -w 8 -s ': ' 10MB",
+          "gnu_mean": 0.035972,
+          "f_mean": 0.007204,
+          "speedup": 5.0
+        },
+        {
+          "name": "-b p'^the' 10MB",
+          "gnu_mean": 0.05967,
+          "f_mean": 0.012163,
+          "speedup": 4.9
+        }
+      ]
+    },
+    "nohup": {
+      "tool": "nohup",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:43Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "nohup true",
+          "gnu_mean": 0.002334,
+          "f_mean": 0.002428,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "nproc": {
+      "tool": "nproc",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:04Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "nproc (no args)",
+          "gnu_mean": 0.000734,
+          "f_mean": 0.000961,
+          "speedup": 0.8
+        },
+        {
+          "name": "nproc --all",
+          "gnu_mean": 0.000698,
+          "f_mean": 0.000816,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "numfmt": {
+      "tool": "numfmt",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:44Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "--to=iec single value",
+          "gnu_mean": 0.001108,
+          "f_mean": 0.001265,
+          "speedup": 0.9
+        },
+        {
+          "name": "--from=iec single value",
+          "gnu_mean": 0.001113,
+          "f_mean": 0.001244,
+          "speedup": 0.9
+        },
+        {
+          "name": "--to=si from CSV column",
+          "gnu_mean": 0.02674,
+          "f_mean": 0.025249,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "od": {
+      "tool": "od",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:10Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 1MB text",
+          "gnu_mean": 0.06381,
+          "f_mean": 0.041123,
+          "speedup": 1.6
+        },
+        {
+          "name": "-A x -t x1z 1MB",
+          "gnu_mean": 0.123653,
+          "f_mean": 0.074277,
+          "speedup": 1.7
+        },
+        {
+          "name": "-c 1MB text",
+          "gnu_mean": 0.120518,
+          "f_mean": 0.044096,
+          "speedup": 2.7
+        },
+        {
+          "name": "default 10MB binary",
+          "gnu_mean": 0.662348,
+          "f_mean": 0.437792,
+          "speedup": 1.5
+        },
+        {
+          "name": "-N 10000 10MB",
+          "gnu_mean": 0.002112,
+          "f_mean": 0.002282,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "paste": {
+      "tool": "paste",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:47Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "2 columns 10MB",
+          "gnu_mean": 0.023913,
+          "f_mean": 0.009014,
+          "speedup": 2.7
+        },
+        {
+          "name": "3 columns 10MB",
+          "gnu_mean": 0.030558,
+          "f_mean": 0.014452,
+          "speedup": 2.1
+        },
+        {
+          "name": "-d comma 10MB",
+          "gnu_mean": 0.02369,
+          "f_mean": 0.008925,
+          "speedup": 2.7
+        },
+        {
+          "name": "-s 10MB single file",
+          "gnu_mean": 0.010484,
+          "f_mean": 0.005349,
+          "speedup": 2.0
+        },
+        {
+          "name": "stdin split 2-way 10MB",
+          "gnu_mean": 0.033103,
+          "f_mean": 0.018243,
+          "speedup": 1.8
+        }
+      ]
+    },
+    "pathchk": {
+      "tool": "pathchk",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:07Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "pathchk default",
+          "gnu_mean": 0.000893,
+          "f_mean": 0.00097,
+          "speedup": 0.9
+        },
+        {
+          "name": "pathchk -p (POSIX portable)",
+          "gnu_mean": 0.000816,
+          "f_mean": 0.00104,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "pinky": {
+      "tool": "pinky",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:11Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "pinky (default)",
+          "gnu_mean": 0.000904,
+          "f_mean": 0.00106,
+          "speedup": 0.9
+        },
+        {
+          "name": "pinky -l",
+          "error": "benchmark failed"
+        }
+      ]
+    },
+    "pr": {
+      "tool": "pr",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:12Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "pr 1MB text",
+          "gnu_mean": 0.010528,
+          "f_mean": 0.002633,
+          "speedup": 4.0
+        },
+        {
+          "name": "-2 (two columns) 1MB",
+          "gnu_mean": 0.011608,
+          "f_mean": 0.002809,
+          "speedup": 4.1
+        },
+        {
+          "name": "-3 (three columns) 1MB",
+          "gnu_mean": 0.008571,
+          "f_mean": 0.002751,
+          "speedup": 3.1
+        },
+        {
+          "name": "-n 1MB text",
+          "gnu_mean": 0.011537,
+          "f_mean": 0.003004,
+          "speedup": 3.8
+        },
+        {
+          "name": "-t 1MB text",
+          "gnu_mean": 0.010043,
+          "f_mean": 0.002662,
+          "speedup": 3.8
+        }
+      ]
+    },
+    "printenv": {
+      "tool": "printenv",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:32Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "printenv (all)",
+          "gnu_mean": 0.000879,
+          "f_mean": 0.001039,
+          "speedup": 0.8
+        },
+        {
+          "name": "printenv HOME",
+          "gnu_mean": 0.000716,
+          "f_mean": 0.000987,
+          "speedup": 0.7
+        },
+        {
+          "name": "printenv PATH",
+          "gnu_mean": 0.00083,
+          "f_mean": 0.000913,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "printf": {
+      "tool": "printf",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:53Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "simple string",
+          "gnu_mean": 0.000906,
+          "f_mean": 0.001119,
+          "speedup": 0.8
+        },
+        {
+          "name": "integer formatting",
+          "gnu_mean": 0.000907,
+          "f_mean": 0.001142,
+          "speedup": 0.8
+        },
+        {
+          "name": "float formatting",
+          "gnu_mean": 0.000924,
+          "f_mean": 0.001269,
+          "speedup": 0.7
+        },
+        {
+          "name": "string padding",
+          "gnu_mean": 0.000902,
+          "f_mean": 0.001062,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "ptx": {
+      "tool": "ptx",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:06Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "ptx 10KB text",
+          "gnu_mean": 0.001906,
+          "f_mean": 0.001495,
+          "speedup": 1.3
+        },
+        {
+          "name": "ptx 100KB text",
+          "gnu_mean": 0.010919,
+          "f_mean": 0.005538,
+          "speedup": 2.0
+        },
+        {
+          "name": "-w 60 100KB text",
+          "gnu_mean": 0.010244,
+          "f_mean": 0.005349,
+          "speedup": 1.9
+        }
+      ]
+    },
+    "pwd": {
+      "tool": "pwd",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:47Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "pwd (no args)",
+          "gnu_mean": 1e-05,
+          "f_mean": 0.000983,
+          "speedup": 0.0
+        },
+        {
+          "name": "pwd -L",
+          "gnu_mean": 1.8e-05,
+          "f_mean": 0.000965,
+          "speedup": 0.0
+        },
+        {
+          "name": "pwd -P",
+          "gnu_mean": 2.5e-05,
+          "f_mean": 0.000982,
+          "speedup": 0.0
+        }
+      ]
+    },
+    "readlink": {
+      "tool": "readlink",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:37Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "readlink symlink",
+          "gnu_mean": 0.000824,
+          "f_mean": 0.000957,
+          "speedup": 0.9
+        },
+        {
+          "name": "readlink -f (canonicalize)",
+          "gnu_mean": 0.000845,
+          "f_mean": 0.000954,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "realpath": {
+      "tool": "realpath",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:40Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "realpath .",
+          "gnu_mean": 0.00082,
+          "f_mean": 0.000943,
+          "speedup": 0.9
+        },
+        {
+          "name": "realpath /tmp",
+          "gnu_mean": 0.000894,
+          "f_mean": 0.001008,
+          "speedup": 0.9
+        },
+        {
+          "name": "realpath test data file",
+          "gnu_mean": 0.000855,
+          "f_mean": 0.000986,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "rev": {
+      "tool": "rev",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:02Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "reverse 100KB text",
+          "gnu_mean": 0.002221,
+          "f_mean": 0.001048,
+          "speedup": 2.1
+        },
+        {
+          "name": "reverse 1MB text",
+          "gnu_mean": 0.014364,
+          "f_mean": 0.00171,
+          "speedup": 8.4
+        },
+        {
+          "name": "reverse 10MB text",
+          "gnu_mean": 0.133851,
+          "f_mean": 0.007501,
+          "speedup": 17.8
+        },
+        {
+          "name": "reverse CSV 10MB",
+          "gnu_mean": 0.099692,
+          "f_mean": 0.007132,
+          "speedup": 14.0
+        },
+        {
+          "name": "reverse repetitive 10MB",
+          "gnu_mean": 0.29206,
+          "f_mean": 0.012531,
+          "speedup": 23.3
+        },
+        {
+          "name": "reverse 10KB single line",
+          "gnu_mean": 0.001005,
+          "f_mean": 0.000929,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "rm": {
+      "tool": "rm",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:59Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "rm single file",
+          "gnu_mean": 0.002143,
+          "f_mean": 0.002246,
+          "speedup": 1.0
+        },
+        {
+          "name": "rm -rf directory",
+          "gnu_mean": 0.007126,
+          "f_mean": 0.007737,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "rmdir": {
+      "tool": "rmdir",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:38Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "rmdir single empty directory",
+          "gnu_mean": 0.001922,
+          "f_mean": 0.002037,
+          "speedup": 0.9
+        },
+        {
+          "name": "rmdir -p nested directories",
+          "error": "benchmark failed"
+        }
+      ]
+    },
+    "runcon": {
+      "tool": "runcon",
+      "status": "NOT_IMPLEMENTED"
+    },
+    "seq": {
+      "tool": "seq",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:00Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "seq 1000000",
+          "gnu_mean": 0.010548,
+          "f_mean": 0.002454,
+          "speedup": 4.3
+        },
+        {
+          "name": "seq 1 10000000",
+          "gnu_mean": 0.09599,
+          "f_mean": 0.01356,
+          "speedup": 7.1
+        },
+        {
+          "name": "seq 0 0.1 100000 (float)",
+          "gnu_mean": 0.230897,
+          "f_mean": 0.019414,
+          "speedup": 11.9
+        },
+        {
+          "name": "seq -w 1 1000000 (zero-padded)",
+          "gnu_mean": 0.241905,
+          "f_mean": 0.015668,
+          "speedup": 15.4
+        }
+      ]
+    },
+    "sha1sum": {
+      "tool": "sha1sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:08Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.001955,
+          "f_mean": 0.001774,
+          "speedup": 1.1
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.008838,
+          "f_mean": 0.007462,
+          "speedup": 1.2
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.008285,
+          "f_mean": 0.007789,
+          "speedup": 1.1
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.002396,
+          "f_mean": 0.001612,
+          "speedup": 1.5
+        }
+      ]
+    },
+    "sha224sum": {
+      "tool": "sha224sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:15Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.002038,
+          "f_mean": 0.00168,
+          "speedup": 1.2
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.008681,
+          "f_mean": 0.007983,
+          "speedup": 1.1
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.008927,
+          "f_mean": 0.008192,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "sha256sum": {
+      "tool": "sha256sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:33Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 100KB text",
+          "gnu_mean": 0.001334,
+          "f_mean": 0.001046,
+          "speedup": 1.3
+        },
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.002046,
+          "f_mean": 0.001798,
+          "speedup": 1.1
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.008533,
+          "f_mean": 0.008029,
+          "speedup": 1.1
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.009295,
+          "f_mean": 0.008621,
+          "speedup": 1.1
+        },
+        {
+          "name": "10 files",
+          "gnu_mean": 0.001458,
+          "f_mean": 0.001142,
+          "speedup": 1.3
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.002387,
+          "f_mean": 0.001653,
+          "speedup": 1.4
+        }
+      ]
+    },
+    "sha384sum": {
+      "tool": "sha384sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:04Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.002665,
+          "f_mean": 0.003093,
+          "speedup": 0.9
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.016045,
+          "f_mean": 0.021177,
+          "speedup": 0.8
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.016466,
+          "f_mean": 0.022139,
+          "speedup": 0.7
+        }
+      ]
+    },
+    "sha512sum": {
+      "tool": "sha512sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:23Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.002662,
+          "f_mean": 0.002946,
+          "speedup": 0.9
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.015498,
+          "f_mean": 0.020323,
+          "speedup": 0.8
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.01607,
+          "f_mean": 0.021046,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "shred": {
+      "tool": "shred",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:04Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "shred 1MB file",
+          "gnu_mean": 0.010142,
+          "f_mean": 0.006893,
+          "speedup": 1.5
+        },
+        {
+          "name": "shred 1MB file with remove (-u)",
+          "gnu_mean": 0.020274,
+          "f_mean": 0.008349,
+          "speedup": 2.4
+        }
+      ]
+    },
+    "shuf": {
+      "tool": "shuf",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:09Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "shuf 1MB text",
+          "gnu_mean": 0.00313,
+          "f_mean": 0.002139,
+          "speedup": 1.5
+        },
+        {
+          "name": "shuf 10MB text",
+          "gnu_mean": 0.016924,
+          "f_mean": 0.013991,
+          "speedup": 1.2
+        },
+        {
+          "name": "-n 100 from 10MB",
+          "gnu_mean": 0.020248,
+          "f_mean": 0.008636,
+          "speedup": 2.3
+        },
+        {
+          "name": "-n 10000 from 10MB",
+          "gnu_mean": 0.020679,
+          "f_mean": 0.008699,
+          "speedup": 2.4
+        },
+        {
+          "name": "-i 1-1000000",
+          "gnu_mean": 0.069792,
+          "f_mean": 0.021573,
+          "speedup": 3.2
+        },
+        {
+          "name": "-i 1-1000000 -n 100",
+          "gnu_mean": 0.000885,
+          "f_mean": 0.00099,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "sleep": {
+      "tool": "sleep",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:56Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "sleep 0 (startup overhead)",
+          "gnu_mean": 0.000881,
+          "f_mean": 0.000909,
+          "speedup": 1.0
+        },
+        {
+          "name": "sleep 0.001 (tiny sleep)",
+          "gnu_mean": 0.001882,
+          "f_mean": 0.001998,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "sort": {
+      "tool": "sort",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:18Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "lexicographic 1MB",
+          "gnu_mean": 0.008546,
+          "f_mean": 0.003769,
+          "speedup": 2.3
+        },
+        {
+          "name": "lexicographic 10MB random",
+          "gnu_mean": 0.069793,
+          "f_mean": 0.009783,
+          "speedup": 7.1
+        },
+        {
+          "name": "already sorted 10MB",
+          "gnu_mean": 0.035157,
+          "f_mean": 0.005646,
+          "speedup": 6.2
+        },
+        {
+          "name": "reverse sorted 10MB",
+          "gnu_mean": 0.029772,
+          "f_mean": 0.006499,
+          "speedup": 4.6
+        },
+        {
+          "name": "-n numeric 10MB",
+          "gnu_mean": 0.072944,
+          "f_mean": 0.00571,
+          "speedup": 12.8
+        },
+        {
+          "name": "-r reverse 10MB",
+          "gnu_mean": 0.053489,
+          "f_mean": 0.008783,
+          "speedup": 6.1
+        },
+        {
+          "name": "-u unique 10MB",
+          "gnu_mean": 0.058493,
+          "f_mean": 0.009185,
+          "speedup": 6.4
+        },
+        {
+          "name": "-t, -k2 CSV 10MB",
+          "gnu_mean": 0.066107,
+          "f_mean": 0.038893,
+          "speedup": 1.7
+        },
+        {
+          "name": "repetitive 10MB",
+          "gnu_mean": 0.05506,
+          "f_mean": 0.012674,
+          "speedup": 4.3
+        },
+        {
+          "name": "--parallel=4 10MB",
+          "gnu_mean": 0.053779,
+          "f_mean": 0.00883,
+          "speedup": 6.1
+        }
+      ]
+    },
+    "split": {
+      "tool": "split",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:54Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "split 10MB into 1MB chunks (-b 1m)",
+          "error": "benchmark failed"
+        },
+        {
+          "name": "split 10MB by 1000 lines (-l 1000)",
+          "gnu_mean": 0.017754,
+          "f_mean": 0.018566,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "stat": {
+      "tool": "stat",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:44Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "stat single file",
+          "gnu_mean": 0.001215,
+          "f_mean": 0.001104,
+          "speedup": 1.1
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.004312,
+          "f_mean": 0.004552,
+          "speedup": 0.9
+        },
+        {
+          "name": "--format=%s (size only)",
+          "gnu_mean": 0.001502,
+          "f_mean": 0.001154,
+          "speedup": 1.3
+        },
+        {
+          "name": "--format='%n %s %Y'",
+          "gnu_mean": 0.001088,
+          "f_mean": 0.000988,
+          "speedup": 1.1
+        },
+        {
+          "name": "-f (filesystem)",
+          "gnu_mean": 0.001045,
+          "f_mean": 0.000979,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "stdbuf": {
+      "tool": "stdbuf",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:45Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "-oL cat 1MB",
+          "gnu_mean": 0.001789,
+          "f_mean": 0.001929,
+          "speedup": 0.9
+        },
+        {
+          "name": "-o0 cat 100KB",
+          "gnu_mean": 0.001739,
+          "f_mean": 0.001902,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "stty": {
+      "tool": "stty",
+      "status": "NOT_IMPLEMENTED",
+      "note": "no TTY available in CI"
+    },
+    "sum": {
+      "tool": "sum",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:09Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "single 1MB text",
+          "gnu_mean": 0.002512,
+          "f_mean": 0.002266,
+          "speedup": 1.1
+        },
+        {
+          "name": "single 10MB text",
+          "gnu_mean": 0.017356,
+          "f_mean": 0.014466,
+          "speedup": 1.2
+        },
+        {
+          "name": "single 10MB binary",
+          "gnu_mean": 0.018163,
+          "f_mean": 0.015106,
+          "speedup": 1.2
+        }
+      ]
+    },
+    "sync": {
+      "tool": "sync",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:58Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "sync (no args)",
+          "gnu_mean": 0.001028,
+          "f_mean": 0.000927,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "tac": {
+      "tool": "tac",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:09Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "reverse 100KB text",
+          "gnu_mean": 0.000962,
+          "f_mean": 0.00134,
+          "speedup": 0.7
+        },
+        {
+          "name": "reverse 1MB text",
+          "gnu_mean": 0.00199,
+          "f_mean": 0.001975,
+          "speedup": 1.0
+        },
+        {
+          "name": "reverse 10MB text",
+          "gnu_mean": 0.010925,
+          "f_mean": 0.005676,
+          "speedup": 1.9
+        },
+        {
+          "name": "reverse CSV 10MB",
+          "gnu_mean": 0.009503,
+          "f_mean": 0.00545,
+          "speedup": 1.7
+        },
+        {
+          "name": "reverse repetitive 10MB",
+          "gnu_mean": 0.023532,
+          "f_mean": 0.009836,
+          "speedup": 2.4
+        },
+        {
+          "name": "custom separator 1MB",
+          "gnu_mean": 0.005889,
+          "f_mean": 0.004125,
+          "speedup": 1.4
+        }
+      ]
+    },
+    "tail": {
+      "tool": "tail",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:53Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 1MB text",
+          "gnu_mean": 0.000852,
+          "f_mean": 0.001144,
+          "speedup": 0.7
+        },
+        {
+          "name": "default 10MB text",
+          "gnu_mean": 0.000926,
+          "f_mean": 0.001161,
+          "speedup": 0.8
+        },
+        {
+          "name": "-n 1000 10MB",
+          "gnu_mean": 0.000913,
+          "f_mean": 0.001223,
+          "speedup": 0.7
+        },
+        {
+          "name": "-n 100000 10MB",
+          "gnu_mean": 0.006039,
+          "f_mean": 0.003113,
+          "speedup": 1.9
+        },
+        {
+          "name": "-n +100 10MB (from line 100)",
+          "gnu_mean": 0.003888,
+          "f_mean": 0.002002,
+          "speedup": 1.9
+        },
+        {
+          "name": "-n +100000 10MB (from line 100000)",
+          "gnu_mean": 0.003884,
+          "f_mean": 0.003273,
+          "speedup": 1.2
+        },
+        {
+          "name": "-c 1000000 10MB",
+          "gnu_mean": 0.001159,
+          "f_mean": 0.001114,
+          "speedup": 1.0
+        },
+        {
+          "name": "100 small files",
+          "gnu_mean": 0.001851,
+          "f_mean": 0.00256,
+          "speedup": 0.7
+        }
+      ]
+    },
+    "tee": {
+      "tool": "tee",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:14Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "tee 1MB to /dev/null",
+          "gnu_mean": 0.001714,
+          "f_mean": 0.001727,
+          "speedup": 1.0
+        },
+        {
+          "name": "tee 10MB to /dev/null",
+          "gnu_mean": 0.00683,
+          "f_mean": 0.00487,
+          "speedup": 1.4
+        }
+      ]
+    },
+    "test": {
+      "tool": "test",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:16Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "test -f (file exists)",
+          "gnu_mean": 2.5e-05,
+          "f_mean": 0.001029,
+          "speedup": 0.0
+        },
+        {
+          "name": "test 1 -eq 1",
+          "gnu_mean": 1.5e-05,
+          "f_mean": 0.001005,
+          "speedup": 0.0
+        },
+        {
+          "name": "test 'hello' = 'hello'",
+          "gnu_mean": 3.1e-05,
+          "f_mean": 0.001127,
+          "speedup": 0.0
+        },
+        {
+          "name": "test -d /tmp",
+          "gnu_mean": 3.9e-05,
+          "f_mean": 0.000916,
+          "speedup": 0.0
+        }
+      ]
+    },
+    "timeout": {
+      "tool": "timeout",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:10Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "timeout 10 true",
+          "gnu_mean": 0.001551,
+          "f_mean": 0.001638,
+          "speedup": 0.9
+        },
+        {
+          "name": "timeout 10 echo hello",
+          "gnu_mean": 0.00178,
+          "f_mean": 0.001992,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "touch": {
+      "tool": "touch",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:01Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "create new file",
+          "gnu_mean": 0.001715,
+          "f_mean": 0.001882,
+          "speedup": 0.9
+        },
+        {
+          "name": "update existing file timestamp",
+          "gnu_mean": 0.000891,
+          "f_mean": 0.001033,
+          "speedup": 0.9
+        },
+        {
+          "name": "set specific timestamp (-t)",
+          "gnu_mean": 0.001841,
+          "f_mean": 0.002075,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "tr": {
+      "tool": "tr",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:52Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "a-z to A-Z 1MB",
+          "gnu_mean": 0.002345,
+          "f_mean": 0.001532,
+          "speedup": 1.5
+        },
+        {
+          "name": "a-z to A-Z 10MB",
+          "gnu_mean": 0.020367,
+          "f_mean": 0.004702,
+          "speedup": 4.3
+        },
+        {
+          "name": "-d digits 10MB",
+          "gnu_mean": 0.018662,
+          "f_mean": 0.004266,
+          "speedup": 4.4
+        },
+        {
+          "name": "-d lowercase 10MB",
+          "gnu_mean": 0.033493,
+          "f_mean": 0.004757,
+          "speedup": 7.0
+        },
+        {
+          "name": "-s spaces 10MB",
+          "gnu_mean": 0.031447,
+          "f_mean": 0.003752,
+          "speedup": 8.4
+        },
+        {
+          "name": "[:lower:] to [:upper:] 10MB",
+          "gnu_mean": 0.013915,
+          "f_mean": 0.004052,
+          "speedup": 3.4
+        },
+        {
+          "name": "-d [:digit:] 10MB CSV",
+          "gnu_mean": 0.017454,
+          "f_mean": 0.004558,
+          "speedup": 3.8
+        },
+        {
+          "name": "translate binary 10MB",
+          "gnu_mean": 0.012123,
+          "f_mean": 0.003968,
+          "speedup": 3.1
+        }
+      ]
+    },
+    "true": {
+      "tool": "true",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:39:51Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "true (startup overhead)",
+          "gnu_mean": 2.7e-05,
+          "f_mean": 0.000747,
+          "speedup": 0.0
+        }
+      ]
+    },
+    "truncate": {
+      "tool": "truncate",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:14Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "truncate to zero (-s 0)",
+          "gnu_mean": 0.00297,
+          "f_mean": 0.003036,
+          "speedup": 1.0
+        },
+        {
+          "name": "create 1M file (-s 1M)",
+          "gnu_mean": 0.001715,
+          "f_mean": 0.001885,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "tsort": {
+      "tool": "tsort",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:20Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "tsort 100K pairs",
+          "gnu_mean": 0.060824,
+          "f_mean": 0.011036,
+          "speedup": 5.5
+        },
+        {
+          "name": "tsort 1M pairs",
+          "gnu_mean": 0.656811,
+          "f_mean": 0.062842,
+          "speedup": 10.5
+        }
+      ]
+    },
+    "tty": {
+      "tool": "tty",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:22Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "tty (no args)",
+          "gnu_mean": 0.000856,
+          "f_mean": 0.000936,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "uname": {
+      "tool": "uname",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:15Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "uname (no args)",
+          "gnu_mean": 0.000831,
+          "f_mean": 0.000919,
+          "speedup": 0.9
+        },
+        {
+          "name": "uname -a",
+          "gnu_mean": 0.000904,
+          "f_mean": 0.001018,
+          "speedup": 0.9
+        },
+        {
+          "name": "uname -r",
+          "gnu_mean": 0.000842,
+          "f_mean": 0.000945,
+          "speedup": 0.9
+        },
+        {
+          "name": "uname -m",
+          "gnu_mean": 0.000826,
+          "f_mean": 0.00099,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "unexpand": {
+      "tool": "unexpand",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:15Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "unexpand 1MB text",
+          "gnu_mean": 0.003348,
+          "f_mean": 0.001713,
+          "speedup": 2.0
+        },
+        {
+          "name": "unexpand 10MB text",
+          "gnu_mean": 0.024928,
+          "f_mean": 0.00481,
+          "speedup": 5.2
+        },
+        {
+          "name": "-a 1MB text",
+          "gnu_mean": 0.007403,
+          "f_mean": 0.005621,
+          "speedup": 1.3
+        },
+        {
+          "name": "-a 10MB text",
+          "gnu_mean": 0.070646,
+          "f_mean": 0.037426,
+          "speedup": 1.9
+        },
+        {
+          "name": "-t 4 10MB text",
+          "gnu_mean": 0.070412,
+          "f_mean": 0.039534,
+          "speedup": 1.8
+        },
+        {
+          "name": "expand|unexpand pipeline 10MB",
+          "gnu_mean": 0.092999,
+          "f_mean": 0.104911,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "uniq": {
+      "tool": "uniq",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:40:17Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 10MB many duplicates",
+          "gnu_mean": 0.014207,
+          "f_mean": 0.0019,
+          "speedup": 7.5
+        },
+        {
+          "name": "default 10MB sorted (low dup)",
+          "gnu_mean": 0.018452,
+          "f_mean": 0.00366,
+          "speedup": 5.0
+        },
+        {
+          "name": "-c count 10MB many dups",
+          "gnu_mean": 0.012656,
+          "f_mean": 0.001861,
+          "speedup": 6.8
+        },
+        {
+          "name": "-c count 10MB sorted",
+          "gnu_mean": 0.029091,
+          "f_mean": 0.0077,
+          "speedup": 3.8
+        },
+        {
+          "name": "-d duplicates only 10MB",
+          "gnu_mean": 0.011913,
+          "f_mean": 0.001843,
+          "speedup": 6.5
+        },
+        {
+          "name": "-u unique only 10MB",
+          "gnu_mean": 0.012053,
+          "f_mean": 0.001831,
+          "speedup": 6.6
+        },
+        {
+          "name": "-i case insensitive 10MB",
+          "gnu_mean": 0.013903,
+          "f_mean": 0.004522,
+          "speedup": 3.1
+        },
+        {
+          "name": "repetitive 10MB",
+          "gnu_mean": 0.04235,
+          "f_mean": 0.003535,
+          "speedup": 12.0
+        }
+      ]
+    },
+    "unlink": {
+      "tool": "unlink",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:10Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "unlink a file",
+          "gnu_mean": 0.002105,
+          "f_mean": 0.00233,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "uptime": {
+      "tool": "uptime",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:10Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "uptime (default)",
+          "gnu_mean": 0.001634,
+          "f_mean": 0.001039,
+          "speedup": 1.6
+        },
+        {
+          "name": "uptime -s (since)",
+          "gnu_mean": 0.001508,
+          "f_mean": 0.00105,
+          "speedup": 1.4
+        }
+      ]
+    },
+    "users": {
+      "tool": "users",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:01Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "users (default)",
+          "gnu_mean": 0.000883,
+          "f_mean": 0.000997,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "vdir": {
+      "tool": "vdir",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:08Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "vdir current directory",
+          "gnu_mean": 0.00129,
+          "f_mean": 0.001621,
+          "speedup": 0.8
+        },
+        {
+          "name": "100 files directory",
+          "gnu_mean": 0.00196,
+          "f_mean": 0.00203,
+          "speedup": 1.0
+        },
+        {
+          "name": "-R test data",
+          "gnu_mean": 0.00201,
+          "f_mean": 0.00221,
+          "speedup": 0.9
+        }
+      ]
+    },
+    "wc": {
+      "tool": "wc",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:17Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "default 100KB text",
+          "gnu_mean": 0.001363,
+          "f_mean": 0.001291,
+          "speedup": 1.1
+        },
+        {
+          "name": "default 1MB text",
+          "gnu_mean": 0.005617,
+          "f_mean": 0.003707,
+          "speedup": 1.5
+        },
+        {
+          "name": "default 10MB text",
+          "gnu_mean": 0.056496,
+          "f_mean": 0.003202,
+          "speedup": 17.6
+        },
+        {
+          "name": "-l 10MB text",
+          "gnu_mean": 0.001971,
+          "f_mean": 0.002546,
+          "speedup": 0.8
+        },
+        {
+          "name": "-w 10MB text",
+          "gnu_mean": 0.054077,
+          "f_mean": 0.01373,
+          "speedup": 3.9
+        },
+        {
+          "name": "-c 10MB text",
+          "gnu_mean": 0.00105,
+          "f_mean": 0.001038,
+          "speedup": 1.0
+        },
+        {
+          "name": "-m 10MB text",
+          "gnu_mean": 0.054041,
+          "f_mean": 0.002866,
+          "speedup": 18.9
+        },
+        {
+          "name": "-L 10MB text",
+          "gnu_mean": 0.054037,
+          "f_mean": 0.010116,
+          "speedup": 5.3
+        },
+        {
+          "name": "default 10MB binary",
+          "gnu_mean": 0.316521,
+          "f_mean": 0.02819,
+          "speedup": 11.2
+        },
+        {
+          "name": "default 10MB repetitive",
+          "gnu_mean": 0.073791,
+          "f_mean": 0.004676,
+          "speedup": 15.8
+        },
+        {
+          "name": "10 files",
+          "gnu_mean": 0.000975,
+          "f_mean": 0.001194,
+          "speedup": 0.8
+        },
+        {
+          "name": "100 files",
+          "gnu_mean": 0.001891,
+          "f_mean": 0.001818,
+          "speedup": 1.0
+        }
+      ]
+    },
+    "who": {
+      "tool": "who",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:12Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "who (default)",
+          "gnu_mean": 0.000916,
+          "f_mean": 0.001114,
+          "speedup": 0.8
+        },
+        {
+          "name": "who -a (all)",
+          "gnu_mean": 0.000963,
+          "f_mean": 0.001248,
+          "speedup": 0.8
+        },
+        {
+          "name": "who -b (boot)",
+          "gnu_mean": 0.001001,
+          "f_mean": 0.001192,
+          "speedup": 0.8
+        }
+      ]
+    },
+    "whoami": {
+      "tool": "whoami",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:06Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "whoami (no args)",
+          "gnu_mean": 0.001118,
+          "f_mean": 0.001011,
+          "speedup": 1.1
+        }
+      ]
+    },
+    "yes": {
+      "tool": "yes",
+      "platform": "Linux_x86_64",
+      "timestamp": "2026-03-01T21:41:03Z",
+      "warmup": 3,
+      "runs": 10,
+      "benchmarks": [
+        {
+          "name": "throughput 1M lines",
+          "gnu_mean": 0.003156,
+          "f_mean": 0.00308,
+          "speedup": 1.0
+        },
+        {
+          "name": "throughput 10M lines",
+          "gnu_mean": 0.027885,
+          "f_mean": 0.023686,
+          "speedup": 1.2
+        },
+        {
+          "name": "throughput hello 1M lines",
+          "gnu_mean": 0.006307,
+          "f_mean": 0.00692,
+          "speedup": 0.9
+        },
+        {
+          "name": "throughput hello 10M lines",
+          "gnu_mean": 0.053552,
+          "f_mean": 0.055387,
+          "speedup": 1.0
+        },
+        {
+          "name": "throughput 100MB",
+          "gnu_mean": 0.044119,
+          "f_mean": 0.045092,
+          "speedup": 1.0
+        }
+      ]
+    }
+  }
+}
