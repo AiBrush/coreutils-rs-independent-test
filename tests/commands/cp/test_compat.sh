@@ -798,9 +798,23 @@ run_cp_tests() {
     echo ""
     echo "=== Verbose Output Format ==="
 
-    run_stdout_test "cp -v output format" \
-        "$GNU_TOOL -v '$test_dir/source_file' '$test_dir/gnu_v_fmt'" \
-        "$F_TOOL -v '$test_dir/source_file' '$test_dir/f_v_fmt'"
+    # Custom comparison: cp -v includes the destination path in output,
+    # so we normalize it before comparing (both use "DEST" as placeholder).
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_v_out f_v_out
+    gnu_v_out=$($GNU_TOOL -v "$test_dir/source_file" "$test_dir/gnu_v_fmt" 2>&1 | sed "s|$test_dir/gnu_v_fmt|DEST|g")
+    f_v_out=$($F_TOOL -v "$test_dir/source_file" "$test_dir/f_v_fmt" 2>&1 | sed "s|$test_dir/f_v_fmt|DEST|g")
+    if [[ "$gnu_v_out" == "$f_v_out" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: cp -v output format"
+        record_result "cp -v output format" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: cp -v output format"
+        echo -e "    GNU (normalized): $gnu_v_out"
+        echo -e "    F (normalized):   $f_v_out"
+        record_result "cp -v output format" "FAIL" "GNU='$gnu_v_out' F='$f_v_out'" "" ""
+    fi
 
     # === Section 19: Target Directory (-t) ===
     echo ""
