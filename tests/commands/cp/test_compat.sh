@@ -668,9 +668,516 @@ run_cp_tests() {
         "$GNU_TOOL 2>&1" \
         "$F_TOOL 2>&1"
 
+    # === Section 14: Multiple Files to Directory ===
+    echo ""
+    echo "=== Multiple Files to Directory ==="
+
+    mkdir -p "$test_dir/gnu_multi_dir" "$test_dir/f_multi_dir"
+    echo "file_a" > "$test_dir/multi_a"
+    echo "file_b" > "$test_dir/multi_b"
+    echo "file_c" > "$test_dir/multi_c"
+
+    $GNU_TOOL "$test_dir/multi_a" "$test_dir/multi_b" "$test_dir/multi_c" "$test_dir/gnu_multi_dir/"
+    $F_TOOL "$test_dir/multi_a" "$test_dir/multi_b" "$test_dir/multi_c" "$test_dir/f_multi_dir/"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_multi_dir/multi_a" "$test_dir/f_multi_dir/multi_a" >/dev/null 2>&1 && \
+       diff "$test_dir/gnu_multi_dir/multi_b" "$test_dir/f_multi_dir/multi_b" >/dev/null 2>&1 && \
+       diff "$test_dir/gnu_multi_dir/multi_c" "$test_dir/f_multi_dir/multi_c" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: multiple files to directory"
+        record_result "multiple files to directory" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: multiple files to directory"
+        record_result "multiple files to directory" "FAIL" "content differs" "" ""
+    fi
+
+    # === Section 15: Interactive Overwrite (-i) ===
+    echo ""
+    echo "=== Interactive Overwrite (-i) ==="
+
+    echo "existing_i" > "$test_dir/gnu_i_target"
+    echo "existing_i" > "$test_dir/f_i_target"
+    echo "new_i_content" > "$test_dir/i_source"
+
+    # Pipe "n" (no) to -i, target should not change
+    echo "n" | $GNU_TOOL -i "$test_dir/i_source" "$test_dir/gnu_i_target" 2>/dev/null || true
+    echo "n" | $F_TOOL -i "$test_dir/i_source" "$test_dir/f_i_target" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_i_target" "$test_dir/f_i_target" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: cp -i with 'n' preserves target"
+        record_result "interactive overwrite no" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: cp -i with 'n' behavior differs"
+        record_result "interactive overwrite no" "FAIL" "content differs" "" ""
+    fi
+
+    # Pipe "y" (yes) to -i, target should be overwritten
+    echo "existing_i" > "$test_dir/gnu_i_target2"
+    echo "existing_i" > "$test_dir/f_i_target2"
+
+    echo "y" | $GNU_TOOL -i "$test_dir/i_source" "$test_dir/gnu_i_target2" 2>/dev/null || true
+    echo "y" | $F_TOOL -i "$test_dir/i_source" "$test_dir/f_i_target2" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_i_target2" "$test_dir/f_i_target2" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: cp -i with 'y' overwrites target"
+        record_result "interactive overwrite yes" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: cp -i with 'y' behavior differs"
+        record_result "interactive overwrite yes" "FAIL" "content differs" "" ""
+    fi
+
+    # === Section 16: Backup Numbered ===
+    echo ""
+    echo "=== Backup Numbered ==="
+
+    local bndir
+    bndir=$(mktemp -d /tmp/fcoreutils_cp_bn_XXXXXX)
+    register_temp "$bndir"
+    mkdir -p "$bndir/gnu" "$bndir/f"
+    echo "original" > "$bndir/gnu/file"
+    echo "original" > "$bndir/f/file"
+    echo "update1" > "$bndir/gnu/src"
+    echo "update1" > "$bndir/f/src"
+
+    $GNU_TOOL --backup=numbered "$bndir/gnu/src" "$bndir/gnu/file" 2>/dev/null || true
+    $F_TOOL --backup=numbered "$bndir/f/src" "$bndir/f/file" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_bn_exists=0 f_bn_exists=0
+    [[ -f "$bndir/gnu/file.~1~" ]] && gnu_bn_exists=1
+    [[ -f "$bndir/f/file.~1~" ]] && f_bn_exists=1
+    if [[ "$gnu_bn_exists" == "$f_bn_exists" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --backup=numbered creates .~1~ (exists=$gnu_bn_exists)"
+        record_result "backup numbered" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --backup=numbered mismatch (GNU=$gnu_bn_exists F=$f_bn_exists)"
+        record_result "backup numbered" "FAIL" "GNU=$gnu_bn_exists F=$f_bn_exists" "" ""
+    fi
+
+    # === Section 17: Suffix (--suffix) ===
+    echo ""
+    echo "=== Suffix (--suffix) ==="
+
+    local sfxdir
+    sfxdir=$(mktemp -d /tmp/fcoreutils_cp_sfx_XXXXXX)
+    register_temp "$sfxdir"
+    mkdir -p "$sfxdir/gnu" "$sfxdir/f"
+    echo "original" > "$sfxdir/gnu/file"
+    echo "original" > "$sfxdir/f/file"
+    echo "replacement" > "$sfxdir/gnu/src"
+    echo "replacement" > "$sfxdir/f/src"
+
+    $GNU_TOOL --backup=simple --suffix=.bak "$sfxdir/gnu/src" "$sfxdir/gnu/file" 2>/dev/null || true
+    $F_TOOL --backup=simple --suffix=.bak "$sfxdir/f/src" "$sfxdir/f/file" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_sfx=0 f_sfx=0
+    [[ -f "$sfxdir/gnu/file.bak" ]] && gnu_sfx=1
+    [[ -f "$sfxdir/f/file.bak" ]] && f_sfx=1
+    if [[ "$gnu_sfx" == "$f_sfx" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --suffix=.bak creates backup (exists=$gnu_sfx)"
+        record_result "suffix .bak" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --suffix=.bak mismatch (GNU=$gnu_sfx F=$f_sfx)"
+        record_result "suffix .bak" "FAIL" "GNU=$gnu_sfx F=$f_sfx" "" ""
+    fi
+
+    # === Section 18: Verbose Output Format ===
+    echo ""
+    echo "=== Verbose Output Format ==="
+
+    run_stdout_test "cp -v output format" \
+        "$GNU_TOOL -v '$test_dir/source_file' '$test_dir/gnu_v_fmt'" \
+        "$F_TOOL -v '$test_dir/source_file' '$test_dir/f_v_fmt'"
+
+    # === Section 19: Target Directory (-t) ===
+    echo ""
+    echo "=== Target Directory (-t) ==="
+
+    mkdir -p "$test_dir/gnu_tdir" "$test_dir/f_tdir"
+    echo "tdir_src1" > "$test_dir/tdir_s1"
+    echo "tdir_src2" > "$test_dir/tdir_s2"
+
+    run_exit_code_test "cp -t dir src1 src2" \
+        "$GNU_TOOL -t '$test_dir/gnu_tdir' '$test_dir/tdir_s1' '$test_dir/tdir_s2'" \
+        "$F_TOOL -t '$test_dir/f_tdir' '$test_dir/tdir_s1' '$test_dir/tdir_s2'"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -f "$test_dir/gnu_tdir/tdir_s1" ]] && [[ -f "$test_dir/f_tdir/tdir_s1" ]] && \
+       diff "$test_dir/gnu_tdir/tdir_s1" "$test_dir/f_tdir/tdir_s1" >/dev/null 2>&1 && \
+       diff "$test_dir/gnu_tdir/tdir_s2" "$test_dir/f_tdir/tdir_s2" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: -t copies files to target directory"
+        record_result "target directory content" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: -t content mismatch"
+        record_result "target directory content" "FAIL" "content differs" "" ""
+    fi
+
+    # === Section 20: No Target Directory (-T) ===
+    echo ""
+    echo "=== No Target Directory (-T) ==="
+
+    run_exit_code_test "cp -T src dst" \
+        "$GNU_TOOL -T '$test_dir/source_file' '$test_dir/gnu_T_dest'" \
+        "$F_TOOL -T '$test_dir/source_file' '$test_dir/f_T_dest'"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_T_dest" "$test_dir/f_T_dest" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: -T copy content matches"
+        record_result "no target directory content" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: -T copy content differs"
+        record_result "no target directory content" "FAIL" "content differs" "" ""
+    fi
+
+    # === Section 21: Dangling Symlink ===
+    echo ""
+    echo "=== Dangling Symlink ==="
+
+    ln -s "/tmp/nonexistent_target_$$" "$test_dir/dangling_link"
+
+    run_exit_code_test "cp dangling symlink" \
+        "$GNU_TOOL '$test_dir/dangling_link' '$test_dir/gnu_dangling_dest' 2>&1" \
+        "$F_TOOL '$test_dir/dangling_link' '$test_dir/f_dangling_dest' 2>&1"
+
+    # === Section 22: Sparse Auto ===
+    echo ""
+    echo "=== Sparse Auto ==="
+
+    if is_linux; then
+        run_exit_code_test "cp --sparse=auto" \
+            "$GNU_TOOL --sparse=auto '$test_dir/source_file' '$test_dir/gnu_sparse'" \
+            "$F_TOOL --sparse=auto '$test_dir/source_file' '$test_dir/f_sparse'"
+    else
+        skip_test "cp --sparse=auto" "sparse files only supported on Linux"
+    fi
+
+    # === Section 23: Reflink Auto ===
+    echo ""
+    echo "=== Reflink Auto ==="
+
+    run_exit_code_test "cp --reflink=auto" \
+        "$GNU_TOOL --reflink=auto '$test_dir/source_file' '$test_dir/gnu_reflink'" \
+        "$F_TOOL --reflink=auto '$test_dir/source_file' '$test_dir/f_reflink'"
+
+    # === Section 24: Preserve Timestamps ===
+    echo ""
+    echo "=== Preserve Timestamps ==="
+
+    $GNU_TOOL --preserve=timestamps "$test_dir/source_file" "$test_dir/gnu_ts"
+    $F_TOOL --preserve=timestamps "$test_dir/source_file" "$test_dir/f_ts"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_mtime f_mtime
+    gnu_mtime=$(stat -c '%Y' "$test_dir/gnu_ts" 2>/dev/null || stat -f '%m' "$test_dir/gnu_ts")
+    f_mtime=$(stat -c '%Y' "$test_dir/f_ts" 2>/dev/null || stat -f '%m' "$test_dir/f_ts")
+    if [[ "$gnu_mtime" == "$f_mtime" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --preserve=timestamps (mtime=$gnu_mtime)"
+        record_result "preserve timestamps" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --preserve=timestamps mtime mismatch (GNU=$gnu_mtime F=$f_mtime)"
+        record_result "preserve timestamps" "FAIL" "GNU=$gnu_mtime F=$f_mtime" "" ""
+    fi
+
+    # === Section 25: Preserve Xattr ===
+    echo ""
+    echo "=== Preserve Xattr ==="
+
+    if is_linux; then
+        run_exit_code_test "cp --preserve=xattr" \
+            "$GNU_TOOL --preserve=xattr '$test_dir/source_file' '$test_dir/gnu_xattr'" \
+            "$F_TOOL --preserve=xattr '$test_dir/source_file' '$test_dir/f_xattr'"
+    else
+        skip_test "cp --preserve=xattr" "xattr preserve test only on Linux"
+    fi
+
+    # === Section 26: Source is Directory Without -r ===
+    echo ""
+    echo "=== Source is Directory Without -r ==="
+
+    run_exit_code_test "cp dir without -r fails" \
+        "$GNU_TOOL '$test_dir/source_dir' '$test_dir/gnu_no_r' 2>&1" \
+        "$F_TOOL '$test_dir/source_dir' '$test_dir/f_no_r' 2>&1"
+
+    # === Section 27: Empty File ===
+    echo ""
+    echo "=== Empty File ==="
+
+    touch "$test_dir/empty_file"
+
+    $GNU_TOOL "$test_dir/empty_file" "$test_dir/gnu_empty_copy"
+    $F_TOOL "$test_dir/empty_file" "$test_dir/f_empty_copy"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_empty_size f_empty_size
+    gnu_empty_size=$(stat -c '%s' "$test_dir/gnu_empty_copy" 2>/dev/null || stat -f '%z' "$test_dir/gnu_empty_copy")
+    f_empty_size=$(stat -c '%s' "$test_dir/f_empty_copy" 2>/dev/null || stat -f '%z' "$test_dir/f_empty_copy")
+    if [[ "$gnu_empty_size" == "0" ]] && [[ "$f_empty_size" == "0" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: empty file copy (size=0)"
+        record_result "empty file copy" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: empty file copy size mismatch (GNU=$gnu_empty_size F=$f_empty_size)"
+        record_result "empty file copy" "FAIL" "GNU=$gnu_empty_size F=$f_empty_size" "" ""
+    fi
+
+    # === Section 28: Special Characters in Filename ===
+    echo ""
+    echo "=== Special Characters in Filename ==="
+
+    echo "space content" > "$test_dir/file with spaces"
+
+    $GNU_TOOL "$test_dir/file with spaces" "$test_dir/gnu_space_copy" 2>/dev/null || true
+    $F_TOOL "$test_dir/file with spaces" "$test_dir/f_space_copy" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_space_copy" "$test_dir/f_space_copy" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: filename with spaces"
+        record_result "special chars spaces" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: filename with spaces differs"
+        record_result "special chars spaces" "FAIL" "content differs" "" ""
+    fi
+
+    echo "unicode content" > "$test_dir/file_unicode_test"
+
+    $GNU_TOOL "$test_dir/file_unicode_test" "$test_dir/gnu_unicode_copy" 2>/dev/null || true
+    $F_TOOL "$test_dir/file_unicode_test" "$test_dir/f_unicode_copy" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_unicode_copy" "$test_dir/f_unicode_copy" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: unicode filename"
+        record_result "special chars unicode" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: unicode filename differs"
+        record_result "special chars unicode" "FAIL" "content differs" "" ""
+    fi
+
+    # === Section 29: Recursive Symlinks -rL ===
+    echo ""
+    echo "=== Recursive Symlinks (-rL) ==="
+
+    local rldir
+    rldir=$(mktemp -d /tmp/fcoreutils_cp_rL_XXXXXX)
+    register_temp "$rldir"
+    mkdir -p "$rldir/src/sub"
+    echo "real_file" > "$rldir/src/real"
+    ln -s "$rldir/src/real" "$rldir/src/sub/link_to_real"
+
+    $GNU_TOOL -rL "$rldir/src" "$rldir/gnu_copy" 2>/dev/null || true
+    $F_TOOL -rL "$rldir/src" "$rldir/f_copy" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_rL_is_link=0 f_rL_is_link=0
+    [[ -L "$rldir/gnu_copy/sub/link_to_real" ]] && gnu_rL_is_link=1
+    [[ -L "$rldir/f_copy/sub/link_to_real" ]] && f_rL_is_link=1
+    if [[ "$gnu_rL_is_link" == "$f_rL_is_link" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: -rL dereferences symlinks (is_link=$gnu_rL_is_link)"
+        record_result "recursive symlinks -rL" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: -rL symlink mismatch (GNU=$gnu_rL_is_link F=$f_rL_is_link)"
+        record_result "recursive symlinks -rL" "FAIL" "GNU=$gnu_rL_is_link F=$f_rL_is_link" "" ""
+    fi
+
+    # === Section 30: Recursive Symlinks -rP ===
+    echo ""
+    echo "=== Recursive Symlinks (-rP) ==="
+
+    local rpdir
+    rpdir=$(mktemp -d /tmp/fcoreutils_cp_rP_XXXXXX)
+    register_temp "$rpdir"
+    mkdir -p "$rpdir/src/sub"
+    echo "real_file" > "$rpdir/src/real"
+    ln -s "$rpdir/src/real" "$rpdir/src/sub/link_to_real"
+
+    $GNU_TOOL -rP "$rpdir/src" "$rpdir/gnu_copy" 2>/dev/null || true
+    $F_TOOL -rP "$rpdir/src" "$rpdir/f_copy" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_rP_is_link=0 f_rP_is_link=0
+    [[ -L "$rpdir/gnu_copy/sub/link_to_real" ]] && gnu_rP_is_link=1
+    [[ -L "$rpdir/f_copy/sub/link_to_real" ]] && f_rP_is_link=1
+    if [[ "$gnu_rP_is_link" == "$f_rP_is_link" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: -rP preserves symlinks (is_link=$gnu_rP_is_link)"
+        record_result "recursive symlinks -rP" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: -rP symlink mismatch (GNU=$gnu_rP_is_link F=$f_rP_is_link)"
+        record_result "recursive symlinks -rP" "FAIL" "GNU=$gnu_rP_is_link F=$f_rP_is_link" "" ""
+    fi
+
+    # === Section 31: No Clobber Source Preserved ===
+    echo ""
+    echo "=== No Clobber Source Preserved ==="
+
+    echo "source_content_nc" > "$test_dir/nc_source"
+    echo "target_content_nc" > "$test_dir/nc_target"
+
+    $F_TOOL -n "$test_dir/nc_source" "$test_dir/nc_target" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local nc_src_content
+    nc_src_content=$(cat "$test_dir/nc_source")
+    if [[ "$nc_src_content" == "source_content_nc" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: -n preserves source file"
+        record_result "no clobber source preserved" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: -n source file modified"
+        record_result "no clobber source preserved" "FAIL" "source was modified" "" ""
+    fi
+
+    # === Section 32: Multiple Preserve Options ===
+    echo ""
+    echo "=== Multiple Preserve Options ==="
+
+    chmod 755 "$test_dir/source_file"
+    $GNU_TOOL --preserve=timestamps,mode "$test_dir/source_file" "$test_dir/gnu_multi_preserve"
+    $F_TOOL --preserve=timestamps,mode "$test_dir/source_file" "$test_dir/f_multi_preserve"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_mp_mode f_mp_mode gnu_mp_mtime f_mp_mtime
+    gnu_mp_mode=$(stat -c '%a' "$test_dir/gnu_multi_preserve" 2>/dev/null || stat -f '%Lp' "$test_dir/gnu_multi_preserve")
+    f_mp_mode=$(stat -c '%a' "$test_dir/f_multi_preserve" 2>/dev/null || stat -f '%Lp' "$test_dir/f_multi_preserve")
+    gnu_mp_mtime=$(stat -c '%Y' "$test_dir/gnu_multi_preserve" 2>/dev/null || stat -f '%m' "$test_dir/gnu_multi_preserve")
+    f_mp_mtime=$(stat -c '%Y' "$test_dir/f_multi_preserve" 2>/dev/null || stat -f '%m' "$test_dir/f_multi_preserve")
+    if [[ "$gnu_mp_mode" == "$f_mp_mode" ]] && [[ "$gnu_mp_mtime" == "$f_mp_mtime" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --preserve=timestamps,mode (mode=$gnu_mp_mode)"
+        record_result "multiple preserve options" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --preserve=timestamps,mode mismatch (mode: GNU=$gnu_mp_mode F=$f_mp_mode, mtime: GNU=$gnu_mp_mtime F=$f_mp_mtime)"
+        record_result "multiple preserve options" "FAIL" "mode or mtime mismatch" "" ""
+    fi
+
+    # === Section 33: Parents Flag (--parents) ===
+    echo ""
+    echo "=== Parents Flag (--parents) ==="
+
+    local pardir
+    pardir=$(mktemp -d /tmp/fcoreutils_cp_par_XXXXXX)
+    register_temp "$pardir"
+    mkdir -p "$pardir/src/a/b"
+    echo "parents_content" > "$pardir/src/a/b/file"
+    mkdir -p "$pardir/gnu_dest" "$pardir/f_dest"
+
+    $GNU_TOOL --parents "$pardir/src/a/b/file" "$pardir/gnu_dest" 2>/dev/null || true
+    $F_TOOL --parents "$pardir/src/a/b/file" "$pardir/f_dest" 2>/dev/null || true
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_par_exists=0 f_par_exists=0
+    [[ -f "$pardir/gnu_dest/$pardir/src/a/b/file" ]] && gnu_par_exists=1
+    [[ -f "$pardir/f_dest/$pardir/src/a/b/file" ]] && f_par_exists=1
+    if [[ "$gnu_par_exists" == "$f_par_exists" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --parents preserves path structure (exists=$gnu_par_exists)"
+        record_result "parents flag" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --parents mismatch (GNU=$gnu_par_exists F=$f_par_exists)"
+        record_result "parents flag" "FAIL" "GNU=$gnu_par_exists F=$f_par_exists" "" ""
+    fi
+
+    # === Section 34: One File System (-x) ===
+    echo ""
+    echo "=== One File System (-x) ==="
+
+    run_exit_code_test "cp -rx within same filesystem" \
+        "$GNU_TOOL -rx '$test_dir/source_dir' '$test_dir/gnu_x_copy'" \
+        "$F_TOOL -rx '$test_dir/source_dir' '$test_dir/f_x_copy'"
+
+    # === Section 35: Strip Trailing Slashes ===
+    echo ""
+    echo "=== Strip Trailing Slashes ==="
+
+    run_exit_code_test "cp --strip-trailing-slashes" \
+        "$GNU_TOOL --strip-trailing-slashes '$test_dir/source_file' '$test_dir/gnu_strip_dest'" \
+        "$F_TOOL --strip-trailing-slashes '$test_dir/source_file' '$test_dir/f_strip_dest'"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if diff "$test_dir/gnu_strip_dest" "$test_dir/f_strip_dest" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --strip-trailing-slashes content matches"
+        record_result "strip trailing slashes content" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --strip-trailing-slashes content differs"
+        record_result "strip trailing slashes content" "FAIL" "content differs" "" ""
+    fi
+
+    # === Section 36: Attributes Only ===
+    echo ""
+    echo "=== Attributes Only ==="
+
+    echo "attr_source" > "$test_dir/attr_src"
+    echo "attr_existing" > "$test_dir/gnu_attr_dst"
+    echo "attr_existing" > "$test_dir/f_attr_dst"
+    chmod 755 "$test_dir/attr_src"
+
+    run_exit_code_test "cp --attributes-only" \
+        "$GNU_TOOL --attributes-only --preserve=mode '$test_dir/attr_src' '$test_dir/gnu_attr_dst'" \
+        "$F_TOOL --attributes-only --preserve=mode '$test_dir/attr_src' '$test_dir/f_attr_dst'"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_attr_content f_attr_content
+    gnu_attr_content=$(cat "$test_dir/gnu_attr_dst" 2>/dev/null || echo "")
+    f_attr_content=$(cat "$test_dir/f_attr_dst" 2>/dev/null || echo "")
+    if [[ "$gnu_attr_content" == "$f_attr_content" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: --attributes-only content behavior matches"
+        record_result "attributes only content" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: --attributes-only content mismatch"
+        record_result "attributes only content" "FAIL" "GNU='$gnu_attr_content' F='$f_attr_content'" "" ""
+    fi
+
+    # === Section 37: Help (--help) ===
+    echo ""
+    echo "=== Help (--help) ==="
+
+    run_exit_code_test "cp --help" \
+        "$GNU_TOOL --help 2>&1" \
+        "$F_TOOL --help 2>&1"
+
+    # === Section 38: Version (--version) ===
+    echo ""
+    echo "=== Version (--version) ==="
+
+    run_exit_code_test "cp --version" \
+        "$GNU_TOOL --version 2>&1" \
+        "$F_TOOL --version 2>&1"
+
     # Cleanup
     rm -rf "$test_dir"
-
 
     finish_test_suite
 }

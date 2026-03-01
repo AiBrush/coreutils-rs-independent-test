@@ -77,6 +77,124 @@ run_groups_tests() {
         "$GNU_TOOL nonexistent_user_$$ 2>&1" \
         "$F_TOOL nonexistent_user_$$ 2>&1"
 
+    # === Multiple Valid Users ===
+    echo ""
+    echo "=== Multiple Valid Users ==="
+
+    local current_user
+    current_user=$(whoami)
+
+    run_test "multiple valid users (self twice)" \
+        "$GNU_TOOL $current_user $current_user" \
+        "$F_TOOL $current_user $current_user"
+
+    run_test "current user and root" \
+        "$GNU_TOOL $current_user root 2>/dev/null || true" \
+        "$F_TOOL $current_user root 2>/dev/null || true"
+
+    # === Comparison with id ===
+    echo ""
+    echo "=== Comparison with id ==="
+
+    run_test "groups vs id -Gn for current user" \
+        "$GNU_TOOL | sed 's/^[^:]*: *//' | tr ' ' '\n' | sort" \
+        "id -Gn | tr ' ' '\n' | sort"
+
+    # === Output Format ===
+    echo ""
+    echo "=== Output Format ==="
+
+    run_test "output format for current user" \
+        "$GNU_TOOL $current_user" \
+        "$F_TOOL $current_user"
+
+    run_test "output format for root" \
+        "$GNU_TOOL root 2>/dev/null || true" \
+        "$F_TOOL root 2>/dev/null || true"
+
+    # === Piped Output ===
+    echo ""
+    echo "=== Piped Output ==="
+
+    run_test "groups piped through cat" \
+        "$GNU_TOOL | cat" \
+        "$F_TOOL | cat"
+
+    run_test "groups user piped through cat" \
+        "$GNU_TOOL $current_user | cat" \
+        "$F_TOOL $current_user | cat"
+
+    # === Invalid Options & Help ===
+    echo ""
+    echo "=== Invalid Options & Help ==="
+
+    run_exit_code_test "--invalid option fails" \
+        "$GNU_TOOL --invalid 2>&1" \
+        "$F_TOOL --invalid 2>&1"
+
+    run_exit_code_test "--help exits 0" \
+        "$GNU_TOOL --help" \
+        "$F_TOOL --help"
+
+    run_exit_code_test "--version exits 0" \
+        "$GNU_TOOL --version" \
+        "$F_TOOL --version"
+
+    # === Comparison with id for Specific User ===
+    echo ""
+    echo "=== Comparison with id for Specific User ==="
+
+    run_test "groups vs id -Gn for explicit current user" \
+        "$GNU_TOOL $current_user | sed 's/^[^:]*: *//' | tr ' ' '\n' | sort" \
+        "id -Gn $current_user | tr ' ' '\n' | sort"
+
+    # === Mixed Valid and Invalid Users ===
+    echo ""
+    echo "=== Mixed Valid and Invalid Users ==="
+
+    run_exit_code_test "valid then invalid user" \
+        "$GNU_TOOL $current_user nonexistent_user_$$ 2>&1" \
+        "$F_TOOL $current_user nonexistent_user_$$ 2>&1"
+
+    run_test "valid then invalid user output" \
+        "$GNU_TOOL $current_user nonexistent_user_$$ 2>&1 || true" \
+        "$F_TOOL $current_user nonexistent_user_$$ 2>&1 || true"
+
+    run_exit_code_test "invalid then valid user" \
+        "$GNU_TOOL nonexistent_user_$$ $current_user 2>&1" \
+        "$F_TOOL nonexistent_user_$$ $current_user 2>&1"
+
+    run_test "invalid then valid user output" \
+        "$GNU_TOOL nonexistent_user_$$ $current_user 2>&1 || true" \
+        "$F_TOOL nonexistent_user_$$ $current_user 2>&1 || true"
+
+    # === Additional Piped Output ===
+    echo ""
+    echo "=== Additional Piped Output ==="
+
+    run_test "groups piped through sort" \
+        "$GNU_TOOL | sort" \
+        "$F_TOOL | sort"
+
+    run_test "groups root piped through cat" \
+        "$GNU_TOOL root 2>/dev/null | cat || true" \
+        "$F_TOOL root 2>/dev/null | cat || true"
+
+    # === Output Format Checks ===
+    echo ""
+    echo "=== Output Format Checks ==="
+
+    run_test "output contains username prefix" \
+        "$GNU_TOOL $current_user | grep -c '$current_user'" \
+        "$F_TOOL $current_user | grep -c '$current_user'"
+
+    run_test "output word count for current user" \
+        "$GNU_TOOL $current_user | wc -w" \
+        "$F_TOOL $current_user | wc -w"
+
+    run_test "output line count for single user" \
+        "$GNU_TOOL $current_user | wc -l" \
+        "$F_TOOL $current_user | wc -l"
 
     finish_test_suite
 }

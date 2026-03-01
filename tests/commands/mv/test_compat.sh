@@ -530,6 +530,356 @@ run_mv_tests() {
         "$GNU_TOOL 2>&1" \
         "$F_TOOL 2>&1"
 
+    # === Section 9: Multiple Files to Directory ===
+    echo ""
+    echo "=== Multiple Files to Directory ==="
+
+    local tmpmulti=$(mktemp -d /tmp/fcoreutils_mv_multi_$$_XXXXXX)
+    register_temp "$tmpmulti"
+
+    mkdir -p "$tmpmulti/gnu_dest" "$tmpmulti/f_dest"
+    echo "a" > "$tmpmulti/gnu_a"
+    echo "b" > "$tmpmulti/gnu_b"
+    echo "c" > "$tmpmulti/gnu_c"
+    echo "a" > "$tmpmulti/f_a"
+    echo "b" > "$tmpmulti/f_b"
+    echo "c" > "$tmpmulti/f_c"
+
+    $GNU_TOOL "$tmpmulti/gnu_a" "$tmpmulti/gnu_b" "$tmpmulti/gnu_c" "$tmpmulti/gnu_dest/"
+    $F_TOOL "$tmpmulti/f_a" "$tmpmulti/f_b" "$tmpmulti/f_c" "$tmpmulti/f_dest/"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -f "$tmpmulti/gnu_dest/gnu_a" ]] && [[ -f "$tmpmulti/f_dest/f_a" ]] && \
+       [[ -f "$tmpmulti/gnu_dest/gnu_b" ]] && [[ -f "$tmpmulti/f_dest/f_b" ]] && \
+       [[ -f "$tmpmulti/gnu_dest/gnu_c" ]] && [[ -f "$tmpmulti/f_dest/f_c" ]] && \
+       [[ ! -f "$tmpmulti/gnu_a" ]] && [[ ! -f "$tmpmulti/f_a" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv multiple files to directory"
+        record_result "mv multiple to dir" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv multiple files to directory"
+        record_result "mv multiple to dir" "FAIL" "files not moved correctly" "" ""
+    fi
+
+    # === Section 10: Suffix (--suffix) ===
+    echo ""
+    echo "=== Suffix ==="
+
+    local tmpsuf=$(mktemp -d /tmp/fcoreutils_mv_suffix_$$_XXXXXX)
+    register_temp "$tmpsuf"
+
+    echo "original" > "$tmpsuf/gnu_target"
+    echo "original" > "$tmpsuf/f_target"
+    echo "new" > "$tmpsuf/gnu_src"
+    echo "new" > "$tmpsuf/f_src"
+
+    $GNU_TOOL -b --suffix=.bak "$tmpsuf/gnu_src" "$tmpsuf/gnu_target"
+    $F_TOOL -b --suffix=.bak "$tmpsuf/f_src" "$tmpsuf/f_target"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -f "$tmpsuf/gnu_target.bak" ]] && [[ -f "$tmpsuf/f_target.bak" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv --suffix=.bak creates backup with custom suffix"
+        record_result "mv suffix" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv --suffix=.bak"
+        record_result "mv suffix" "FAIL" "backup with custom suffix missing" "" ""
+    fi
+
+    # === Section 11: --target-directory (-t) ===
+    echo ""
+    echo "=== Target Directory (-t) ==="
+
+    local tmptd=$(mktemp -d /tmp/fcoreutils_mv_td_$$_XXXXXX)
+    register_temp "$tmptd"
+
+    mkdir -p "$tmptd/gnu_dest" "$tmptd/f_dest"
+    echo "td" > "$tmptd/gnu_src"
+    echo "td" > "$tmptd/f_src"
+
+    $GNU_TOOL -t "$tmptd/gnu_dest" "$tmptd/gnu_src"
+    $F_TOOL -t "$tmptd/f_dest" "$tmptd/f_src"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -f "$tmptd/gnu_dest/gnu_src" ]] && [[ -f "$tmptd/f_dest/f_src" ]] && \
+       [[ ! -f "$tmptd/gnu_src" ]] && [[ ! -f "$tmptd/f_src" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv -t target_directory"
+        record_result "mv target directory" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv -t target_directory"
+        record_result "mv target directory" "FAIL" "target directory move failed" "" ""
+    fi
+
+    # === Section 12: --no-target-directory (-T) ===
+    echo ""
+    echo "=== No Target Directory (-T) ==="
+
+    local tmpnt=$(mktemp -d /tmp/fcoreutils_mv_nt_$$_XXXXXX)
+    register_temp "$tmpnt"
+
+    mkdir -p "$tmpnt/gnu_src" "$tmpnt/f_src"
+
+    $GNU_TOOL -T "$tmpnt/gnu_src" "$tmpnt/gnu_renamed"
+    $F_TOOL -T "$tmpnt/f_src" "$tmpnt/f_renamed"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -d "$tmpnt/gnu_renamed" ]] && [[ -d "$tmpnt/f_renamed" ]] && \
+       [[ ! -d "$tmpnt/gnu_src" ]] && [[ ! -d "$tmpnt/f_src" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv -T renames dir instead of moving into"
+        record_result "mv no target directory" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv -T"
+        record_result "mv no target directory" "FAIL" "-T behavior differs" "" ""
+    fi
+
+    # === Section 13: Symlink Rename ===
+    echo ""
+    echo "=== Symlink Rename ==="
+
+    local tmpsym=$(mktemp -d /tmp/fcoreutils_mv_sym_$$_XXXXXX)
+    register_temp "$tmpsym"
+
+    echo "target" > "$tmpsym/real_file"
+    ln -s "$tmpsym/real_file" "$tmpsym/gnu_link"
+    ln -s "$tmpsym/real_file" "$tmpsym/f_link"
+
+    $GNU_TOOL "$tmpsym/gnu_link" "$tmpsym/gnu_link_renamed"
+    $F_TOOL "$tmpsym/f_link" "$tmpsym/f_link_renamed"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -L "$tmpsym/gnu_link_renamed" ]] && [[ -L "$tmpsym/f_link_renamed" ]] && \
+       [[ ! -L "$tmpsym/gnu_link" ]] && [[ ! -L "$tmpsym/f_link" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv symlink renames the link"
+        record_result "mv symlink rename" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv symlink rename"
+        record_result "mv symlink rename" "FAIL" "symlink rename behavior differs" "" ""
+    fi
+
+    # === Section 14: Symlink Target Preserved ===
+    echo ""
+    echo "=== Symlink Target Preserved ==="
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local gnu_target f_target
+    gnu_target=$(readlink "$tmpsym/gnu_link_renamed" 2>/dev/null || echo "")
+    f_target=$(readlink "$tmpsym/f_link_renamed" 2>/dev/null || echo "")
+
+    if [[ "$gnu_target" == "$f_target" ]] && [[ -n "$gnu_target" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv symlink preserves target"
+        record_result "mv symlink target" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv symlink target (gnu=$gnu_target f=$f_target)"
+        record_result "mv symlink target" "FAIL" "symlink target differs: gnu=$gnu_target f=$f_target" "" ""
+    fi
+
+    # === Section 15: Permission Denied ===
+    echo ""
+    echo "=== Permission Denied ==="
+
+    local tmpperm=$(mktemp -d /tmp/fcoreutils_mv_perm_$$_XXXXXX)
+    register_temp "$tmpperm"
+
+    mkdir -p "$tmpperm/readonly_dir"
+    echo "locked" > "$tmpperm/readonly_dir/file"
+    chmod 444 "$tmpperm/readonly_dir"
+
+    run_exit_code_test "mv into read-only dir fails" \
+        "$GNU_TOOL '$tmpperm/readonly_dir/file' '$tmpperm/moved_out' 2>&1" \
+        "$F_TOOL '$tmpperm/readonly_dir/file' '$tmpperm/moved_out' 2>&1"
+
+    chmod 755 "$tmpperm/readonly_dir"
+
+    # === Section 16: Dir Into Itself ===
+    echo ""
+    echo "=== Dir Into Itself ==="
+
+    local tmpself=$(mktemp -d /tmp/fcoreutils_mv_self_$$_XXXXXX)
+    register_temp "$tmpself"
+
+    mkdir -p "$tmpself/gnu_dir/sub" "$tmpself/f_dir/sub"
+
+    run_exit_code_test "mv dir into itself fails" \
+        "$GNU_TOOL '$tmpself/gnu_dir' '$tmpself/gnu_dir/sub' 2>&1" \
+        "$F_TOOL '$tmpself/f_dir' '$tmpself/f_dir/sub' 2>&1"
+
+    # === Section 17: Special Characters in Filenames ===
+    echo ""
+    echo "=== Special Characters ==="
+
+    local tmpsc=$(mktemp -d /tmp/fcoreutils_mv_sc_$$_XXXXXX)
+    register_temp "$tmpsc"
+
+    echo "special" > "$tmpsc/gnu file with spaces"
+    echo "special" > "$tmpsc/f file with spaces"
+
+    $GNU_TOOL "$tmpsc/gnu file with spaces" "$tmpsc/gnu moved spaces"
+    $F_TOOL "$tmpsc/f file with spaces" "$tmpsc/f moved spaces"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -f "$tmpsc/gnu moved spaces" ]] && [[ -f "$tmpsc/f moved spaces" ]] && \
+       [[ ! -f "$tmpsc/gnu file with spaces" ]] && [[ ! -f "$tmpsc/f file with spaces" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv files with spaces"
+        record_result "mv special chars" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv files with spaces"
+        record_result "mv special chars" "FAIL" "special chars handling differs" "" ""
+    fi
+
+    # === Section 18: Empty Directory ===
+    echo ""
+    echo "=== Empty Directory ==="
+
+    local tmped=$(mktemp -d /tmp/fcoreutils_mv_ed_$$_XXXXXX)
+    register_temp "$tmped"
+
+    mkdir -p "$tmped/gnu_empty" "$tmped/f_empty"
+
+    $GNU_TOOL "$tmped/gnu_empty" "$tmped/gnu_empty_moved"
+    $F_TOOL "$tmped/f_empty" "$tmped/f_empty_moved"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -d "$tmped/gnu_empty_moved" ]] && [[ -d "$tmped/f_empty_moved" ]] && \
+       [[ ! -d "$tmped/gnu_empty" ]] && [[ ! -d "$tmped/f_empty" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv empty directory"
+        record_result "mv empty dir" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv empty directory"
+        record_result "mv empty dir" "FAIL" "empty dir move differs" "" ""
+    fi
+
+    # === Section 19: Hidden Files ===
+    echo ""
+    echo "=== Hidden Files ==="
+
+    local tmphid=$(mktemp -d /tmp/fcoreutils_mv_hid_$$_XXXXXX)
+    register_temp "$tmphid"
+
+    echo "hidden" > "$tmphid/.gnu_hidden"
+    echo "hidden" > "$tmphid/.f_hidden"
+
+    $GNU_TOOL "$tmphid/.gnu_hidden" "$tmphid/.gnu_hidden_moved"
+    $F_TOOL "$tmphid/.f_hidden" "$tmphid/.f_hidden_moved"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -f "$tmphid/.gnu_hidden_moved" ]] && [[ -f "$tmphid/.f_hidden_moved" ]] && \
+       [[ ! -f "$tmphid/.gnu_hidden" ]] && [[ ! -f "$tmphid/.f_hidden" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv hidden files"
+        record_result "mv hidden files" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv hidden files"
+        record_result "mv hidden files" "FAIL" "hidden file move differs" "" ""
+    fi
+
+    # === Section 20: Strip Trailing Slashes (--strip-trailing-slashes) ===
+    echo ""
+    echo "=== Strip Trailing Slashes ==="
+
+    local tmpsts=$(mktemp -d /tmp/fcoreutils_mv_sts_$$_XXXXXX)
+    register_temp "$tmpsts"
+
+    mkdir -p "$tmpsts/gnu_slashdir" "$tmpsts/f_slashdir"
+
+    run_exit_code_test "mv --strip-trailing-slashes" \
+        "$GNU_TOOL --strip-trailing-slashes '$tmpsts/gnu_slashdir/' '$tmpsts/gnu_stripped' 2>&1" \
+        "$F_TOOL --strip-trailing-slashes '$tmpsts/f_slashdir/' '$tmpsts/f_stripped' 2>&1"
+
+    # === Section 21: Verbose Output Format ===
+    echo ""
+    echo "=== Verbose Output Format ==="
+
+    local tmpvf=$(mktemp -d /tmp/fcoreutils_mv_vf_$$_XXXXXX)
+    register_temp "$tmpvf"
+
+    echo "vf" > "$tmpvf/gnu_vf_src"
+    echo "vf" > "$tmpvf/f_vf_src"
+
+    local gnu_vf_out f_vf_out
+    gnu_vf_out=$($GNU_TOOL -v "$tmpvf/gnu_vf_src" "$tmpvf/gnu_vf_dst" 2>&1 || true)
+    f_vf_out=$($F_TOOL -v "$tmpvf/f_vf_src" "$tmpvf/f_vf_dst" 2>&1 || true)
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    # Both should contain an arrow indicator (-> or ')
+    if echo "$gnu_vf_out" | grep -q "->"; then
+        if echo "$f_vf_out" | grep -q "->"; then
+            TESTS_PASSED=$((TESTS_PASSED + 1))
+            echo -e "  ${GREEN}PASS${NC}: mv -v output contains -> indicator"
+            record_result "mv verbose output format" "PASS" "" "" ""
+        else
+            TESTS_FAILED=$((TESTS_FAILED + 1))
+            echo -e "  ${RED}FAIL${NC}: mv -v output format (f missing ->)"
+            record_result "mv verbose output format" "FAIL" "f output: $f_vf_out" "" ""
+        fi
+    else
+        # GNU doesn't use -> on this platform, just check both produce output
+        if [[ -n "$gnu_vf_out" ]] && [[ -n "$f_vf_out" ]]; then
+            TESTS_PASSED=$((TESTS_PASSED + 1))
+            echo -e "  ${GREEN}PASS${NC}: mv -v produces output"
+            record_result "mv verbose output format" "PASS" "" "" ""
+        else
+            TESTS_FAILED=$((TESTS_FAILED + 1))
+            echo -e "  ${RED}FAIL${NC}: mv -v output missing"
+            record_result "mv verbose output format" "FAIL" "gnu='$gnu_vf_out' f='$f_vf_out'" "" ""
+        fi
+    fi
+
+    # === Section 22: Interactive Yes ===
+    echo ""
+    echo "=== Interactive ==="
+
+    local tmpint=$(mktemp -d /tmp/fcoreutils_mv_int_$$_XXXXXX)
+    register_temp "$tmpint"
+
+    echo "exists" > "$tmpint/gnu_int_dst"
+    echo "exists" > "$tmpint/f_int_dst"
+    echo "new_y" > "$tmpint/gnu_int_src_y"
+    echo "new_y" > "$tmpint/f_int_src_y"
+
+    run_exit_code_test "mv -i with yes response" \
+        "echo y | $GNU_TOOL -i '$tmpint/gnu_int_src_y' '$tmpint/gnu_int_dst' 2>&1" \
+        "echo y | $F_TOOL -i '$tmpint/f_int_src_y' '$tmpint/f_int_dst' 2>&1"
+
+    # === Section 23: Interactive No ===
+
+    echo "exists_n" > "$tmpint/gnu_int_dst_n"
+    echo "exists_n" > "$tmpint/f_int_dst_n"
+    echo "new_n" > "$tmpint/gnu_int_src_n"
+    echo "new_n" > "$tmpint/f_int_src_n"
+
+    TESTS_RUN=$((TESTS_RUN + 1))
+    echo n | $GNU_TOOL -i "$tmpint/gnu_int_src_n" "$tmpint/gnu_int_dst_n" 2>/dev/null || true
+    echo n | $F_TOOL -i "$tmpint/f_int_src_n" "$tmpint/f_int_dst_n" 2>/dev/null || true
+
+    local gnu_int_content f_int_content
+    gnu_int_content=$(cat "$tmpint/gnu_int_dst_n" 2>/dev/null || echo "")
+    f_int_content=$(cat "$tmpint/f_int_dst_n" 2>/dev/null || echo "")
+
+    if [[ "$gnu_int_content" == "exists_n" ]] && [[ "$f_int_content" == "exists_n" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}PASS${NC}: mv -i with no response preserves target"
+        record_result "mv interactive no" "PASS" "" "" ""
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}FAIL${NC}: mv -i with no response (gnu='$gnu_int_content' f='$f_int_content')"
+        record_result "mv interactive no" "FAIL" "interactive no behavior differs" "" ""
+    fi
+
     # Cleanup
     rm -rf "$test_dir"
 

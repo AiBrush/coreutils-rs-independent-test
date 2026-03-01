@@ -19,28 +19,68 @@ run_cp_benchmarks() {
 
     init_benchmark "cp"
 
+    # Prepare benchmark test files
+    local bench_dir
+    bench_dir=$(mktemp -d /tmp/fcoreutils_bench_cp_$$_XXXXXX)
+    register_temp "$bench_dir"
+
+    # Small file (1KB)
+    dd if=/dev/urandom of="$bench_dir/small_file" bs=1024 count=1 2>/dev/null
+
+    # Medium file (1MB)
+    dd if=/dev/urandom of="$bench_dir/medium_file" bs=1024 count=1024 2>/dev/null
+
+    # Large file (10MB)
+    dd if=/dev/urandom of="$bench_dir/large_file" bs=1024 count=10240 2>/dev/null
+
+    # Many small files directory (100 files)
+    mkdir -p "$bench_dir/many_small"
+    for i in $(seq 1 100); do
+        echo "file content $i" > "$bench_dir/many_small/file_$i"
+    done
+
+    # Deep directory structure
+    mkdir -p "$bench_dir/deep/a/b/c/d/e/f/g/h"
+    for dir in "$bench_dir/deep" "$bench_dir/deep/a" "$bench_dir/deep/a/b" \
+               "$bench_dir/deep/a/b/c" "$bench_dir/deep/a/b/c/d" \
+               "$bench_dir/deep/a/b/c/d/e" "$bench_dir/deep/a/b/c/d/e/f" \
+               "$bench_dir/deep/a/b/c/d/e/f/g" "$bench_dir/deep/a/b/c/d/e/f/g/h"; do
+        echo "content in $(basename "$dir")" > "$dir/file.txt"
+    done
+
     echo ""
-    echo "=== Copy single file ==="
+    echo "=== Copy Single File ==="
 
-    run_benchmark "cp 1MB file" \
-        "rm -f /tmp/bench_cp_gnu && $GNU_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_cp_gnu" \
-        "rm -f /tmp/bench_cp_f && $F_TOOL '$TEST_DATA_DIR/text_1m.txt' /tmp/bench_cp_f" \
+    run_benchmark "cp small file (1KB)" \
+        "rm -f /tmp/bench_cp_small_gnu_$$ && $GNU_TOOL '$bench_dir/small_file' /tmp/bench_cp_small_gnu_$$" \
+        "rm -f /tmp/bench_cp_small_f_$$ && $F_TOOL '$bench_dir/small_file' /tmp/bench_cp_small_f_$$"
 
-    run_benchmark "cp 10MB file" \
-        "rm -f /tmp/bench_cp_10m_gnu && $GNU_TOOL '$TEST_DATA_DIR/text_10m.txt' /tmp/bench_cp_10m_gnu" \
-        "rm -f /tmp/bench_cp_10m_f && $F_TOOL '$TEST_DATA_DIR/text_10m.txt' /tmp/bench_cp_10m_f" \
+    run_benchmark "cp medium file (1MB)" \
+        "rm -f /tmp/bench_cp_med_gnu_$$ && $GNU_TOOL '$bench_dir/medium_file' /tmp/bench_cp_med_gnu_$$" \
+        "rm -f /tmp/bench_cp_med_f_$$ && $F_TOOL '$bench_dir/medium_file' /tmp/bench_cp_med_f_$$"
+
+    run_benchmark "cp large file (10MB)" \
+        "rm -f /tmp/bench_cp_lg_gnu_$$ && $GNU_TOOL '$bench_dir/large_file' /tmp/bench_cp_lg_gnu_$$" \
+        "rm -f /tmp/bench_cp_lg_f_$$ && $F_TOOL '$bench_dir/large_file' /tmp/bench_cp_lg_f_$$"
 
     echo ""
-    echo "=== Copy directory recursively ==="
+    echo "=== Copy Directory Recursively ==="
 
-    run_benchmark "cp -r directory (many_files)" \
-        "rm -rf /tmp/bench_cp_dir_gnu && $GNU_TOOL -r '$TEST_DATA_DIR/many_files' /tmp/bench_cp_dir_gnu" \
-        "rm -rf /tmp/bench_cp_dir_f && $F_TOOL -r '$TEST_DATA_DIR/many_files' /tmp/bench_cp_dir_f" \
+    run_benchmark "cp -r many small files (100 files)" \
+        "rm -rf /tmp/bench_cp_many_gnu_$$ && $GNU_TOOL -r '$bench_dir/many_small' /tmp/bench_cp_many_gnu_$$" \
+        "rm -rf /tmp/bench_cp_many_f_$$ && $F_TOOL -r '$bench_dir/many_small' /tmp/bench_cp_many_f_$$"
+
+    run_benchmark "cp -r deep directory (8 levels)" \
+        "rm -rf /tmp/bench_cp_deep_gnu_$$ && $GNU_TOOL -r '$bench_dir/deep' /tmp/bench_cp_deep_gnu_$$" \
+        "rm -rf /tmp/bench_cp_deep_f_$$ && $F_TOOL -r '$bench_dir/deep' /tmp/bench_cp_deep_f_$$"
 
     # Cleanup
-    rm -f /tmp/bench_cp_gnu /tmp/bench_cp_f /tmp/bench_cp_u
-    rm -f /tmp/bench_cp_10m_gnu /tmp/bench_cp_10m_f /tmp/bench_cp_10m_u
-    rm -rf /tmp/bench_cp_dir_gnu /tmp/bench_cp_dir_f /tmp/bench_cp_dir_u
+    rm -rf "$bench_dir"
+    rm -f /tmp/bench_cp_small_gnu_$$ /tmp/bench_cp_small_f_$$
+    rm -f /tmp/bench_cp_med_gnu_$$ /tmp/bench_cp_med_f_$$
+    rm -f /tmp/bench_cp_lg_gnu_$$ /tmp/bench_cp_lg_f_$$
+    rm -rf /tmp/bench_cp_many_gnu_$$ /tmp/bench_cp_many_f_$$
+    rm -rf /tmp/bench_cp_deep_gnu_$$ /tmp/bench_cp_deep_f_$$
 
     save_benchmark_results
 }
