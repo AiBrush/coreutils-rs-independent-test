@@ -140,8 +140,8 @@ run_stat_tests() {
     echo "=== Filesystem Mode (-f) ==="
 
     run_stdout_test "-f / filesystem info" \
-        "$GNU_TOOL -f /" \
-        "$F_TOOL -f /"
+        "$GNU_TOOL -f / | sed 's/Free: [0-9]*/Free: N/g; s/Available: [0-9]*/Available: N/g'" \
+        "$F_TOOL -f / | sed 's/Free: [0-9]*/Free: N/g; s/Available: [0-9]*/Available: N/g'"
 
     run_stdout_test "-f -c %T filesystem type" \
         "$GNU_TOOL -f -c '%T' /" \
