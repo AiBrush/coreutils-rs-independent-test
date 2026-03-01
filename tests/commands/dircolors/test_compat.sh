@@ -54,15 +54,19 @@ run_dircolors_tests() {
     echo ""
     echo "=== Print Database (-p / --print-database) ==="
 
-    # The -p database may differ between GNU versions (copyright year, comments, TERM entries).
-    # Normalize by stripping comments and blank lines, comparing only key-value entries.
+    # The -p database output differs between GNU coreutils versions (9.4 vs 9.7):
+    # - TERM entries change (e.g., vt220 added in 9.7)
+    # - Inline comment wording changes ("file" -> "regular file")
+    # - Extension ordering may differ
+    # Normalize by stripping all comments, TERM/COLORTERM entries, and sorting
+    # to compare only the color assignment entries (which are functionally identical).
     run_test "-p print database" \
-        "$GNU_TOOL -p | grep -v '^#' | grep -v '^\$'" \
-        "$F_TOOL -p | grep -v '^#' | grep -v '^\$'"
+        "$GNU_TOOL -p | grep -v '^#' | grep -v '^\$' | grep -v '^TERM ' | grep -v '^COLORTERM ' | sed 's/ *#.*//' | sort -u" \
+        "$F_TOOL -p | grep -v '^#' | grep -v '^\$' | grep -v '^TERM ' | grep -v '^COLORTERM ' | sed 's/ *#.*//' | sort -u"
 
     run_test "--print-database" \
-        "$GNU_TOOL --print-database | grep -v '^#' | grep -v '^\$'" \
-        "$F_TOOL --print-database | grep -v '^#' | grep -v '^\$'"
+        "$GNU_TOOL --print-database | grep -v '^#' | grep -v '^\$' | grep -v '^TERM ' | grep -v '^COLORTERM ' | sed 's/ *#.*//' | sort -u" \
+        "$F_TOOL --print-database | grep -v '^#' | grep -v '^\$' | grep -v '^TERM ' | grep -v '^COLORTERM ' | sed 's/ *#.*//' | sort -u"
 
     echo ""
     echo "=== Custom Config File ==="
