@@ -79,6 +79,19 @@ run_benchmark() {
         fi
     fi
 
+    # Resolve shell builtins to external binaries for fair comparison.
+    # Without this, hyperfine's `sh -c "true"` uses the instant shell builtin
+    # while `sh -c "ftrue"` execs the external binary, making the comparison
+    # unfair (e.g., true: 0µs vs ftrue: 800µs = reported as <0.1x).
+    if type -t "$gnu_binary" 2>/dev/null | grep -q builtin; then
+        local ext_path
+        ext_path=$(type -P "$gnu_binary" 2>/dev/null || true)
+        if [[ -n "$ext_path" ]]; then
+            gnu_cmd="${gnu_cmd/$gnu_binary/$ext_path}"
+            gnu_binary="$ext_path"
+        fi
+    fi
+
     # Check if GNU tool is available
     if ! command -v "$gnu_binary" &>/dev/null; then
         echo -e "  ${YELLOW}GNU $TOOL_NAME not available on this platform${NC}"
