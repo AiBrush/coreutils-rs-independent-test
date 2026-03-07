@@ -229,6 +229,12 @@ jobs:
           [[ -f /tmp/fcoreutils-test-data/unreadable.txt ]] && chmod 000 /tmp/fcoreutils-test-data/unreadable.txt
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
+      - name: Install test locales
+        run: |
+          sudo sed -i 's/^# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen
+          sudo sed -i 's/^# zh_CN.GB18030 GB18030/zh_CN.GB18030 GB18030/' /etc/locale.gen
+          sudo locale-gen
+
       - name: Run compatibility test
         run: bash tests/commands/run_tool.sh ${{ matrix.tool }}
         continue-on-error: true
