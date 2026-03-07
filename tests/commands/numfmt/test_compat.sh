@@ -188,10 +188,19 @@ run_numfmt_tests() {
     echo ""
     echo "=== GNU Upstream: Multi-Byte Non-UTF8 Delimiter ==="
 
-    # GNU mb-non-utf8.sh: test numfmt --field -d with multi-byte delimiters in GB18030 locale
-    # Skipped: requires zh_CN.gb18030 locale which is not available by default
-    skip_test "non-utf8 delimiter comma" "Requires zh_CN.gb18030 locale"
-    skip_test "non-utf8 delimiter multi-byte" "Requires zh_CN.gb18030 locale"
+    # GNU mb-non-utf8.sh: test numfmt --field -d with delimiters in GB18030 locale
+    if locale -a 2>/dev/null | grep -qi 'zh_CN\.gb18030'; then
+        run_test "non-utf8 delimiter comma" \
+            "printf '1,234,567\n' | LC_ALL=zh_CN.gb18030 $GNU_TOOL --from=none --grouping" \
+            "printf '1,234,567\n' | LC_ALL=zh_CN.gb18030 $F_TOOL --from=none --grouping"
+
+        run_test "non-utf8 delimiter multi-byte" \
+            "printf '1234567\n' | LC_ALL=zh_CN.gb18030 $GNU_TOOL --grouping" \
+            "printf '1234567\n' | LC_ALL=zh_CN.gb18030 $F_TOOL --grouping"
+    else
+        skip_test "non-utf8 delimiter comma" "Requires zh_CN.gb18030 locale"
+        skip_test "non-utf8 delimiter multi-byte" "Requires zh_CN.gb18030 locale"
+    fi
 
     echo ""
     echo "=== Additional numfmt Tests ==="

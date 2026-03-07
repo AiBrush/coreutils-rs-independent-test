@@ -334,14 +334,26 @@ run_fold_tests() {
         "printf '\0\0\0\0\0\0\0\0\0\0' | $GNU_TOOL --characters -w 5 | wc -l" \
         "printf '\0\0\0\0\0\0\0\0\0\0' | $F_TOOL --characters -w 5 | wc -l"
 
-    # fold-characters.sh: skipped (requires LOCALE_FR_UTF8 special locale)
-    skip_test "fold characters wide-char" "Requires French UTF-8 locale (LOCALE_FR_UTF8)"
+    # fold-characters.sh: wide-char (CJK) width handling in UTF-8 locale
+    if locale -a 2>/dev/null | grep -qi 'fr_FR\.utf'; then
+        run_test "fold characters wide-char" \
+            "printf 'a\xe4\xb8\x89\xe5\x9b\x9b\n' | LC_ALL=fr_FR.UTF-8 $GNU_TOOL -w5" \
+            "printf 'a\xe4\xb8\x89\xe5\x9b\x9b\n' | LC_ALL=fr_FR.UTF-8 $F_TOOL -w5"
 
-    # fold-nbsp.sh: skipped (requires LOCALE_FR_UTF8 special locale)
-    skip_test "fold non-breaking space" "Requires French UTF-8 locale (LOCALE_FR_UTF8)"
+        # fold-nbsp.sh: non-breaking space (U+00A0) as break point
+        run_test "fold non-breaking space" \
+            "printf 'a\xc2\xa0b\xc2\xa0c\n' | LC_ALL=fr_FR.UTF-8 $GNU_TOOL -s -w4" \
+            "printf 'a\xc2\xa0b\xc2\xa0c\n' | LC_ALL=fr_FR.UTF-8 $F_TOOL -s -w4"
 
-    # fold-spaces.sh: skipped (requires LOCALE_FR_UTF8 and Unicode blank detection)
-    skip_test "fold Unicode breaking spaces" "Requires French UTF-8 locale (LOCALE_FR_UTF8)"
+        # fold-spaces.sh: Unicode em-space (U+2003) as break point
+        run_test "fold Unicode breaking spaces" \
+            "printf 'a\xe2\x80\x83b\n' | LC_ALL=fr_FR.UTF-8 $GNU_TOOL -s -w3" \
+            "printf 'a\xe2\x80\x83b\n' | LC_ALL=fr_FR.UTF-8 $F_TOOL -s -w3"
+    else
+        skip_test "fold characters wide-char" "Requires French UTF-8 locale (LOCALE_FR_UTF8)"
+        skip_test "fold non-breaking space" "Requires French UTF-8 locale (LOCALE_FR_UTF8)"
+        skip_test "fold Unicode breaking spaces" "Requires French UTF-8 locale (LOCALE_FR_UTF8)"
+    fi
 
     # fold-zero-width.sh bounded-memory test: skipped (requires ulimit -v and /dev/full)
     skip_test "fold bounded memory" "Requires ulimit -v and /dev/full"

@@ -175,9 +175,26 @@ run_paste_tests() {
     echo "=== GNU Upstream: Multi-Byte Delimiters ==="
 
     # GNU multi-byte.sh: test paste with multi-byte UTF-8/GB18030 delimiters
-    # Skipped: requires French UTF-8 locale (LOCALE_FR_UTF8) and zh_CN.gb18030
-    skip_test "multi-byte UTF-8 delimiter" "Requires non-default locale (LOCALE_FR_UTF8)"
-    skip_test "multi-byte GB18030 delimiter" "Requires zh_CN.gb18030 locale"
+    local paste_tmp1=$(make_temp "$(printf 'a\nb\n')")
+    local paste_tmp2=$(make_temp "$(printf '1\n2\n')")
+    register_temp "$paste_tmp1"
+    register_temp "$paste_tmp2"
+
+    if locale -a 2>/dev/null | grep -qi 'fr_FR\.utf'; then
+        run_test "multi-byte UTF-8 delimiter" \
+            "LC_ALL=fr_FR.UTF-8 $GNU_TOOL -d'é' '$paste_tmp1' '$paste_tmp2'" \
+            "LC_ALL=fr_FR.UTF-8 $F_TOOL -d'é' '$paste_tmp1' '$paste_tmp2'"
+    else
+        skip_test "multi-byte UTF-8 delimiter" "Requires non-default locale (LOCALE_FR_UTF8)"
+    fi
+
+    if locale -a 2>/dev/null | grep -qi 'zh_CN\.gb18030'; then
+        run_test "multi-byte GB18030 delimiter" \
+            "LC_ALL=zh_CN.gb18030 $GNU_TOOL -d',' '$paste_tmp1' '$paste_tmp2'" \
+            "LC_ALL=zh_CN.gb18030 $F_TOOL -d',' '$paste_tmp1' '$paste_tmp2'"
+    else
+        skip_test "multi-byte GB18030 delimiter" "Requires zh_CN.gb18030 locale"
+    fi
 
     echo ""
     echo "=== Error Handling ==="

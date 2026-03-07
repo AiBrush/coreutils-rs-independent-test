@@ -352,8 +352,14 @@ run_nl_tests() {
         "printf 'a\n\n' | $GNU_TOOL -b a" \
         "printf 'a\n\n' | $F_TOOL -b a"
 
-    # multibyte.sh: skipped (requires specific French UTF-8 locale)
-    skip_test "multibyte section delimiters" "Requires LOCALE_FR_UTF8"
+    # multibyte.sh: section delimiters in multibyte locale
+    if locale -a 2>/dev/null | grep -qi 'fr_FR\.utf'; then
+        run_test "multibyte section delimiters" \
+            "printf '\\\\:\\\\:\\\\:\nheader\n\\\\:\\\\:\nbody1\nbody2\n\\\\:\nfooter\n' | LC_ALL=fr_FR.UTF-8 $GNU_TOOL" \
+            "printf '\\\\:\\\\:\\\\:\nheader\n\\\\:\\\\:\nbody1\nbody2\n\\\\:\nfooter\n' | LC_ALL=fr_FR.UTF-8 $F_TOOL"
+    else
+        skip_test "multibyte section delimiters" "Requires LOCALE_FR_UTF8"
+    fi
 
     # nl.sh overflow tests: skipped (requires getlimits_ INTMAX values)
     skip_test "nl overflow values" "Requires getlimits_ overflow values"
