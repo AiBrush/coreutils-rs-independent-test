@@ -205,18 +205,84 @@ build_tools() {
             continue
         fi
 
-        # Check if pre-built binary exists (some tools ship pre-built)
+        # Tools without Makefiles: build from unified .asm source using nasm -f bin
         if [[ ! -f "$tool_dir/Makefile" ]]; then
-            if [[ -f "$tool_dir/$binary" ]]; then
+            local unified_src=""
+            # Look for unified source file
+            if [[ -d "$tool_dir/unified" ]]; then
+                unified_src=$(ls "$tool_dir/unified/"*_unified.asm 2>/dev/null | head -1)
+            fi
+            # Some tools have source directly in their directory (e.g. yes)
+            if [[ -z "$unified_src" ]] && [[ -f "$tool_dir/${binary}.asm" ]]; then
+                unified_src="$tool_dir/${binary}.asm"
+            fi
+
+            if [[ -n "$unified_src" ]]; then
+                echo -n "  Building $binary (nasm -f bin)... "
+                if nasm -f bin "$unified_src" -o "$INSTALL_DIR/$binary" 2>/dev/null && \
+                   chmod +x "$INSTALL_DIR/$binary"; then
+                    local size
+                    size=$(stat -c%s "$INSTALL_DIR/$binary" 2>/dev/null || echo "?")
+                    echo "OK ($size bytes)"
+                    built=$((built + 1))
+                else
+                    echo "FAIL (nasm error)"
+                    failed=$((failed + 1))
+                    failed_tools+=("$tool")
+                fi
+            elif [[ -f "$tool_dir/tools/${binary}.asm" ]] && [[ -d "$tool_dir/lib" ]]; then
+                # Multi-file build: nasm -f elf64 + ld (e.g. wc)
+                echo -n "  Building $binary (nasm elf64 + ld)... "
+                local build_dir="$tool_dir/build"
+                mkdir -p "$build_dir/tools" "$build_dir/lib"
+                local obj_files=""
+                local build_ok=true
+
+                # Build main tool object
+                if ! nasm -f elf64 -I "$tool_dir/include/" "$tool_dir/tools/${binary}.asm" \
+                     -o "$build_dir/tools/${binary}.o" 2>/dev/null; then
+                    build_ok=false
+                fi
+                obj_files="$build_dir/tools/${binary}.o"
+
+                # Build library objects
+                if $build_ok; then
+                    for lib_src in "$tool_dir/lib/"*.asm; do
+                        local lib_name
+                        lib_name=$(basename "$lib_src" .asm)
+                        if ! nasm -f elf64 -I "$tool_dir/include/" "$lib_src" \
+                             -o "$build_dir/lib/${lib_name}.o" 2>/dev/null; then
+                            build_ok=false
+                            break
+                        fi
+                        obj_files="$obj_files $build_dir/lib/${lib_name}.o"
+                    done
+                fi
+
+                # Link
+                if $build_ok && ld --gc-sections -n $obj_files -o "$INSTALL_DIR/$binary" 2>/dev/null; then
+                    chmod +x "$INSTALL_DIR/$binary"
+                    local size
+                    size=$(stat -c%s "$INSTALL_DIR/$binary" 2>/dev/null || echo "?")
+                    echo "OK ($size bytes)"
+                    built=$((built + 1))
+                else
+                    echo "FAIL (build error)"
+                    failed=$((failed + 1))
+                    failed_tools+=("$tool")
+                fi
+                rm -rf "$build_dir"
+            elif [[ -f "$tool_dir/$binary" ]]; then
+                # Fallback: copy pre-built binary if present
                 echo -n "  Copying pre-built $binary... "
                 cp "$tool_dir/$binary" "$INSTALL_DIR/$binary"
                 chmod +x "$INSTALL_DIR/$binary"
                 local size
-                size=$(stat -c%s "$INSTALL_DIR/$binary" 2>/dev/null || stat -f%z "$INSTALL_DIR/$binary" 2>/dev/null || echo "?")
+                size=$(stat -c%s "$INSTALL_DIR/$binary" 2>/dev/null || echo "?")
                 echo "OK ($size bytes)"
                 built=$((built + 1))
             else
-                echo "  SKIP: $tool (no Makefile and no pre-built binary)"
+                echo "  SKIP: $tool (no Makefile, no unified source, no pre-built binary)"
             fi
             continue
         fi
