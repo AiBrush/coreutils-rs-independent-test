@@ -24,7 +24,12 @@ PROJECT_ROOT = os.path.join(SCRIPT_DIR, "..")
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
 
 # Assembly tools that have x86-64 assembly implementations
-ASM_TOOLS = {"cat", "seq", "nl", "expand", "unexpand", "fold", "uniq", "od", "sort", "false"}
+ASM_TOOLS = {
+    "arch", "base64", "cat", "cut", "echo", "expand", "false", "fold",
+    "head", "hostid", "logname", "md5sum", "nl", "od", "pwd", "rev",
+    "seq", "sleep", "sort", "sync", "tac", "tail", "tr", "true",
+    "tty", "unexpand", "uniq", "wc", "whoami", "yes",
+}
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

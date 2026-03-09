@@ -20,8 +20,12 @@ RESULTS_DIR="${RESULTS_DIR:-$PROJECT_ROOT/results}"
 ASM_INSTALL_DIR="${ASM_INSTALL_DIR:-$HOME/.local/bin/asm}"
 FCOREUTILS_DIR="${FCOREUTILS_DIR:-}"
 
-# Assembly tools to test
-ASM_TOOLS=(cat seq nl expand unexpand fold uniq od sort false)
+# Assembly tools to test (all 29 with compat tests; yes excluded — no compat test)
+ASM_TOOLS=(
+    arch base64 cat cut echo expand false fold head hostid logname
+    md5sum nl od pwd rev seq sleep sort sync tac tail tr true tty
+    unexpand uniq wc whoami
+)
 
 # Colors
 if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then

@@ -19,16 +19,36 @@ CLEANUP_REPO=false
 
 # Assembly tools to build (tool_name:binary_name)
 ASM_TOOLS=(
+    arch:farch
+    base64:fbase64
     cat:fcat
-    seq:fseq
-    nl:fnl
+    cut:fcut
+    echo:fecho
     expand:fexpand
-    unexpand:funexpand
-    fold:ffold
-    uniq:funiq
-    od:fod
-    sort:fsort
     false:ffalse
+    fold:ffold
+    head:fhead
+    hostid:fhostid
+    logname:flogname
+    md5sum:fmd5sum
+    nl:fnl
+    od:fod
+    pwd:fpwd
+    rev:frev
+    seq:fseq
+    sleep:fsleep
+    sort:fsort
+    sync:fsync
+    tac:ftac
+    tail:ftail
+    tr:ftr
+    true:ftrue
+    tty:ftty
+    unexpand:funexpand
+    uniq:funiq
+    wc:fwc
+    whoami:fwhoami
+    yes:fyes
 )
 
 usage() {
@@ -185,8 +205,19 @@ build_tools() {
             continue
         fi
 
+        # Check if pre-built binary exists (some tools ship pre-built)
         if [[ ! -f "$tool_dir/Makefile" ]]; then
-            echo "  SKIP: $tool (no Makefile)"
+            if [[ -f "$tool_dir/$binary" ]]; then
+                echo -n "  Copying pre-built $binary... "
+                cp "$tool_dir/$binary" "$INSTALL_DIR/$binary"
+                chmod +x "$INSTALL_DIR/$binary"
+                local size
+                size=$(stat -c%s "$INSTALL_DIR/$binary" 2>/dev/null || stat -f%z "$INSTALL_DIR/$binary" 2>/dev/null || echo "?")
+                echo "OK ($size bytes)"
+                built=$((built + 1))
+            else
+                echo "  SKIP: $tool (no Makefile and no pre-built binary)"
+            fi
             continue
         fi
 

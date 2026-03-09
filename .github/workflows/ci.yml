@@ -591,9 +591,16 @@ jobs:
 
           ASM_DIR = os.path.expanduser("~/.local/bin/asm")
           asm_tools = {
-              "cat": "fcat", "seq": "fseq", "nl": "fnl", "expand": "fexpand",
-              "unexpand": "funexpand", "fold": "ffold", "uniq": "funiq",
-              "od": "fod", "sort": "fsort", "false": "ffalse"
+              "arch": "farch", "base64": "fbase64", "cat": "fcat",
+              "cut": "fcut", "echo": "fecho", "expand": "fexpand",
+              "false": "ffalse", "fold": "ffold", "head": "fhead",
+              "hostid": "fhostid", "logname": "flogname", "md5sum": "fmd5sum",
+              "nl": "fnl", "od": "fod", "pwd": "fpwd", "rev": "frev",
+              "seq": "fseq", "sleep": "fsleep", "sort": "fsort",
+              "sync": "fsync", "tac": "ftac", "tail": "ftail",
+              "tr": "ftr", "true": "ftrue", "tty": "ftty",
+              "unexpand": "funexpand", "uniq": "funiq", "wc": "fwc",
+              "whoami": "fwhoami", "yes": "fyes",
           }
 
           sizes = {}
@@ -653,7 +660,7 @@ jobs:
           path: results/asm_sizes.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (10 parallel jobs)
+  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (29 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-compat:
     name: ASM-Compat/${{ matrix.tool }}
@@ -663,16 +670,35 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - arch
+          - base64
           - cat
-          - seq
-          - nl
+          - cut
+          - echo
           - expand
-          - unexpand
-          - fold
-          - uniq
-          - od
-          - sort
           - "false"
+          - fold
+          - head
+          - hostid
+          - logname
+          - md5sum
+          - nl
+          - od
+          - pwd
+          - rev
+          - seq
+          - sleep
+          - sort
+          - sync
+          - tac
+          - tail
+          - tr
+          - "true"
+          - tty
+          - unexpand
+          - uniq
+          - wc
+          - whoami
     steps:
       - uses: actions/checkout@v4
 
@@ -768,7 +794,7 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 7: Assembly Security Tests — per-tool security validation (10 parallel)
+  # Job 7: Assembly Security Tests — per-tool security validation (29 parallel)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-security:
     name: ASM-Security/${{ matrix.tool }}
@@ -778,16 +804,35 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - arch
+          - base64
           - cat
-          - seq
-          - nl
+          - cut
+          - echo
           - expand
-          - unexpand
-          - fold
-          - uniq
-          - od
-          - sort
           - "false"
+          - fold
+          - head
+          - hostid
+          - logname
+          - md5sum
+          - nl
+          - od
+          - pwd
+          - rev
+          - seq
+          - sleep
+          - sort
+          - sync
+          - tac
+          - tail
+          - tr
+          - "true"
+          - tty
+          - unexpand
+          - uniq
+          - wc
+          - whoami
     steps:
       - uses: actions/checkout@v4
 
@@ -894,7 +939,7 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 8: Assembly Benchmarks — 3-way comparison per tool (9 parallel jobs)
+  # Job 8: Assembly Benchmarks — 3-way comparison per tool (20 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-bench:
     name: ASM-Bench/${{ matrix.tool }}
@@ -904,15 +949,26 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - base64
           - cat
-          - seq
-          - nl
+          - cut
+          - echo
           - expand
-          - unexpand
           - fold
-          - uniq
+          - head
+          - md5sum
+          - nl
           - od
+          - rev
+          - seq
           - sort
+          - tac
+          - tail
+          - tr
+          - unexpand
+          - uniq
+          - wc
+          - yes
     steps:
       - uses: actions/checkout@v4
 
@@ -1039,6 +1095,12 @@ jobs:
 
           # Tool-specific benchmarks
           case "$TOOL" in
+            base64)
+              run_bench "encode 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
             cat)
               run_bench "passthrough 1MB" \
                 "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
@@ -1055,33 +1117,21 @@ jobs:
                   "$ASM_BIN -n '$DATA_DIR/text_10m.txt' > /dev/null"
               fi
               ;;
-            seq)
-              run_bench "1 to 1M" \
-                "$GNU_BIN 1000000 > /dev/null" \
-                "$RUST_BIN 1000000 > /dev/null" \
-                "$ASM_BIN 1000000 > /dev/null"
-              run_bench "1 to 10M" \
-                "$GNU_BIN 10000000 > /dev/null" \
-                "$RUST_BIN 10000000 > /dev/null" \
-                "$ASM_BIN 10000000 > /dev/null"
-              ;;
-            nl)
+            cut)
               if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
-                run_bench "10MB text" \
-                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
-                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
-                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+                run_bench "10MB -c1-20" \
+                  "$GNU_BIN -c1-20 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -c1-20 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -c1-20 '$DATA_DIR/text_10m.txt' > /dev/null"
               fi
+              ;;
+            echo)
+              run_bench "short string" \
+                "$GNU_BIN 'hello world' > /dev/null" \
+                "$RUST_BIN 'hello world' > /dev/null" \
+                "$ASM_BIN 'hello world' > /dev/null"
               ;;
             expand)
-              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
-                run_bench "10MB text" \
-                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
-                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
-                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
-              fi
-              ;;
-            unexpand)
               if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
                 run_bench "10MB text" \
                   "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
@@ -1101,6 +1151,90 @@ jobs:
                   "$ASM_BIN -w 40 '$DATA_DIR/text_10m.txt' > /dev/null"
               fi
               ;;
+            head)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "first 1000 lines 10MB" \
+                  "$GNU_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            md5sum)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB file" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            nl)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            od)
+              run_bench "1MB text" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            rev)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            seq)
+              run_bench "1 to 1M" \
+                "$GNU_BIN 1000000 > /dev/null" \
+                "$RUST_BIN 1000000 > /dev/null" \
+                "$ASM_BIN 1000000 > /dev/null"
+              run_bench "1 to 10M" \
+                "$GNU_BIN 10000000 > /dev/null" \
+                "$RUST_BIN 10000000 > /dev/null" \
+                "$ASM_BIN 10000000 > /dev/null"
+              ;;
+            sort)
+              run_bench "1MB text" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            tac)
+              run_bench "reverse 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            tail)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "last 1000 lines 10MB" \
+                  "$GNU_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            tr)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB lowercase" \
+                  "$GNU_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            unexpand)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
             uniq)
               if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
                 sort "$DATA_DIR/text_10m.txt" > /tmp/asm_bench_sorted.txt
@@ -1111,17 +1245,23 @@ jobs:
                 rm -f /tmp/asm_bench_sorted.txt
               fi
               ;;
-            od)
-              run_bench "1MB text" \
-                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
-                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
-                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+            wc)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+                run_bench "10MB -l only" \
+                  "$GNU_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
               ;;
-            sort)
-              run_bench "1MB text" \
-                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
-                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
-                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+            yes)
+              run_bench "1M lines" \
+                "$GNU_BIN | head -n 1000000 > /dev/null" \
+                "$RUST_BIN | head -n 1000000 > /dev/null" \
+                "$ASM_BIN | head -n 1000000 > /dev/null"
               ;;
           esac
 

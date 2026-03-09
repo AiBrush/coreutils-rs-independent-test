@@ -27,18 +27,31 @@ RUNS=${BENCH_RUNS:-10}
 
 # Assembly tools available for benchmarking
 # Format: tool_name:binary_name
+# Data-processing tools that benefit from benchmarking:
 ASM_TOOLS=(
+    base64:fbase64
     cat:fcat
-    seq:fseq
-    nl:fnl
+    cut:fcut
+    echo:fecho
     expand:fexpand
-    unexpand:funexpand
     fold:ffold
-    uniq:funiq
+    head:fhead
+    md5sum:fmd5sum
+    nl:fnl
     od:fod
+    rev:frev
+    seq:fseq
     sort:fsort
+    tac:ftac
+    tail:ftail
+    tr:ftr
+    unexpand:funexpand
+    uniq:funiq
+    wc:fwc
+    yes:fyes
 )
-# Note: false is excluded from benchmarks (trivial exit-only tool)
+# Note: trivial tools excluded from benchmarks:
+# true, false, arch, hostid, logname, tty, whoami, pwd, sync, sleep
 
 # Colors
 if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
@@ -413,6 +426,151 @@ bench_sort() {
             "$rust '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
             "$asm '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
     fi
+}
+
+bench_head() {
+    local gnu="head"
+    local rust="$RUST_INSTALL_DIR/fhead"
+    local asm="$ASM_INSTALL_DIR/fhead"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "head" "first 1000 lines 10MB" \
+            "$gnu -n 1000 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust -n 1000 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm -n 1000 '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_tail() {
+    local gnu="tail"
+    local rust="$RUST_INSTALL_DIR/ftail"
+    local asm="$ASM_INSTALL_DIR/ftail"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "tail" "last 1000 lines 10MB" \
+            "$gnu -n 1000 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust -n 1000 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm -n 1000 '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_tac() {
+    local gnu="tac"
+    local rust="$RUST_INSTALL_DIR/ftac"
+    local asm="$ASM_INSTALL_DIR/ftac"
+
+    if [[ -f "$TEST_DATA_DIR/text_1m.txt" ]]; then
+        run_3way_benchmark "tac" "reverse 1MB" \
+            "$gnu '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_1m.txt' > /dev/null"
+    fi
+}
+
+bench_rev() {
+    local gnu="rev"
+    local rust="$RUST_INSTALL_DIR/frev"
+    local asm="$ASM_INSTALL_DIR/frev"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "rev" "10MB text" \
+            "$gnu '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_wc() {
+    local gnu="wc"
+    local rust="$RUST_INSTALL_DIR/fwc"
+    local asm="$ASM_INSTALL_DIR/fwc"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "wc" "10MB text" \
+            "$gnu '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+
+        run_3way_benchmark "wc" "10MB -l only" \
+            "$gnu -l '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust -l '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm -l '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_cut() {
+    local gnu="cut"
+    local rust="$RUST_INSTALL_DIR/fcut"
+    local asm="$ASM_INSTALL_DIR/fcut"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "cut" "10MB -c1-20" \
+            "$gnu -c1-20 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust -c1-20 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm -c1-20 '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_tr() {
+    local gnu="tr"
+    local rust="$RUST_INSTALL_DIR/ftr"
+    local asm="$ASM_INSTALL_DIR/ftr"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "tr" "10MB lowercase" \
+            "$gnu a-z A-Z < '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust a-z A-Z < '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm a-z A-Z < '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_base64() {
+    local gnu="base64"
+    local rust="$RUST_INSTALL_DIR/fbase64"
+    local asm="$ASM_INSTALL_DIR/fbase64"
+
+    if [[ -f "$TEST_DATA_DIR/text_1m.txt" ]]; then
+        run_3way_benchmark "base64" "encode 1MB" \
+            "$gnu '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_1m.txt' > /dev/null"
+    fi
+}
+
+bench_md5sum() {
+    local gnu="md5sum"
+    local rust="$RUST_INSTALL_DIR/fmd5sum"
+    local asm="$ASM_INSTALL_DIR/fmd5sum"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "md5sum" "10MB file" \
+            "$gnu '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_echo() {
+    local gnu="echo"
+    local rust="$RUST_INSTALL_DIR/fecho"
+    local asm="$ASM_INSTALL_DIR/fecho"
+
+    # echo is fast — benchmark with many invocations
+    run_3way_benchmark "echo" "short string" \
+        "$gnu 'hello world' > /dev/null" \
+        "$rust 'hello world' > /dev/null" \
+        "$asm 'hello world' > /dev/null"
+}
+
+bench_yes() {
+    local gnu="yes"
+    local rust="$RUST_INSTALL_DIR/fyes"
+    local asm="$ASM_INSTALL_DIR/fyes"
+
+    run_3way_benchmark "yes" "1M lines" \
+        "$gnu | head -n 1000000 > /dev/null" \
+        "$rust | head -n 1000000 > /dev/null" \
+        "$asm | head -n 1000000 > /dev/null"
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────
