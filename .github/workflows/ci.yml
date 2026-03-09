@@ -559,12 +559,753 @@ jobs:
           path: results/compatibility/${{ inputs.version }}/${{ matrix.result_name }}.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 5: Report — aggregate all results and publish
+  # Job 5: Assembly Setup — install nasm, clone, build assembly tools
+  # ─────────────────────────────────────────────────────────────────────────────
+  asm-setup:
+    name: ASM Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install nasm and binutils
+        run: sudo apt-get update -qq && sudo apt-get install -y nasm binutils
+
+      - name: Clone and build assembly tools
+        run: |
+          bash scripts/install_assembly.sh \
+            --version ${{ inputs.version }} \
+            --install-dir "$HOME/.local/bin/asm"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install hyperfine
+        run: sudo apt-get install -y hyperfine
+
+      - name: Generate test data
+        run: bash tests/helpers/generate_test_data.sh
+
+      - name: Measure assembly binary sizes
+        run: |
+          python3 - <<'EOF'
+          import json, os, shutil, subprocess
+
+          ASM_DIR = os.path.expanduser("~/.local/bin/asm")
+          asm_tools = {
+              "arch": "farch", "base64": "fbase64", "cat": "fcat",
+              "cut": "fcut", "echo": "fecho", "expand": "fexpand",
+              "false": "ffalse", "fold": "ffold", "head": "fhead",
+              "hostid": "fhostid", "logname": "flogname", "md5sum": "fmd5sum",
+              "nl": "fnl", "od": "fod", "pwd": "fpwd", "rev": "frev",
+              "seq": "fseq", "sleep": "fsleep", "sort": "fsort",
+              "sync": "fsync", "tac": "ftac", "tail": "ftail",
+              "tr": "ftr", "true": "ftrue", "tty": "ftty",
+              "unexpand": "funexpand", "uniq": "funiq", "wc": "fwc",
+              "whoami": "fwhoami", "yes": "fyes",
+          }
+
+          sizes = {}
+          for tool, binary in sorted(asm_tools.items()):
+              asm_path = os.path.join(ASM_DIR, binary)
+              gnu_path = shutil.which(tool)
+              if os.path.exists(asm_path):
+                  sizes[tool] = {
+                      "asm_bytes": os.path.getsize(asm_path),
+                      "gnu_bytes": os.path.getsize(gnu_path) if gnu_path else None,
+                  }
+
+          out = {
+              "type": "asm_sizes",
+              "platform": subprocess.check_output(["uname", "-sm"]).decode().strip(),
+              "sizes": sizes,
+          }
+
+          os.makedirs("results", exist_ok=True)
+          with open("results/asm_sizes.json", "w") as f:
+              json.dump(out, f, indent=2)
+          print(f"Assembly binary sizes measured for {len(sizes)} tools")
+          EOF
+
+      - name: Package assembly setup artifact
+        run: |
+          mkdir -p ci-asm-setup/bin
+          cp -a "$HOME/.local/bin/asm"/* ci-asm-setup/bin/ 2>/dev/null || true
+          # Copy hyperfine
+          cp "$(which hyperfine)" ci-asm-setup/bin/hyperfine
+          # Tar test data
+          chmod -R u+r /tmp/fcoreutils-test-data/
+          tar cf ci-asm-setup/test-data.tar -C /tmp fcoreutils-test-data
+          # Save the clone path for tests that need the source tree
+          # (compat/security tests need the test scripts from the repo)
+
+      - name: Clone fcoreutils for test scripts
+        run: |
+          git clone --depth 1 --branch ${{ inputs.version }} \
+            https://github.com/AiBrush/fcoreutils.git /tmp/fcoreutils-src 2>/dev/null || \
+          git clone --depth 1 \
+            https://github.com/AiBrush/fcoreutils.git /tmp/fcoreutils-src
+          # Tar just the assembly test scripts
+          tar cf ci-asm-setup/asm-tests.tar -C /tmp/fcoreutils-src assembly/
+
+      - name: Upload assembly setup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asm-setup
+          path: ci-asm-setup/
+          compression-level: 6
+
+      - name: Upload assembly sizes
+        uses: actions/upload-artifact@v4
+        with:
+          name: asm-sizes
+          path: results/asm_sizes.json
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (29 parallel jobs)
+  # ─────────────────────────────────────────────────────────────────────────────
+  asm-compat:
+    name: ASM-Compat/${{ matrix.tool }}
+    needs: asm-setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool:
+          - arch
+          - base64
+          - cat
+          - cut
+          - echo
+          - expand
+          - "false"
+          - fold
+          - head
+          - hostid
+          - logname
+          - md5sum
+          - nl
+          - od
+          - pwd
+          - rev
+          - seq
+          - sleep
+          - sort
+          - sync
+          - tac
+          - tail
+          - tr
+          - "true"
+          - tty
+          - unexpand
+          - uniq
+          - wc
+          - whoami
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download assembly setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: asm-setup
+          path: ci-asm-setup
+
+      - name: Restore assembly environment
+        run: |
+          mkdir -p "$HOME/.local/bin/asm"
+          # Copy assembly binaries (exclude hyperfine)
+          for f in ci-asm-setup/bin/*; do
+            fname=$(basename "$f")
+            if [[ "$fname" != "hyperfine" ]]; then
+              cp "$f" "$HOME/.local/bin/asm/"
+            fi
+          done
+          chmod +x "$HOME/.local/bin/asm"/*
+          # Extract test data
+          tar xf ci-asm-setup/test-data.tar -C /tmp
+          # Extract assembly test scripts
+          mkdir -p /tmp/fcoreutils-src
+          tar xf ci-asm-setup/asm-tests.tar -C /tmp/fcoreutils-src
+
+      - name: Run assembly compatibility test
+        run: |
+          TOOL="${{ matrix.tool }}"
+          BINARY="f${TOOL}"
+          BIN_PATH="$HOME/.local/bin/asm/$BINARY"
+          TEST_SCRIPT="/tmp/fcoreutils-src/assembly/$TOOL/tests/run_tests.sh"
+
+          mkdir -p results
+
+          if [[ ! -x "$BIN_PATH" ]]; then
+            echo "Assembly binary $BINARY not found at $BIN_PATH"
+            echo "{\"tool\":\"$TOOL\",\"binary\":\"$BINARY\",\"status\":\"SKIP\",\"reason\":\"binary not found\",\"passed\":0,\"failed\":0,\"total\":0}" \
+              > "results/asm_compat_${TOOL}.json"
+            exit 0
+          fi
+
+          if [[ ! -f "$TEST_SCRIPT" ]]; then
+            echo "Test script not found at $TEST_SCRIPT"
+            echo "{\"tool\":\"$TOOL\",\"binary\":\"$BINARY\",\"status\":\"SKIP\",\"reason\":\"no test script\",\"passed\":0,\"failed\":0,\"total\":0}" \
+              > "results/asm_compat_${TOOL}.json"
+            exit 0
+          fi
+
+          echo "Running compatibility tests for assembly $BINARY..."
+          test_output=$(timeout 300 bash "$TEST_SCRIPT" "$BIN_PATH" 2>&1) || true
+          echo "$test_output"
+
+          # Parse results
+          passed=0; failed=0; total=0
+          if echo "$test_output" | grep -q "Results:"; then
+            passed=$(echo "$test_output" | grep "Results:" | sed -n 's/.*Results: \([0-9]*\) passed.*/\1/p')
+            failed=$(echo "$test_output" | grep "Results:" | sed -n 's/.*, \([0-9]*\) failed.*/\1/p')
+            total=$((passed + failed))
+          fi
+
+          # Fallback: count ALL TESTS PASSED / FAILED lines
+          if [[ "$total" -eq 0 ]]; then
+            if echo "$test_output" | grep -q "ALL TESTS PASSED"; then
+              passed=1; total=1
+            elif echo "$test_output" | grep -q "TESTS FAILED"; then
+              failed=1; total=1
+            fi
+          fi
+
+          cat > "results/asm_compat_${TOOL}.json" <<EOJSON
+          {
+              "tool": "$TOOL",
+              "binary": "$BINARY",
+              "status": "tested",
+              "passed": $passed,
+              "failed": $failed,
+              "total": $total,
+              "platform": "$(uname -s)_$(uname -m)",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOJSON
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: asm-compat-${{ matrix.tool }}
+          path: results/asm_compat_${{ matrix.tool }}.json
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 7: Assembly Security Tests — per-tool security validation (29 parallel)
+  # ─────────────────────────────────────────────────────────────────────────────
+  asm-security:
+    name: ASM-Security/${{ matrix.tool }}
+    needs: asm-setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool:
+          - arch
+          - base64
+          - cat
+          - cut
+          - echo
+          - expand
+          - "false"
+          - fold
+          - head
+          - hostid
+          - logname
+          - md5sum
+          - nl
+          - od
+          - pwd
+          - rev
+          - seq
+          - sleep
+          - sort
+          - sync
+          - tac
+          - tail
+          - tr
+          - "true"
+          - tty
+          - unexpand
+          - uniq
+          - wc
+          - whoami
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download assembly setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: asm-setup
+          path: ci-asm-setup
+
+      - name: Restore assembly environment
+        run: |
+          mkdir -p "$HOME/.local/bin/asm"
+          for f in ci-asm-setup/bin/*; do
+            fname=$(basename "$f")
+            if [[ "$fname" != "hyperfine" ]]; then
+              cp "$f" "$HOME/.local/bin/asm/"
+            fi
+          done
+          chmod +x "$HOME/.local/bin/asm"/*
+          tar xf ci-asm-setup/test-data.tar -C /tmp
+          mkdir -p /tmp/fcoreutils-src
+          tar xf ci-asm-setup/asm-tests.tar -C /tmp/fcoreutils-src
+
+      - name: Run assembly security test
+        run: |
+          TOOL="${{ matrix.tool }}"
+          BINARY="f${TOOL}"
+          BIN_PATH="$HOME/.local/bin/asm/$BINARY"
+          TEST_SCRIPT="/tmp/fcoreutils-src/assembly/$TOOL/tests/security_tests.py"
+          TOOL_DIR="/tmp/fcoreutils-src/assembly/$TOOL"
+
+          mkdir -p results
+
+          if [[ ! -x "$BIN_PATH" ]]; then
+            echo "Assembly binary $BINARY not found"
+            echo "{\"tool\":\"$TOOL\",\"binary\":\"$BINARY\",\"status\":\"SKIP\",\"reason\":\"binary not found\",\"passed\":0,\"failed\":0,\"skipped\":0,\"total\":0}" \
+              > "results/asm_security_${TOOL}.json"
+            exit 0
+          fi
+
+          if [[ ! -f "$TEST_SCRIPT" ]]; then
+            echo "Security test not found at $TEST_SCRIPT"
+            echo "{\"tool\":\"$TOOL\",\"binary\":\"$BINARY\",\"status\":\"SKIP\",\"reason\":\"no security test\",\"passed\":0,\"failed\":0,\"skipped\":0,\"total\":0}" \
+              > "results/asm_security_${TOOL}.json"
+            exit 0
+          fi
+
+          echo "Running security tests for assembly $BINARY..."
+
+          # Symlink binary where security_tests.py expects it
+          EXPECTED_BIN="$TOOL_DIR/$BINARY"
+          created_symlink=false
+          if [[ ! -f "$EXPECTED_BIN" ]]; then
+            ln -sf "$BIN_PATH" "$EXPECTED_BIN"
+            created_symlink=true
+          fi
+
+          pushd "$TOOL_DIR" >/dev/null
+          test_output=$(timeout 600 python3 tests/security_tests.py 2>&1) || true
+          echo "$test_output"
+          popd >/dev/null
+
+          if $created_symlink; then
+            rm -f "$EXPECTED_BIN"
+          fi
+
+          # Parse results from [PASS]/[FAIL]/[SKIP] lines
+          passed=$(echo "$test_output" | grep -c '^\[PASS\]' || true)
+          failed=$(echo "$test_output" | grep -c '^\[FAIL\]' || true)
+          skipped=$(echo "$test_output" | grep -c '^\[SKIP\]' || true)
+          total=$((passed + failed + skipped))
+
+          # Try TOTAL: pattern as fallback
+          if [[ "$total" -eq 0 ]] && echo "$test_output" | grep -qE "TOTAL:\s+[0-9]"; then
+            total=$(echo "$test_output" | grep -oP 'TOTAL:\s+\K[0-9]+' | tail -1)
+            passed=$(echo "$test_output" | grep -oP 'PASS:\s+\K[0-9]+' | tail -1)
+            failed=$(echo "$test_output" | grep -oP 'FAIL:\s+\K[0-9]+' | tail -1)
+            skipped=$(echo "$test_output" | grep -oP 'SKIP:\s+\K[0-9]+' | tail -1)
+          fi
+
+          cat > "results/asm_security_${TOOL}.json" <<EOJSON
+          {
+              "tool": "$TOOL",
+              "binary": "$BINARY",
+              "status": "tested",
+              "passed": ${passed:-0},
+              "failed": ${failed:-0},
+              "skipped": ${skipped:-0},
+              "total": ${total:-0},
+              "platform": "$(uname -s)_$(uname -m)",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOJSON
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: asm-security-${{ matrix.tool }}
+          path: results/asm_security_${{ matrix.tool }}.json
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 8: Assembly Benchmarks — 3-way comparison per tool (20 parallel jobs)
+  # ─────────────────────────────────────────────────────────────────────────────
+  asm-bench:
+    name: ASM-Bench/${{ matrix.tool }}
+    needs: [setup, asm-setup]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool:
+          - base64
+          - cat
+          - cut
+          - echo
+          - expand
+          - fold
+          - head
+          - md5sum
+          - nl
+          - od
+          - rev
+          - seq
+          - sort
+          - tac
+          - tail
+          - tr
+          - unexpand
+          - uniq
+          - wc
+          - yes
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Rust setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: setup-linux
+          path: ci-setup
+
+      - name: Download assembly setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: asm-setup
+          path: ci-asm-setup
+
+      - name: Restore environment (Rust + ASM + test data)
+        run: |
+          # Rust fcoreutils
+          mkdir -p "$HOME/.local/bin"
+          cp -a ci-setup/bin/* "$HOME/.local/bin/"
+          chmod +x "$HOME/.local/bin"/*
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+          # Assembly binaries (separate directory)
+          mkdir -p "$HOME/.local/bin/asm"
+          for f in ci-asm-setup/bin/*; do
+            fname=$(basename "$f")
+            if [[ "$fname" != "hyperfine" ]]; then
+              cp "$f" "$HOME/.local/bin/asm/"
+            fi
+          done
+          chmod +x "$HOME/.local/bin/asm"/*
+
+          # Extract test data
+          tar xf ci-setup/test-data.tar -C /tmp
+          [[ -f /tmp/fcoreutils-test-data/unreadable.txt ]] && chmod 000 /tmp/fcoreutils-test-data/unreadable.txt
+
+      - name: Run 3-way benchmark
+        run: |
+          TOOL="${{ matrix.tool }}"
+          BINARY="f${TOOL}"
+          GNU_BIN="$TOOL"
+          RUST_BIN="$HOME/.local/bin/$BINARY"
+          ASM_BIN="$HOME/.local/bin/asm/$BINARY"
+          DATA_DIR="/tmp/fcoreutils-test-data"
+
+          mkdir -p results
+
+          # Check binaries
+          echo "GNU:  $(which $GNU_BIN 2>/dev/null || echo 'not found')"
+          echo "Rust: $RUST_BIN ($(test -x $RUST_BIN && echo 'OK' || echo 'not found'))"
+          echo "ASM:  $ASM_BIN ($(test -x $ASM_BIN && echo 'OK' || echo 'not found'))"
+
+          if [[ ! -x "$ASM_BIN" ]]; then
+            echo "Assembly binary not found, skipping benchmark"
+            echo "{\"tool\":\"$TOOL\",\"status\":\"SKIP\",\"reason\":\"asm binary not found\"}" \
+              > "results/asm_bench_${TOOL}.json"
+            exit 0
+          fi
+
+          BENCH_RESULTS="[]"
+          add_result() {
+            local entry="$1"
+            if [[ "$BENCH_RESULTS" == "[]" ]]; then
+              BENCH_RESULTS="[$entry]"
+            else
+              BENCH_RESULTS="${BENCH_RESULTS%]},${entry}]"
+            fi
+          }
+
+          run_bench() {
+            local name="$1"
+            local gnu_cmd="$2"
+            local rust_cmd="$3"
+            local asm_cmd="$4"
+
+            echo ""
+            echo "--- $name ---"
+
+            local json_file
+            json_file=$(mktemp /tmp/asm_bench_XXXXXX.json)
+
+            local hf_args=(--warmup 3 --runs 10 --export-json "$json_file")
+
+            # Add available commands
+            if command -v "$GNU_BIN" &>/dev/null; then
+              hf_args+=(-n "GNU $TOOL" "$gnu_cmd")
+            fi
+            if [[ -x "$RUST_BIN" ]]; then
+              hf_args+=(-n "Rust f$TOOL" "$rust_cmd")
+            fi
+            if [[ -x "$ASM_BIN" ]]; then
+              hf_args+=(-n "ASM f$TOOL" "$asm_cmd")
+            fi
+
+            if hyperfine "${hf_args[@]}" 2>&1; then
+              local result
+              result=$(python3 -c "
+          import json
+          d = json.load(open('$json_file'))
+          entry = {'name': '$name', 'status': 'benchmarked'}
+          for r in d.get('results', []):
+              cmd = r.get('command', '')
+              mean = round(r.get('mean', 0), 6)
+              if 'GNU' in cmd: entry['gnu_mean'] = mean
+              elif 'Rust' in cmd: entry['rust_mean'] = mean
+              elif 'ASM' in cmd: entry['asm_mean'] = mean
+          gnu = entry.get('gnu_mean')
+          rust = entry.get('rust_mean')
+          asm = entry.get('asm_mean')
+          if gnu and rust and rust > 0: entry['rust_vs_gnu'] = round(gnu/rust, 1)
+          if gnu and asm and asm > 0: entry['asm_vs_gnu'] = round(gnu/asm, 1)
+          if rust and asm and asm > 0: entry['asm_vs_rust'] = round(rust/asm, 1)
+          print(json.dumps(entry))
+          " 2>/dev/null || echo "")
+
+              if [[ -n "$result" ]]; then
+                add_result "$result"
+              fi
+            fi
+
+            rm -f "$json_file"
+          }
+
+          # Tool-specific benchmarks
+          case "$TOOL" in
+            base64)
+              run_bench "encode 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            cat)
+              run_bench "passthrough 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "passthrough 10MB" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+                run_bench "-n 10MB" \
+                  "$GNU_BIN -n '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -n '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -n '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            cut)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB -c1-20" \
+                  "$GNU_BIN -c1-20 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -c1-20 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -c1-20 '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            echo)
+              run_bench "short string" \
+                "$GNU_BIN 'hello world' > /dev/null" \
+                "$RUST_BIN 'hello world' > /dev/null" \
+                "$ASM_BIN 'hello world' > /dev/null"
+              ;;
+            expand)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            fold)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB default width" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+                run_bench "10MB -w 40" \
+                  "$GNU_BIN -w 40 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -w 40 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -w 40 '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            head)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "first 1000 lines 10MB" \
+                  "$GNU_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            md5sum)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB file" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            nl)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            od)
+              run_bench "1MB text" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            rev)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            seq)
+              run_bench "1 to 1M" \
+                "$GNU_BIN 1000000 > /dev/null" \
+                "$RUST_BIN 1000000 > /dev/null" \
+                "$ASM_BIN 1000000 > /dev/null"
+              run_bench "1 to 10M" \
+                "$GNU_BIN 10000000 > /dev/null" \
+                "$RUST_BIN 10000000 > /dev/null" \
+                "$ASM_BIN 10000000 > /dev/null"
+              ;;
+            sort)
+              run_bench "1MB text" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            tac)
+              run_bench "reverse 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            tail)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "last 1000 lines 10MB" \
+                  "$GNU_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -n 1000 '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            tr)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB lowercase" \
+                  "$GNU_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            unexpand)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            uniq)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                sort "$DATA_DIR/text_10m.txt" > /tmp/asm_bench_sorted.txt
+                run_bench "10MB sorted" \
+                  "$GNU_BIN /tmp/asm_bench_sorted.txt > /dev/null" \
+                  "$RUST_BIN /tmp/asm_bench_sorted.txt > /dev/null" \
+                  "$ASM_BIN /tmp/asm_bench_sorted.txt > /dev/null"
+                rm -f /tmp/asm_bench_sorted.txt
+              fi
+              ;;
+            wc)
+              if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
+                run_bench "10MB text" \
+                  "$GNU_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN '$DATA_DIR/text_10m.txt' > /dev/null"
+                run_bench "10MB -l only" \
+                  "$GNU_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$RUST_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null" \
+                  "$ASM_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null"
+              fi
+              ;;
+            yes)
+              run_bench "1M lines" \
+                "$GNU_BIN | head -n 1000000 > /dev/null" \
+                "$RUST_BIN | head -n 1000000 > /dev/null" \
+                "$ASM_BIN | head -n 1000000 > /dev/null"
+              ;;
+          esac
+
+          # Measure sizes
+          gnu_size=0; rust_size=0; asm_size=0
+          gnu_path=$(which "$GNU_BIN" 2>/dev/null || echo "")
+          [[ -n "$gnu_path" ]] && gnu_size=$(stat -c%s "$gnu_path" 2>/dev/null || echo 0)
+          [[ -f "$RUST_BIN" ]] && rust_size=$(stat -c%s "$RUST_BIN" 2>/dev/null || echo 0)
+          [[ -f "$ASM_BIN" ]] && asm_size=$(stat -c%s "$ASM_BIN" 2>/dev/null || echo 0)
+
+          cat > "results/asm_bench_${TOOL}.json" <<EOJSON
+          {
+              "tool": "$TOOL",
+              "platform": "$(uname -s)_$(uname -m)",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+              "warmup": 3,
+              "runs": 10,
+              "benchmarks": $BENCH_RESULTS,
+              "sizes": {
+                  "gnu_bytes": $gnu_size,
+                  "rust_bytes": $rust_size,
+                  "asm_bytes": $asm_size
+              }
+          }
+          EOJSON
+        continue-on-error: true
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/results
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: asm-bench-${{ matrix.tool }}
+          path: results/asm_bench_${{ matrix.tool }}.json
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 9: Report — aggregate all results and publish
   # ─────────────────────────────────────────────────────────────────────────────
   report:
     name: Publish Report
     runs-on: ubuntu-latest
-    needs: [compat, bench, setup, functional]
+    needs: [compat, bench, setup, functional, asm-compat, asm-security, asm-bench]
     if: always()
     permissions:
       contents: write
@@ -594,6 +1335,37 @@ jobs:
         with:
           name: sizes
           path: results/
+        continue-on-error: true
+
+      - name: Download assembly sizes
+        uses: actions/download-artifact@v4
+        with:
+          name: asm-sizes
+          path: results/
+        continue-on-error: true
+
+      - name: Download assembly compat results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: asm-compat-*
+          path: results/asm-compat-raw/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Download assembly security results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: asm-security-*
+          path: results/asm-security-raw/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Download assembly benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: asm-bench-*
+          path: results/asm-bench-raw/
+          merge-multiple: true
         continue-on-error: true
 
       - name: Download functional-linux-arm64
@@ -746,6 +1518,79 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
 
+      - name: Aggregate assembly results
+        run: |
+          python3 - <<'PYEOF'
+          import json, glob, os
+          from datetime import datetime, timezone
+
+          version = os.environ["VERSION"]
+
+          # ── Assembly compatibility ──
+          asm_compat = {}
+          for f in sorted(glob.glob("results/asm-compat-raw/asm_compat_*.json")):
+              try:
+                  data = json.load(open(f))
+                  tool = data.get("tool", "")
+                  if tool:
+                      asm_compat[tool] = data
+              except Exception:
+                  pass
+
+          # ── Assembly security ──
+          asm_security = {}
+          for f in sorted(glob.glob("results/asm-security-raw/asm_security_*.json")):
+              try:
+                  data = json.load(open(f))
+                  tool = data.get("tool", "")
+                  if tool:
+                      asm_security[tool] = data
+              except Exception:
+                  pass
+
+          # ── Assembly benchmarks ──
+          asm_bench = {}
+          for f in sorted(glob.glob("results/asm-bench-raw/asm_bench_*.json")):
+              try:
+                  data = json.load(open(f))
+                  tool = data.get("tool", "")
+                  if tool:
+                      asm_bench[tool] = data
+              except Exception:
+                  pass
+
+          # ── Assembly sizes ──
+          asm_sizes = {}
+          if os.path.exists("results/asm_sizes.json"):
+              try:
+                  asm_sizes = json.load(open("results/asm_sizes.json")).get("sizes", {})
+              except Exception:
+                  pass
+
+          # ── Aggregate ──
+          aggregate = {
+              "type": "assembly",
+              "platform": "Linux_x86_64",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "compatibility": asm_compat,
+              "security": asm_security,
+              "benchmarks": asm_bench,
+              "sizes": asm_sizes,
+          }
+
+          out_dir = f"results/assembly/{version}"
+          os.makedirs(out_dir, exist_ok=True)
+          with open(f"{out_dir}/linux_x86_64.json", "w") as f:
+              json.dump(aggregate, f, indent=2)
+
+          print(f"Assembly results aggregated: "
+                f"{len(asm_compat)} compat, "
+                f"{len(asm_security)} security, "
+                f"{len(asm_bench)} bench")
+          PYEOF
+        env:
+          VERSION: ${{ inputs.version }}
+
       - name: Install Python dependencies
         run: pip install matplotlib
 
@@ -836,6 +1681,7 @@ jobs:
 
           git add "results/compatibility/$VERSION/" \
                   "results/benchmarks/$VERSION/" \
+                  "results/assembly/$VERSION/" \
                   results/speedup-history.png \
                   README.md
 
