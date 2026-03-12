@@ -20,11 +20,11 @@ RESULTS_DIR="${RESULTS_DIR:-$PROJECT_ROOT/results}"
 ASM_INSTALL_DIR="${ASM_INSTALL_DIR:-$HOME/.local/bin/asm}"
 FCOREUTILS_DIR="${FCOREUTILS_DIR:-}"
 
-# Assembly tools to test (all 29 with security tests; yes excluded — no security test)
+# Assembly tools to test (all 40 with security tests)
 ASM_TOOLS=(
-    arch base64 cat cut echo expand false fold head hostid logname
-    md5sum nl od pwd rev seq sleep sort sync tac tail tr true tty
-    unexpand uniq wc whoami
+    arch base32 base64 basenc cat comm cut echo expand factor false fold
+    head hostid join logname md5sum nl od paste pr pwd rev seq shred shuf
+    sleep sort sync tac tail tr true tsort tty unexpand uniq wc whoami yes
 )
 
 # Colors
