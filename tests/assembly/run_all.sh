@@ -20,11 +20,18 @@ RESULTS_DIR="${RESULTS_DIR:-$PROJECT_ROOT/results}"
 ASM_INSTALL_DIR="${ASM_INSTALL_DIR:-$HOME/.local/bin/asm}"
 FCOREUTILS_DIR="${FCOREUTILS_DIR:-}"
 
-# Assembly tools to test (all 40 with compat tests)
+# Assembly tools to test (all 107 assembly tools)
 ASM_TOOLS=(
-    arch base32 base64 basenc cat comm cut echo expand factor false fold
-    head hostid join logname md5sum nl od paste pr pwd rev seq shred shuf
-    sleep sort sync tac tail tr true tsort tty unexpand uniq wc whoami yes
+    arch b2sum base32 base64 basename basenc cat chcon chgrp chmod chown
+    chroot cksum comm cp csplit cut date dd df dir dircolors dirname du
+    echo env expand expr factor false fmt fold groups head hostid id
+    install join kill link ln logname ls md5sum mkdir mkfifo mknod mktemp
+    mv nice nl nohup nproc numfmt od paste pathchk pinky pr printenv
+    printf ptx pwd readlink realpath rev rm rmdir runcon seq sha1sum
+    sha224sum sha256sum sha384sum sha512sum shred shuf sleep sort split
+    stat stdbuf stty sum sync tac tail tee test timeout touch tr true
+    truncate tsort tty uname unexpand uniq unlink uptime users vdir wc
+    who whoami yes
 )
 
 # Colors
