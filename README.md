@@ -15,10 +15,10 @@
 - **Fastest speedup:** rev at 23.9x faster than GNU
 
 ### Assembly (x86-64 nasm) Summary
-- **Assembly tools:** 30 tools (static ELF binaries, no libc)
+- **Assembly tools:** 41 tools (static ELF binaries, no libc)
 - **GNU compat tests:** 880 passed, 0 failed
 - **Security tests:** 3247/3248 passed (100.0%)
-- **Tools:** arch, base64, cat, cut, echo, expand, false, fold, head, hostid, logname, md5sum, nl, od, pwd, rev, seq, sleep, sort, sync, tac, tail, tr, true, tty, unexpand, uniq, wc, whoami, yes
+- **Tools:** arch, base32, base64, basenc, cat, comm, cut, echo, expand, factor, false, fold, head, hostid, join, logname, md5sum, nl, od, paste, pr, pwd, rev, seq, shred, shuf, sleep, sort, sync, tac, tail, tr, true, tsort, tty, unexpand, uniq, wc, whoami, yes
 
 ### Full Tools Comparison
 
@@ -153,7 +153,7 @@ Detailed results for each version (benchmarks, compatibility, failures) are in t
 - Runs 3911+ compatibility tests comparing output byte-for-byte against GNU coreutils
 - Benchmarks using `hyperfine` with warmup runs and timed runs
 - Measures binary sizes of f\* and GNU for each tool
-- Builds and tests x86-64 assembly implementations (nasm) for 30 tools
+- Builds and tests x86-64 assembly implementations (nasm) for 41 tools
 - Tests run across multiple platforms via GitHub Actions
 
 ## Running Locally
