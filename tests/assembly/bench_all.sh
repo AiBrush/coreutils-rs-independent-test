@@ -29,22 +29,32 @@ RUNS=${BENCH_RUNS:-10}
 # Format: tool_name:binary_name
 # Data-processing tools that benefit from benchmarking:
 ASM_TOOLS=(
+    base32:fbase32
     base64:fbase64
+    basenc:fbasenc
     cat:fcat
+    comm:fcomm
     cut:fcut
     echo:fecho
     expand:fexpand
+    factor:ffactor
     fold:ffold
     head:fhead
+    join:fjoin
     md5sum:fmd5sum
     nl:fnl
     od:fod
+    paste:fpaste
+    pr:fpr
     rev:frev
     seq:fseq
+    shred:fshred
+    shuf:fshuf
     sort:fsort
     tac:ftac
     tail:ftail
     tr:ftr
+    tsort:ftsort
     unexpand:funexpand
     uniq:funiq
     wc:fwc
@@ -571,6 +581,177 @@ bench_yes() {
         "$gnu | head -n 1000000 > /dev/null" \
         "$rust | head -n 1000000 > /dev/null" \
         "$asm | head -n 1000000 > /dev/null"
+}
+
+bench_base32() {
+    local gnu="base32"
+    local rust="$RUST_INSTALL_DIR/fbase32"
+    local asm="$ASM_INSTALL_DIR/fbase32"
+
+    if [[ -f "$TEST_DATA_DIR/text_1m.txt" ]]; then
+        run_3way_benchmark "base32" "encode 1MB" \
+            "$gnu '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_1m.txt' > /dev/null"
+    fi
+}
+
+bench_basenc() {
+    local gnu="basenc"
+    local rust="$RUST_INSTALL_DIR/fbasenc"
+    local asm="$ASM_INSTALL_DIR/fbasenc"
+
+    if [[ -f "$TEST_DATA_DIR/text_1m.txt" ]]; then
+        run_3way_benchmark "basenc" "base64 encode 1MB" \
+            "$gnu --base64 '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$rust --base64 '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$asm --base64 '$TEST_DATA_DIR/text_1m.txt' > /dev/null"
+
+        run_3way_benchmark "basenc" "base32 encode 1MB" \
+            "$gnu --base32 '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$rust --base32 '$TEST_DATA_DIR/text_1m.txt' > /dev/null" \
+            "$asm --base32 '$TEST_DATA_DIR/text_1m.txt' > /dev/null"
+    fi
+}
+
+bench_comm() {
+    local gnu="comm"
+    local rust="$RUST_INSTALL_DIR/fcomm"
+    local asm="$ASM_INSTALL_DIR/fcomm"
+
+    if [[ -f "$TEST_DATA_DIR/comm_bench_file1_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/comm_bench_file2_10m.txt" ]]; then
+        run_3way_benchmark "comm" "10MB sorted files" \
+            "$gnu '$TEST_DATA_DIR/comm_bench_file1_10m.txt' '$TEST_DATA_DIR/comm_bench_file2_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/comm_bench_file1_10m.txt' '$TEST_DATA_DIR/comm_bench_file2_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/comm_bench_file1_10m.txt' '$TEST_DATA_DIR/comm_bench_file2_10m.txt' > /dev/null"
+
+        run_3way_benchmark "comm" "10MB -12 (common only)" \
+            "$gnu -12 '$TEST_DATA_DIR/comm_bench_file1_10m.txt' '$TEST_DATA_DIR/comm_bench_file2_10m.txt' > /dev/null" \
+            "$rust -12 '$TEST_DATA_DIR/comm_bench_file1_10m.txt' '$TEST_DATA_DIR/comm_bench_file2_10m.txt' > /dev/null" \
+            "$asm -12 '$TEST_DATA_DIR/comm_bench_file1_10m.txt' '$TEST_DATA_DIR/comm_bench_file2_10m.txt' > /dev/null"
+    fi
+}
+
+bench_factor() {
+    local gnu="factor"
+    local rust="$RUST_INSTALL_DIR/ffactor"
+    local asm="$ASM_INSTALL_DIR/ffactor"
+
+    run_3way_benchmark "factor" "range 1-100000" \
+        "seq 1 100000 | $gnu > /dev/null" \
+        "seq 1 100000 | $rust > /dev/null" \
+        "seq 1 100000 | $asm > /dev/null"
+
+    run_3way_benchmark "factor" "large primes" \
+        "$gnu 999999999999999989 1000000000000000003 999999999999999877 > /dev/null" \
+        "$rust 999999999999999989 1000000000000000003 999999999999999877 > /dev/null" \
+        "$asm 999999999999999989 1000000000000000003 999999999999999877 > /dev/null"
+}
+
+bench_join() {
+    local gnu="join"
+    local rust="$RUST_INSTALL_DIR/fjoin"
+    local asm="$ASM_INSTALL_DIR/fjoin"
+
+    if [[ -f "$TEST_DATA_DIR/join_bench_file1_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/join_bench_file2_10m.txt" ]]; then
+        run_3way_benchmark "join" "10MB keyed files" \
+            "$gnu '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/join_bench_file1_10m.txt' '$TEST_DATA_DIR/join_bench_file2_10m.txt' > /dev/null"
+    fi
+}
+
+bench_paste() {
+    local gnu="paste"
+    local rust="$RUST_INSTALL_DIR/fpaste"
+    local asm="$ASM_INSTALL_DIR/fpaste"
+
+    if [[ -f "$TEST_DATA_DIR/paste_bench_col1_10m.txt" ]] && [[ -f "$TEST_DATA_DIR/paste_bench_col2_10m.txt" ]]; then
+        run_3way_benchmark "paste" "two 10MB columns" \
+            "$gnu '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/paste_bench_col1_10m.txt' '$TEST_DATA_DIR/paste_bench_col2_10m.txt' > /dev/null"
+
+        run_3way_benchmark "paste" "-s serial 10MB" \
+            "$gnu -s '$TEST_DATA_DIR/paste_bench_col1_10m.txt' > /dev/null" \
+            "$rust -s '$TEST_DATA_DIR/paste_bench_col1_10m.txt' > /dev/null" \
+            "$asm -s '$TEST_DATA_DIR/paste_bench_col1_10m.txt' > /dev/null"
+    fi
+}
+
+bench_pr() {
+    local gnu="pr"
+    local rust="$RUST_INSTALL_DIR/fpr"
+    local asm="$ASM_INSTALL_DIR/fpr"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "pr" "10MB default format" \
+            "$gnu '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+
+        run_3way_benchmark "pr" "10MB 2 columns" \
+            "$gnu -2 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust -2 '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm -2 '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+}
+
+bench_shred() {
+    local gnu="shred"
+    local rust="$RUST_INSTALL_DIR/fshred"
+    local asm="$ASM_INSTALL_DIR/fshred"
+
+    # Create a temporary file for shredding (shred is destructive)
+    local shred_tmp="/tmp/asm_bench_shred_$$.tmp"
+
+    # 10MB single pass
+    dd if=/dev/zero of="$shred_tmp" bs=1M count=10 2>/dev/null
+    run_3way_benchmark "shred" "10MB -n1 single pass" \
+        "cp '$shred_tmp' '${shred_tmp}.gnu' && $gnu -n 1 '${shred_tmp}.gnu'" \
+        "cp '$shred_tmp' '${shred_tmp}.rust' && $rust -n 1 '${shred_tmp}.rust'" \
+        "cp '$shred_tmp' '${shred_tmp}.asm' && $asm -n 1 '${shred_tmp}.asm'"
+
+    rm -f "$shred_tmp" "${shred_tmp}.gnu" "${shred_tmp}.rust" "${shred_tmp}.asm"
+}
+
+bench_shuf() {
+    local gnu="shuf"
+    local rust="$RUST_INSTALL_DIR/fshuf"
+    local asm="$ASM_INSTALL_DIR/fshuf"
+
+    if [[ -f "$TEST_DATA_DIR/text_10m.txt" ]]; then
+        run_3way_benchmark "shuf" "shuffle 10MB" \
+            "$gnu '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$rust '$TEST_DATA_DIR/text_10m.txt' > /dev/null" \
+            "$asm '$TEST_DATA_DIR/text_10m.txt' > /dev/null"
+    fi
+
+    run_3way_benchmark "shuf" "-i range 1-1000000" \
+        "$gnu -i 1-1000000 > /dev/null" \
+        "$rust -i 1-1000000 > /dev/null" \
+        "$asm -i 1-1000000 > /dev/null"
+}
+
+bench_tsort() {
+    local gnu="tsort"
+    local rust="$RUST_INSTALL_DIR/ftsort"
+    local asm="$ASM_INSTALL_DIR/ftsort"
+
+    # Generate a large DAG for benchmarking
+    local tsort_input="/tmp/asm_bench_tsort_$$.txt"
+    python3 -c "
+for i in range(100000):
+    print(f'node{i} node{i+1}')
+" > "$tsort_input" 2>/dev/null
+
+    if [[ -f "$tsort_input" ]]; then
+        run_3way_benchmark "tsort" "100K-edge chain" \
+            "$gnu '$tsort_input' > /dev/null" \
+            "$rust '$tsort_input' > /dev/null" \
+            "$asm '$tsort_input' > /dev/null"
+        rm -f "$tsort_input"
+    fi
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────

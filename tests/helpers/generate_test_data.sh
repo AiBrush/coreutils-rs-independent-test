@@ -770,6 +770,19 @@ b c
 c a
 EOF
 
+# ── tsort benchmark data ─────────────────────────────────────────────────────
+if [[ ! -f "$TEST_DATA_DIR/tsort_bench_100k.txt" ]]; then
+    python3 -c "
+for i in range(100000):
+    print(f'node{i} node{i+1}')
+" > "$TEST_DATA_DIR/tsort_bench_100k.txt"
+fi
+
+# ── factor benchmark data ───────────────────────────────────────────────────
+if [[ ! -f "$TEST_DATA_DIR/factor_bench_100k.txt" ]]; then
+    seq 1 100000 > "$TEST_DATA_DIR/factor_bench_100k.txt"
+fi
+
 # ── dircolors test data ─────────────────────────────────────────────────────
 cat > "$TEST_DATA_DIR/dircolors_custom.txt" <<'EOF'
 # Custom dircolors configuration

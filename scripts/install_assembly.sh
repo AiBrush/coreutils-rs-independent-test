@@ -20,22 +20,31 @@ CLEANUP_REPO=false
 # Assembly tools to build (tool_name:binary_name)
 ASM_TOOLS=(
     arch:farch
+    base32:fbase32
     base64:fbase64
+    basenc:fbasenc
     cat:fcat
+    comm:fcomm
     cut:fcut
     echo:fecho
     expand:fexpand
+    factor:ffactor
     false:ffalse
     fold:ffold
     head:fhead
     hostid:fhostid
+    join:fjoin
     logname:flogname
     md5sum:fmd5sum
     nl:fnl
     od:fod
+    paste:fpaste
+    pr:fpr
     pwd:fpwd
     rev:frev
     seq:fseq
+    shred:fshred
+    shuf:fshuf
     sleep:fsleep
     sort:fsort
     sync:fsync
@@ -43,6 +52,7 @@ ASM_TOOLS=(
     tail:ftail
     tr:ftr
     true:ftrue
+    tsort:ftsort
     tty:ftty
     unexpand:funexpand
     uniq:funiq
