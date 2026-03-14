@@ -20,43 +20,110 @@ CLEANUP_REPO=false
 # Assembly tools to build (tool_name:binary_name)
 ASM_TOOLS=(
     arch:farch
+    b2sum:fb2sum
     base32:fbase32
     base64:fbase64
+    basename:fbasename
     basenc:fbasenc
     cat:fcat
+    chcon:fchcon
+    chgrp:fchgrp
+    chmod:fchmod
+    chown:fchown
+    chroot:fchroot
+    cksum:fcksum
     comm:fcomm
+    cp:fcp
+    csplit:fcsplit
     cut:fcut
+    date:fdate
+    dd:fdd
+    df:fdf
+    dir:fdir
+    dircolors:fdircolors
+    dirname:fdirname
+    du:fdu
     echo:fecho
+    env:fenv
     expand:fexpand
+    expr:fexpr
     factor:ffactor
     false:ffalse
+    fmt:ffmt
     fold:ffold
+    groups:fgroups
     head:fhead
     hostid:fhostid
+    id:fid
+    install:finstall
     join:fjoin
+    kill:fkill
+    link:flink
+    ln:fln
     logname:flogname
+    ls:fls
     md5sum:fmd5sum
+    mkdir:fmkdir
+    mkfifo:fmkfifo
+    mknod:fmknod
+    mktemp:fmktemp
+    mv:fmv
+    nice:fnice
     nl:fnl
+    nohup:fnohup
+    nproc:fnproc
+    numfmt:fnumfmt
     od:fod
     paste:fpaste
+    pathchk:fpathchk
+    pinky:fpinky
     pr:fpr
+    printenv:fprintenv
+    printf:fprintf
+    ptx:fptx
     pwd:fpwd
+    readlink:freadlink
+    realpath:frealpath
     rev:frev
+    rm:frm
+    rmdir:frmdir
+    runcon:fruncon
     seq:fseq
+    sha1sum:fsha1sum
+    sha224sum:fsha224sum
+    sha256sum:fsha256sum
+    sha384sum:fsha384sum
+    sha512sum:fsha512sum
     shred:fshred
     shuf:fshuf
     sleep:fsleep
     sort:fsort
+    split:fsplit
+    stat:fstat
+    stdbuf:fstdbuf
+    stty:fstty
+    sum:fsum
     sync:fsync
     tac:ftac
     tail:ftail
+    tee:ftee
+    test:ftest
+    timeout:ftimeout
+    touch:ftouch
     tr:ftr
     true:ftrue
+    truncate:ftruncate
     tsort:ftsort
     tty:ftty
+    uname:funame
     unexpand:funexpand
     uniq:funiq
+    unlink:funlink
+    uptime:fuptime
+    users:fusers
+    vdir:fvdir
     wc:fwc
+    who:fwho
     whoami:fwhoami
     yes:fyes
 )
