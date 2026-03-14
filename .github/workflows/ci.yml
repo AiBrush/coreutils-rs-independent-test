@@ -591,20 +591,41 @@ jobs:
 
           ASM_DIR = os.path.expanduser("~/.local/bin/asm")
           asm_tools = {
-              "arch": "farch", "base64": "fbase64", "cat": "fcat",
-              "cut": "fcut", "echo": "fecho", "expand": "fexpand",
-              "false": "ffalse", "fold": "ffold", "head": "fhead",
-              "hostid": "fhostid", "logname": "flogname", "md5sum": "fmd5sum",
-              "nl": "fnl", "od": "fod", "pwd": "fpwd", "rev": "frev",
-              "seq": "fseq", "sleep": "fsleep", "sort": "fsort",
-              "base32": "fbase32", "basenc": "fbasenc",
-              "comm": "fcomm", "factor": "ffactor",
-              "join": "fjoin", "paste": "fpaste", "pr": "fpr",
-              "shred": "fshred", "shuf": "fshuf",
+              "arch": "farch", "b2sum": "fb2sum", "base32": "fbase32",
+              "base64": "fbase64", "basename": "fbasename", "basenc": "fbasenc",
+              "cat": "fcat", "chcon": "fchcon", "chgrp": "fchgrp",
+              "chmod": "fchmod", "chown": "fchown", "chroot": "fchroot",
+              "cksum": "fcksum", "comm": "fcomm", "cp": "fcp",
+              "csplit": "fcsplit", "cut": "fcut", "date": "fdate",
+              "dd": "fdd", "df": "fdf", "dir": "fdir",
+              "dircolors": "fdircolors", "dirname": "fdirname", "du": "fdu",
+              "echo": "fecho", "env": "fenv", "expand": "fexpand",
+              "expr": "fexpr", "factor": "ffactor", "false": "ffalse",
+              "fmt": "ffmt", "fold": "ffold", "groups": "fgroups",
+              "head": "fhead", "hostid": "fhostid", "id": "fid",
+              "install": "finstall", "join": "fjoin", "kill": "fkill",
+              "link": "flink", "ln": "fln", "logname": "flogname",
+              "ls": "fls", "md5sum": "fmd5sum", "mkdir": "fmkdir",
+              "mkfifo": "fmkfifo", "mknod": "fmknod", "mktemp": "fmktemp",
+              "mv": "fmv", "nice": "fnice", "nl": "fnl",
+              "nohup": "fnohup", "nproc": "fnproc", "numfmt": "fnumfmt",
+              "od": "fod", "paste": "fpaste", "pathchk": "fpathchk",
+              "pinky": "fpinky", "pr": "fpr", "printenv": "fprintenv",
+              "printf": "fprintf", "ptx": "fptx", "pwd": "fpwd",
+              "readlink": "freadlink", "realpath": "frealpath", "rev": "frev",
+              "rm": "frm", "rmdir": "frmdir", "runcon": "fruncon",
+              "seq": "fseq", "sha1sum": "fsha1sum", "sha224sum": "fsha224sum",
+              "sha256sum": "fsha256sum", "sha384sum": "fsha384sum", "sha512sum": "fsha512sum",
+              "shred": "fshred", "shuf": "fshuf", "sleep": "fsleep",
+              "sort": "fsort", "split": "fsplit", "stat": "fstat",
+              "stdbuf": "fstdbuf", "stty": "fstty", "sum": "fsum",
               "sync": "fsync", "tac": "ftac", "tail": "ftail",
-              "tr": "ftr", "true": "ftrue", "tsort": "ftsort",
-              "tty": "ftty",
-              "unexpand": "funexpand", "uniq": "funiq", "wc": "fwc",
+              "tee": "ftee", "test": "ftest", "timeout": "ftimeout",
+              "touch": "ftouch", "tr": "ftr", "true": "ftrue",
+              "truncate": "ftruncate", "tsort": "ftsort", "tty": "ftty",
+              "uname": "funame", "unexpand": "funexpand", "uniq": "funiq",
+              "unlink": "funlink", "uptime": "fuptime", "users": "fusers",
+              "vdir": "fvdir", "wc": "fwc", "who": "fwho",
               "whoami": "fwhoami", "yes": "fyes",
           }
 
@@ -665,7 +686,7 @@ jobs:
           path: results/asm_sizes.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (40 parallel jobs)
+  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (107 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-compat:
     name: ASM-Compat/${{ matrix.tool }}
@@ -676,43 +697,110 @@ jobs:
       matrix:
         tool:
           - arch
+          - b2sum
           - base32
           - base64
+          - basename
           - basenc
           - cat
+          - chcon
+          - chgrp
+          - chmod
+          - chown
+          - chroot
+          - cksum
           - comm
+          - cp
+          - csplit
           - cut
+          - date
+          - dd
+          - df
+          - dir
+          - dircolors
+          - dirname
+          - du
           - echo
+          - env
           - expand
+          - expr
           - factor
           - "false"
+          - fmt
           - fold
+          - groups
           - head
           - hostid
+          - id
+          - install
           - join
+          - kill
+          - link
+          - ln
           - logname
+          - ls
           - md5sum
+          - mkdir
+          - mkfifo
+          - mknod
+          - mktemp
+          - mv
+          - nice
           - nl
+          - nohup
+          - nproc
+          - numfmt
           - od
           - paste
+          - pathchk
+          - pinky
           - pr
+          - printenv
+          - printf
+          - ptx
           - pwd
+          - readlink
+          - realpath
           - rev
+          - rm
+          - rmdir
+          - runcon
           - seq
+          - sha1sum
+          - sha224sum
+          - sha256sum
+          - sha384sum
+          - sha512sum
           - shred
           - shuf
           - sleep
           - sort
+          - split
+          - stat
+          - stdbuf
+          - stty
+          - sum
           - sync
           - tac
           - tail
+          - tee
+          - "test"
+          - timeout
+          - touch
           - tr
           - "true"
+          - truncate
           - tsort
           - tty
+          - uname
           - unexpand
           - uniq
+          - unlink
+          - uptime
+          - users
+          - vdir
           - wc
+          - who
           - whoami
           - "yes"
     steps:
@@ -810,7 +898,7 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 7: Assembly Security Tests — per-tool security validation (40 parallel)
+  # Job 7: Assembly Security Tests — per-tool security validation (107 parallel)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-security:
     name: ASM-Security/${{ matrix.tool }}
@@ -821,43 +909,110 @@ jobs:
       matrix:
         tool:
           - arch
+          - b2sum
           - base32
           - base64
+          - basename
           - basenc
           - cat
+          - chcon
+          - chgrp
+          - chmod
+          - chown
+          - chroot
+          - cksum
           - comm
+          - cp
+          - csplit
           - cut
+          - date
+          - dd
+          - df
+          - dir
+          - dircolors
+          - dirname
+          - du
           - echo
+          - env
           - expand
+          - expr
           - factor
           - "false"
+          - fmt
           - fold
+          - groups
           - head
           - hostid
+          - id
+          - install
           - join
+          - kill
+          - link
+          - ln
           - logname
+          - ls
           - md5sum
+          - mkdir
+          - mkfifo
+          - mknod
+          - mktemp
+          - mv
+          - nice
           - nl
+          - nohup
+          - nproc
+          - numfmt
           - od
           - paste
+          - pathchk
+          - pinky
           - pr
+          - printenv
+          - printf
+          - ptx
           - pwd
+          - readlink
+          - realpath
           - rev
+          - rm
+          - rmdir
+          - runcon
           - seq
+          - sha1sum
+          - sha224sum
+          - sha256sum
+          - sha384sum
+          - sha512sum
           - shred
           - shuf
           - sleep
           - sort
+          - split
+          - stat
+          - stdbuf
+          - stty
+          - sum
           - sync
           - tac
           - tail
+          - tee
+          - "test"
+          - timeout
+          - touch
           - tr
           - "true"
+          - truncate
           - tsort
           - tty
+          - uname
           - unexpand
           - uniq
+          - unlink
+          - uptime
+          - users
+          - vdir
           - wc
+          - who
           - whoami
           - "yes"
     steps:
