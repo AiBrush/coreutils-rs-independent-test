@@ -597,8 +597,13 @@ jobs:
               "hostid": "fhostid", "logname": "flogname", "md5sum": "fmd5sum",
               "nl": "fnl", "od": "fod", "pwd": "fpwd", "rev": "frev",
               "seq": "fseq", "sleep": "fsleep", "sort": "fsort",
+              "base32": "fbase32", "basenc": "fbasenc",
+              "comm": "fcomm", "factor": "ffactor",
+              "join": "fjoin", "paste": "fpaste", "pr": "fpr",
+              "shred": "fshred", "shuf": "fshuf",
               "sync": "fsync", "tac": "ftac", "tail": "ftail",
-              "tr": "ftr", "true": "ftrue", "tty": "ftty",
+              "tr": "ftr", "true": "ftrue", "tsort": "ftsort",
+              "tty": "ftty",
               "unexpand": "funexpand", "uniq": "funiq", "wc": "fwc",
               "whoami": "fwhoami", "yes": "fyes",
           }
@@ -660,7 +665,7 @@ jobs:
           path: results/asm_sizes.json
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (29 parallel jobs)
+  # Job 6: Assembly Compat Tests — per-tool GNU compatibility (40 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-compat:
     name: ASM-Compat/${{ matrix.tool }}
@@ -671,22 +676,31 @@ jobs:
       matrix:
         tool:
           - arch
+          - base32
           - base64
+          - basenc
           - cat
+          - comm
           - cut
           - echo
           - expand
+          - factor
           - "false"
           - fold
           - head
           - hostid
+          - join
           - logname
           - md5sum
           - nl
           - od
+          - paste
+          - pr
           - pwd
           - rev
           - seq
+          - shred
+          - shuf
           - sleep
           - sort
           - sync
@@ -694,11 +708,13 @@ jobs:
           - tail
           - tr
           - "true"
+          - tsort
           - tty
           - unexpand
           - uniq
           - wc
           - whoami
+          - "yes"
     steps:
       - uses: actions/checkout@v4
 
@@ -794,7 +810,7 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 7: Assembly Security Tests — per-tool security validation (29 parallel)
+  # Job 7: Assembly Security Tests — per-tool security validation (40 parallel)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-security:
     name: ASM-Security/${{ matrix.tool }}
@@ -805,22 +821,31 @@ jobs:
       matrix:
         tool:
           - arch
+          - base32
           - base64
+          - basenc
           - cat
+          - comm
           - cut
           - echo
           - expand
+          - factor
           - "false"
           - fold
           - head
           - hostid
+          - join
           - logname
           - md5sum
           - nl
           - od
+          - paste
+          - pr
           - pwd
           - rev
           - seq
+          - shred
+          - shuf
           - sleep
           - sort
           - sync
@@ -828,11 +853,13 @@ jobs:
           - tail
           - tr
           - "true"
+          - tsort
           - tty
           - unexpand
           - uniq
           - wc
           - whoami
+          - "yes"
     steps:
       - uses: actions/checkout@v4
 
@@ -939,7 +966,7 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 8: Assembly Benchmarks — 3-way comparison per tool (20 parallel jobs)
+  # Job 8: Assembly Benchmarks — 3-way comparison per tool (27 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-bench:
     name: ASM-Bench/${{ matrix.tool }}
@@ -949,8 +976,11 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - base32
           - base64
+          - basenc
           - cat
+          - comm
           - cut
           - echo
           - expand
@@ -959,12 +989,16 @@ jobs:
           - md5sum
           - nl
           - od
+          - paste
+          - pr
           - rev
           - seq
+          - shuf
           - sort
           - tac
           - tail
           - tr
+          - tsort
           - unexpand
           - uniq
           - wc
@@ -1095,11 +1129,23 @@ jobs:
 
           # Tool-specific benchmarks
           case "$TOOL" in
+            base32)
+              run_bench "encode 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
             base64)
               run_bench "encode 1MB" \
                 "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
                 "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
                 "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            basenc)
+              run_bench "encode 1MB --base64" \
+                "$GNU_BIN --base64 '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN --base64 '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN --base64 '$DATA_DIR/text_1m.txt' > /dev/null"
               ;;
             cat)
               run_bench "passthrough 1MB" \
@@ -1116,6 +1162,14 @@ jobs:
                   "$RUST_BIN -n '$DATA_DIR/text_10m.txt' > /dev/null" \
                   "$ASM_BIN -n '$DATA_DIR/text_10m.txt' > /dev/null"
               fi
+              ;;
+            comm)
+              sort "$DATA_DIR/text_1m.txt" > /tmp/asm_bench_comm_sorted.txt
+              run_bench "compare sorted 1MB" \
+                "$GNU_BIN /tmp/asm_bench_comm_sorted.txt /tmp/asm_bench_comm_sorted.txt > /dev/null" \
+                "$RUST_BIN /tmp/asm_bench_comm_sorted.txt /tmp/asm_bench_comm_sorted.txt > /dev/null" \
+                "$ASM_BIN /tmp/asm_bench_comm_sorted.txt /tmp/asm_bench_comm_sorted.txt > /dev/null"
+              rm -f /tmp/asm_bench_comm_sorted.txt
               ;;
             cut)
               if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
@@ -1181,6 +1235,18 @@ jobs:
                 "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
                 "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
               ;;
+            paste)
+              run_bench "merge two 1MB files" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            pr)
+              run_bench "format 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
             rev)
               if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
                 run_bench "10MB text" \
@@ -1198,6 +1264,12 @@ jobs:
                 "$GNU_BIN 10000000 > /dev/null" \
                 "$RUST_BIN 10000000 > /dev/null" \
                 "$ASM_BIN 10000000 > /dev/null"
+              ;;
+            shuf)
+              run_bench "shuffle 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
               ;;
             sort)
               run_bench "1MB text" \
@@ -1226,6 +1298,18 @@ jobs:
                   "$RUST_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null" \
                   "$ASM_BIN a-z A-Z < '$DATA_DIR/text_10m.txt' > /dev/null"
               fi
+              ;;
+            tsort)
+              # Generate pairs: "1 2\n2 3\n3 4\n..." for topological sort
+              python3 -c "
+          for i in range(1, 100001):
+              print(f'{i} {i+1}')
+          " > /tmp/asm_bench_tsort_input.txt
+              run_bench "100K pairs" \
+                "$GNU_BIN /tmp/asm_bench_tsort_input.txt > /dev/null" \
+                "$RUST_BIN /tmp/asm_bench_tsort_input.txt > /dev/null" \
+                "$ASM_BIN /tmp/asm_bench_tsort_input.txt > /dev/null"
+              rm -f /tmp/asm_bench_tsort_input.txt
               ;;
             unexpand)
               if [[ -f "$DATA_DIR/text_10m.txt" ]]; then
