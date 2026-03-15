@@ -1121,7 +1121,7 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 8: Assembly Benchmarks — 3-way comparison per tool (27 parallel jobs)
+  # Job 8: Assembly Benchmarks — 3-way comparison per tool (107 parallel jobs)
   # ─────────────────────────────────────────────────────────────────────────────
   asm-bench:
     name: ASM-Bench/${{ matrix.tool }}
@@ -1131,33 +1131,113 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - arch
+          - b2sum
           - base32
           - base64
+          - basename
           - basenc
           - cat
+          - chcon
+          - chgrp
+          - chmod
+          - chown
+          - chroot
+          - cksum
           - comm
+          - cp
+          - csplit
           - cut
+          - date
+          - dd
+          - df
+          - dir
+          - dircolors
+          - dirname
+          - du
           - echo
+          - env
           - expand
+          - expr
+          - factor
+          - "false"
+          - fmt
           - fold
+          - groups
           - head
+          - hostid
+          - id
+          - install
+          - join
+          - kill
+          - link
+          - ln
+          - logname
+          - ls
           - md5sum
+          - mkdir
+          - mkfifo
+          - mknod
+          - mktemp
+          - mv
+          - nice
           - nl
+          - nohup
+          - nproc
+          - numfmt
           - od
           - paste
+          - pathchk
+          - pinky
           - pr
+          - printenv
+          - printf
+          - ptx
+          - pwd
+          - readlink
+          - realpath
           - rev
+          - rm
+          - rmdir
+          - runcon
           - seq
+          - sha1sum
+          - sha224sum
+          - sha256sum
+          - sha384sum
+          - sha512sum
+          - shred
           - shuf
+          - sleep
           - sort
+          - split
+          - stat
+          - stdbuf
+          - stty
+          - sum
+          - sync
           - tac
           - tail
+          - tee
+          - "test"
+          - timeout
+          - touch
           - tr
+          - "true"
+          - truncate
           - tsort
+          - tty
+          - uname
           - unexpand
           - uniq
+          - unlink
+          - uptime
+          - users
+          - vdir
           - wc
-          - yes
+          - who
+          - whoami
+          - "yes"
     steps:
       - uses: actions/checkout@v4
 
@@ -1495,6 +1575,536 @@ jobs:
                   "$RUST_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null" \
                   "$ASM_BIN -l '$DATA_DIR/text_10m.txt' > /dev/null"
               fi
+              ;;
+            arch)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            b2sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            basename)
+              run_bench "invoke" \
+                "$GNU_BIN /usr/local/bin/test.txt .txt" \
+                "$RUST_BIN /usr/local/bin/test.txt .txt" \
+                "$ASM_BIN /usr/local/bin/test.txt .txt"
+              ;;
+            chcon)
+              run_bench "invoke" \
+                "$GNU_BIN --help > /dev/null 2>&1 || true" \
+                "$RUST_BIN --help > /dev/null 2>&1 || true" \
+                "$ASM_BIN --help > /dev/null 2>&1 || true"
+              ;;
+            chgrp)
+              CHGRP_FILE=$(mktemp /tmp/asm_bench_chgrp_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN $(id -un) '$CHGRP_FILE' 2>/dev/null || true" \
+                "$RUST_BIN $(id -un) '$CHGRP_FILE' 2>/dev/null || true" \
+                "$ASM_BIN $(id -un) '$CHGRP_FILE' 2>/dev/null || true"
+              rm -f "$CHGRP_FILE"
+              ;;
+            chmod)
+              CHMOD_FILE=$(mktemp /tmp/asm_bench_chmod_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN 644 '$CHMOD_FILE'" \
+                "$RUST_BIN 644 '$CHMOD_FILE'" \
+                "$ASM_BIN 644 '$CHMOD_FILE'"
+              rm -f "$CHMOD_FILE"
+              ;;
+            chown)
+              CHOWN_FILE=$(mktemp /tmp/asm_bench_chown_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN $(id -un) '$CHOWN_FILE' 2>/dev/null || true" \
+                "$RUST_BIN $(id -un) '$CHOWN_FILE' 2>/dev/null || true" \
+                "$ASM_BIN $(id -un) '$CHOWN_FILE' 2>/dev/null || true"
+              rm -f "$CHOWN_FILE"
+              ;;
+            chroot)
+              run_bench "invoke" \
+                "$GNU_BIN --help > /dev/null 2>&1 || true" \
+                "$RUST_BIN --help > /dev/null 2>&1 || true" \
+                "$ASM_BIN --help > /dev/null 2>&1 || true"
+              ;;
+            cksum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            cp)
+              CP_DEST=$(mktemp /tmp/asm_bench_cp_XXXXXX)
+              run_bench "copy 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' '$CP_DEST'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' '$CP_DEST'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' '$CP_DEST'"
+              rm -f "$CP_DEST"
+              ;;
+            csplit)
+              CSPLIT_DIR=$(mktemp -d /tmp/asm_bench_csplit_XXXXXX)
+              pushd "$CSPLIT_DIR" >/dev/null
+              run_bench "split by pattern 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' '/^[[:space:]]*$/' '{*}' > /dev/null 2>&1; rm -f xx*" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' '/^[[:space:]]*$/' '{*}' > /dev/null 2>&1; rm -f xx*" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' '/^[[:space:]]*$/' '{*}' > /dev/null 2>&1; rm -f xx*"
+              popd >/dev/null
+              rm -rf "$CSPLIT_DIR"
+              ;;
+            date)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            dd)
+              run_bench "copy 1MB" \
+                "$GNU_BIN if='$DATA_DIR/text_1m.txt' of=/dev/null bs=64k 2>/dev/null" \
+                "$RUST_BIN if='$DATA_DIR/text_1m.txt' of=/dev/null bs=64k 2>/dev/null" \
+                "$ASM_BIN if='$DATA_DIR/text_1m.txt' of=/dev/null bs=64k 2>/dev/null"
+              ;;
+            df)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            dir)
+              run_bench "list data dir" \
+                "$GNU_BIN '$DATA_DIR' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR' > /dev/null"
+              ;;
+            dircolors)
+              run_bench "invoke" \
+                "$GNU_BIN -b > /dev/null" \
+                "$RUST_BIN -b > /dev/null" \
+                "$ASM_BIN -b > /dev/null"
+              ;;
+            dirname)
+              run_bench "invoke" \
+                "$GNU_BIN /usr/local/bin/test.txt" \
+                "$RUST_BIN /usr/local/bin/test.txt" \
+                "$ASM_BIN /usr/local/bin/test.txt"
+              ;;
+            du)
+              run_bench "summarize test data" \
+                "$GNU_BIN -s '$DATA_DIR' > /dev/null" \
+                "$RUST_BIN -s '$DATA_DIR' > /dev/null" \
+                "$ASM_BIN -s '$DATA_DIR' > /dev/null"
+              ;;
+            env)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            expr)
+              run_bench "arithmetic" \
+                "$GNU_BIN 12345 + 67890" \
+                "$RUST_BIN 12345 + 67890" \
+                "$ASM_BIN 12345 + 67890"
+              ;;
+            factor)
+              seq 1 100000 > /tmp/asm_bench_factor_input.txt
+              run_bench "factor 100K numbers" \
+                "$GNU_BIN < /tmp/asm_bench_factor_input.txt > /dev/null" \
+                "$RUST_BIN < /tmp/asm_bench_factor_input.txt > /dev/null" \
+                "$ASM_BIN < /tmp/asm_bench_factor_input.txt > /dev/null"
+              rm -f /tmp/asm_bench_factor_input.txt
+              ;;
+            "false")
+              run_bench "invoke" \
+                "$GNU_BIN || true" \
+                "$RUST_BIN || true" \
+                "$ASM_BIN || true"
+              ;;
+            fmt)
+              run_bench "format 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            groups)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            hostid)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            id)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            install)
+              INST_BASE=$(mktemp -d /tmp/asm_bench_install_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' '$INST_BASE/gnu_f'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' '$INST_BASE/rust_f'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' '$INST_BASE/asm_f'"
+              rm -rf "$INST_BASE"
+              ;;
+            join)
+              sort "$DATA_DIR/text_1m.txt" > /tmp/asm_bench_join_a.txt
+              cp /tmp/asm_bench_join_a.txt /tmp/asm_bench_join_b.txt
+              run_bench "join sorted 1MB" \
+                "$GNU_BIN /tmp/asm_bench_join_a.txt /tmp/asm_bench_join_b.txt > /dev/null" \
+                "$RUST_BIN /tmp/asm_bench_join_a.txt /tmp/asm_bench_join_b.txt > /dev/null" \
+                "$ASM_BIN /tmp/asm_bench_join_a.txt /tmp/asm_bench_join_b.txt > /dev/null"
+              rm -f /tmp/asm_bench_join_a.txt /tmp/asm_bench_join_b.txt
+              ;;
+            kill)
+              run_bench "invoke" \
+                "$GNU_BIN -l > /dev/null" \
+                "$RUST_BIN -l > /dev/null" \
+                "$ASM_BIN -l > /dev/null"
+              ;;
+            link)
+              LINK_SRC=$(mktemp /tmp/asm_bench_link_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN '$LINK_SRC' '${LINK_SRC}_gnu'; rm -f '${LINK_SRC}_gnu'" \
+                "$RUST_BIN '$LINK_SRC' '${LINK_SRC}_rust'; rm -f '${LINK_SRC}_rust'" \
+                "$ASM_BIN '$LINK_SRC' '${LINK_SRC}_asm'; rm -f '${LINK_SRC}_asm'"
+              rm -f "$LINK_SRC"
+              ;;
+            ln)
+              LN_SRC=$(mktemp /tmp/asm_bench_ln_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN -sf '$LN_SRC' '${LN_SRC}_gnu'" \
+                "$RUST_BIN -sf '$LN_SRC' '${LN_SRC}_rust'" \
+                "$ASM_BIN -sf '$LN_SRC' '${LN_SRC}_asm'"
+              rm -f "$LN_SRC" "${LN_SRC}_gnu" "${LN_SRC}_rust" "${LN_SRC}_asm"
+              ;;
+            logname)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            ls)
+              run_bench "list data dir" \
+                "$GNU_BIN -la '$DATA_DIR' > /dev/null" \
+                "$RUST_BIN -la '$DATA_DIR' > /dev/null" \
+                "$ASM_BIN -la '$DATA_DIR' > /dev/null"
+              ;;
+            mkdir)
+              MKDIR_BASE=$(mktemp -d /tmp/asm_bench_mkdir_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN '$MKDIR_BASE/gnu_d' && rmdir '$MKDIR_BASE/gnu_d'" \
+                "$RUST_BIN '$MKDIR_BASE/rust_d' && rmdir '$MKDIR_BASE/rust_d'" \
+                "$ASM_BIN '$MKDIR_BASE/asm_d' && rmdir '$MKDIR_BASE/asm_d'"
+              rm -rf "$MKDIR_BASE"
+              ;;
+            mkfifo)
+              MKFIFO_BASE=$(mktemp -d /tmp/asm_bench_mkfifo_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN '$MKFIFO_BASE/gnu_f' && rm -f '$MKFIFO_BASE/gnu_f'" \
+                "$RUST_BIN '$MKFIFO_BASE/rust_f' && rm -f '$MKFIFO_BASE/rust_f'" \
+                "$ASM_BIN '$MKFIFO_BASE/asm_f' && rm -f '$MKFIFO_BASE/asm_f'"
+              rm -rf "$MKFIFO_BASE"
+              ;;
+            mknod)
+              MKNOD_BASE=$(mktemp -d /tmp/asm_bench_mknod_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN '$MKNOD_BASE/gnu_p' p && rm -f '$MKNOD_BASE/gnu_p'" \
+                "$RUST_BIN '$MKNOD_BASE/rust_p' p && rm -f '$MKNOD_BASE/rust_p'" \
+                "$ASM_BIN '$MKNOD_BASE/asm_p' p && rm -f '$MKNOD_BASE/asm_p'"
+              rm -rf "$MKNOD_BASE"
+              ;;
+            mktemp)
+              run_bench "invoke" \
+                "f=$($GNU_BIN) && rm -f \$f" \
+                "f=$($RUST_BIN) && rm -f \$f" \
+                "f=$($ASM_BIN) && rm -f \$f"
+              ;;
+            mv)
+              MV_BASE=$(mktemp -d /tmp/asm_bench_mv_XXXXXX)
+              run_bench "invoke" \
+                "touch '$MV_BASE/s'; $GNU_BIN '$MV_BASE/s' '$MV_BASE/d'" \
+                "touch '$MV_BASE/s'; $RUST_BIN '$MV_BASE/s' '$MV_BASE/d'" \
+                "touch '$MV_BASE/s'; $ASM_BIN '$MV_BASE/s' '$MV_BASE/d'"
+              rm -rf "$MV_BASE"
+              ;;
+            nice)
+              run_bench "invoke" \
+                "$GNU_BIN true" \
+                "$RUST_BIN true" \
+                "$ASM_BIN true"
+              ;;
+            nohup)
+              run_bench "invoke" \
+                "$GNU_BIN true > /dev/null 2>&1" \
+                "$RUST_BIN true > /dev/null 2>&1" \
+                "$ASM_BIN true > /dev/null 2>&1"
+              ;;
+            nproc)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            numfmt)
+              seq 1 100000 > /tmp/asm_bench_numfmt_input.txt
+              run_bench "format 100K numbers" \
+                "$GNU_BIN --to=iec < /tmp/asm_bench_numfmt_input.txt > /dev/null" \
+                "$RUST_BIN --to=iec < /tmp/asm_bench_numfmt_input.txt > /dev/null" \
+                "$ASM_BIN --to=iec < /tmp/asm_bench_numfmt_input.txt > /dev/null"
+              rm -f /tmp/asm_bench_numfmt_input.txt
+              ;;
+            pathchk)
+              run_bench "invoke" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            pinky)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null 2>&1 || true" \
+                "$RUST_BIN > /dev/null 2>&1 || true" \
+                "$ASM_BIN > /dev/null 2>&1 || true"
+              ;;
+            printenv)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            printf)
+              run_bench "format string" \
+                "$GNU_BIN '%s %d %x\n' hello 42 255" \
+                "$RUST_BIN '%s %d %x\n' hello 42 255" \
+                "$ASM_BIN '%s %d %x\n' hello 42 255"
+              ;;
+            ptx)
+              run_bench "index 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            pwd)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            readlink)
+              ln -sf "$DATA_DIR/text_1m.txt" /tmp/asm_bench_readlink_sym
+              run_bench "invoke" \
+                "$GNU_BIN /tmp/asm_bench_readlink_sym" \
+                "$RUST_BIN /tmp/asm_bench_readlink_sym" \
+                "$ASM_BIN /tmp/asm_bench_readlink_sym"
+              rm -f /tmp/asm_bench_readlink_sym
+              ;;
+            realpath)
+              run_bench "invoke" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            rm)
+              RM_BASE=$(mktemp -d /tmp/asm_bench_rm_XXXXXX)
+              run_bench "invoke" \
+                "touch '$RM_BASE/f'; $GNU_BIN '$RM_BASE/f'" \
+                "touch '$RM_BASE/f'; $RUST_BIN '$RM_BASE/f'" \
+                "touch '$RM_BASE/f'; $ASM_BIN '$RM_BASE/f'"
+              rm -rf "$RM_BASE"
+              ;;
+            rmdir)
+              RMDIR_BASE=$(mktemp -d /tmp/asm_bench_rmdir_XXXXXX)
+              run_bench "invoke" \
+                "mkdir -p '$RMDIR_BASE/d'; $GNU_BIN '$RMDIR_BASE/d'" \
+                "mkdir -p '$RMDIR_BASE/d'; $RUST_BIN '$RMDIR_BASE/d'" \
+                "mkdir -p '$RMDIR_BASE/d'; $ASM_BIN '$RMDIR_BASE/d'"
+              rm -rf "$RMDIR_BASE"
+              ;;
+            runcon)
+              run_bench "invoke" \
+                "$GNU_BIN --help > /dev/null 2>&1 || true" \
+                "$RUST_BIN --help > /dev/null 2>&1 || true" \
+                "$ASM_BIN --help > /dev/null 2>&1 || true"
+              ;;
+            sha1sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            sha224sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            sha256sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            sha384sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            sha512sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            shred)
+              SHRED_FILE=$(mktemp /tmp/asm_bench_shred_XXXXXX)
+              cp "$DATA_DIR/text_1m.txt" "$SHRED_FILE"
+              run_bench "shred 1MB" \
+                "cp '$DATA_DIR/text_1m.txt' '$SHRED_FILE' && $GNU_BIN -n 1 '$SHRED_FILE'" \
+                "cp '$DATA_DIR/text_1m.txt' '$SHRED_FILE' && $RUST_BIN -n 1 '$SHRED_FILE'" \
+                "cp '$DATA_DIR/text_1m.txt' '$SHRED_FILE' && $ASM_BIN -n 1 '$SHRED_FILE'"
+              rm -f "$SHRED_FILE"
+              ;;
+            sleep)
+              run_bench "invoke" \
+                "$GNU_BIN 0" \
+                "$RUST_BIN 0" \
+                "$ASM_BIN 0"
+              ;;
+            split)
+              SPLIT_DIR=$(mktemp -d /tmp/asm_bench_split_XXXXXX)
+              run_bench "split 1MB" \
+                "$GNU_BIN -l 1000 '$DATA_DIR/text_1m.txt' -d '$SPLIT_DIR/gnu_'; rm -f $SPLIT_DIR/gnu_*" \
+                "$RUST_BIN -l 1000 '$DATA_DIR/text_1m.txt' -d '$SPLIT_DIR/rust_'; rm -f $SPLIT_DIR/rust_*" \
+                "$ASM_BIN -l 1000 '$DATA_DIR/text_1m.txt' -d '$SPLIT_DIR/asm_'; rm -f $SPLIT_DIR/asm_*"
+              rm -rf "$SPLIT_DIR"
+              ;;
+            stat)
+              run_bench "stat file" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            stdbuf)
+              run_bench "invoke" \
+                "$GNU_BIN --help > /dev/null 2>&1 || true" \
+                "$RUST_BIN --help > /dev/null 2>&1 || true" \
+                "$ASM_BIN --help > /dev/null 2>&1 || true"
+              ;;
+            stty)
+              run_bench "invoke" \
+                "$GNU_BIN --help > /dev/null 2>&1 || true" \
+                "$RUST_BIN --help > /dev/null 2>&1 || true" \
+                "$ASM_BIN --help > /dev/null 2>&1 || true"
+              ;;
+            sum)
+              run_bench "hash 1MB" \
+                "$GNU_BIN '$DATA_DIR/text_1m.txt'" \
+                "$RUST_BIN '$DATA_DIR/text_1m.txt'" \
+                "$ASM_BIN '$DATA_DIR/text_1m.txt'"
+              ;;
+            sync)
+              run_bench "invoke" \
+                "$GNU_BIN" \
+                "$RUST_BIN" \
+                "$ASM_BIN"
+              ;;
+            tee)
+              run_bench "tee 1MB" \
+                "$GNU_BIN /dev/null < '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$RUST_BIN /dev/null < '$DATA_DIR/text_1m.txt' > /dev/null" \
+                "$ASM_BIN /dev/null < '$DATA_DIR/text_1m.txt' > /dev/null"
+              ;;
+            "test")
+              run_bench "invoke" \
+                "$GNU_BIN 1 -eq 1" \
+                "$RUST_BIN 1 -eq 1" \
+                "$ASM_BIN 1 -eq 1"
+              ;;
+            timeout)
+              run_bench "invoke" \
+                "$GNU_BIN 1 true" \
+                "$RUST_BIN 1 true" \
+                "$ASM_BIN 1 true"
+              ;;
+            touch)
+              TOUCH_BASE=$(mktemp -d /tmp/asm_bench_touch_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN '$TOUCH_BASE/gnu_f'" \
+                "$RUST_BIN '$TOUCH_BASE/rust_f'" \
+                "$ASM_BIN '$TOUCH_BASE/asm_f'"
+              rm -rf "$TOUCH_BASE"
+              ;;
+            "true")
+              run_bench "invoke" \
+                "$GNU_BIN" \
+                "$RUST_BIN" \
+                "$ASM_BIN"
+              ;;
+            truncate)
+              TRUNC_FILE=$(mktemp /tmp/asm_bench_truncate_XXXXXX)
+              run_bench "invoke" \
+                "$GNU_BIN -s 0 '$TRUNC_FILE'" \
+                "$RUST_BIN -s 0 '$TRUNC_FILE'" \
+                "$ASM_BIN -s 0 '$TRUNC_FILE'"
+              rm -f "$TRUNC_FILE"
+              ;;
+            tty)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            uname)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            unlink)
+              UNLINK_BASE=$(mktemp -d /tmp/asm_bench_unlink_XXXXXX)
+              run_bench "invoke" \
+                "touch '$UNLINK_BASE/f'; $GNU_BIN '$UNLINK_BASE/f'" \
+                "touch '$UNLINK_BASE/f'; $RUST_BIN '$UNLINK_BASE/f'" \
+                "touch '$UNLINK_BASE/f'; $ASM_BIN '$UNLINK_BASE/f'"
+              rm -rf "$UNLINK_BASE"
+              ;;
+            uptime)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
+              ;;
+            users)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null 2>&1 || true" \
+                "$RUST_BIN > /dev/null 2>&1 || true" \
+                "$ASM_BIN > /dev/null 2>&1 || true"
+              ;;
+            vdir)
+              run_bench "list data dir" \
+                "$GNU_BIN '$DATA_DIR' > /dev/null" \
+                "$RUST_BIN '$DATA_DIR' > /dev/null" \
+                "$ASM_BIN '$DATA_DIR' > /dev/null"
+              ;;
+            who)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null 2>&1 || true" \
+                "$RUST_BIN > /dev/null 2>&1 || true" \
+                "$ASM_BIN > /dev/null 2>&1 || true"
+              ;;
+            whoami)
+              run_bench "invoke" \
+                "$GNU_BIN > /dev/null" \
+                "$RUST_BIN > /dev/null" \
+                "$ASM_BIN > /dev/null"
               ;;
             yes)
               run_bench "1M lines" \
@@ -1930,3 +2540,4 @@ jobs:
             git commit -m "Update test report $VERSION"
             git push
           fi
+
